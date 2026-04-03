@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Duyệt Yêu Cầu - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'requests/css/request_review.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="request-page">
+    <div class="request-toolbar">
+        <div class="request-search-row">
+            <div class="request-type-label">Loại yêu cầu: Tất cả</div>
+            <label class="request-search-box">
+                <img src="{% static 'images/search_icon.png' %}" alt="Tìm kiếm">
+                <input type="text" placeholder="Tìm kiếm">
+            </label>
+            <button type="button" class="request-search-btn">Tìm kiếm</button>
+        </div>
+
+        <div class="request-filter-tabs">
+            <button type="button" class="request-filter-tab is-active">Tất cả</button>
+            <button type="button" class="request-filter-tab">Đang chờ duyệt</button>
+            <button type="button" class="request-filter-tab">Đã duyệt</button>
+            <button type="button" class="request-filter-tab">Đã từ chối</button>
+        </div>
+    </div>
+
+    <div class="request-table-card">
+        <table class="request-table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã đăng ký</th>
+                    <th>Tên nhân viên</th>
+                    <th>Loại yêu cầu</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in requests_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.ma_dk }}</td>
+                    <td>{{ item.ten_nv }}</td>
+                    <td>{{ item.loai_yc }}</td>
+                    <td>{{ item.ngay_dk }}</td>
+                    <td>
+                        <span class="request-status is-{{ item.trang_thai_key }}">{{ item.trang_thai }}</span>
+                    </td>
+                    <td class="request-action-cell">
+                        <button
+                            type="button"
+                            class="request-detail-btn"
+                            data-open-modal="request-detail-modal"
+                            data-employee-name="{{ item.ten_nv }}"
+                            data-employee-code="{{ item.ma_nv }}"
+                            data-rows='[{% for label, value in item.chi_tiet_rows %}{"label":"{{ label }}","value":"{{ value }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                        >
+                            Xem chi tiết
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="request-modal-overlay" id="request-detail-modal">
+    <div class="request-modal">
+        <div class="request-modal-header">
+            <h2>Chi tiết yêu cầu</h2>
+            <button type="button" class="request-modal-close" data-close-modal="request-detail-modal">&times;</button>
+        </div>
+
+        <div class="request-profile">
+            <div class="request-profile-avatar">👤</div>
+            <div class="request-profile-text">
+                <strong id="request-detail-name">Nguyễn Văn An</strong>
+                <span id="request-detail-code">Mã nhân viên - NV001</span>
+            </div>
+        </div>
+
+        <div id="request-detail-grid" class="request-detail-grid"></div>
+
+        <div class="request-modal-footer">
+            <button type="button" class="request-approve-btn">✔ Duyệt</button>
+            <button type="button" class="request-reject-btn">✖ Từ chối</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'requests/js/request_review.js' %}"></script>
+{% endblock %}
