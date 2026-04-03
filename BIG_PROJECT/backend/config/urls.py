@@ -15,5 +15,7 @@ urlpatterns = [
     path('schedules/', include('apps.schedules.urls')),
     path('reports/', include('apps.reports.urls')),
     path('api/', include('apps.branches.urls')),
+    path('api/', include('apps.attendances.urls')),
+    path('api/requests/', include('apps.requests.urls')),
     path('api-token-auth/', views.obtain_auth_token),
 ]
