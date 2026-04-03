@@ -1,9 +1,9 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from .views import ChiNhanhViewSet
 
-router = DefaultRouter()
-router.register(r'branches', ChiNhanhViewSet)
+router = SimpleRouter()
+router.register(r'', ChiNhanhViewSet, basename='branches')
 
 urlpatterns = [
     path('', include(router.urls)),
