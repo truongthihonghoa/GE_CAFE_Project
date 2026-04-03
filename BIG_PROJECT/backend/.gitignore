@@ -1,5 +1,16 @@
+# Python
+venv/
 __pycache__/
 *.pyc
+
+# Django
 db.sqlite3
-.venv/
+media/
+
+# IDE
 .idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
