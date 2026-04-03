@@ -16,6 +16,10 @@ urlpatterns = [
     path('reports/', include('apps.reports.urls')),
     path('api/', include('apps.branches.urls')),
     path('api/', include('apps.attendances.urls')),
-    path('api/requests/', include('apps.requests.urls')),
-    path('api-token-auth/', views.obtain_auth_token),
-]
+    path('api/requests/', include('apps.requests.urls')),]
+# >>>>>>> 1a59a90afba3015d4a70b74bf4dce7765e294386
+#     path('api-token-auth/', views.obtain_auth_token),
+#     path('api/branches/', include('apps.branches.api_urls')),
+#     path('api/employees/', include('apps.employees.api_urls')),
+#     path('api/contracts/', include('apps.contracts.api_urls')),
+# ]
