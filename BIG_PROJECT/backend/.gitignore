@@ -1,11 +1,10 @@
 # Python
 venv/
-.idea/
 __pycache__/
 *.pyc
 
 # Django
-db.sqlite3
+# db.sqlite3  <-- HÃY THÊM DẤU # VÀO ĐẦU DÒNG NÀY ĐỂ BỎ QUA NÓ
 media/
 
 # IDE
