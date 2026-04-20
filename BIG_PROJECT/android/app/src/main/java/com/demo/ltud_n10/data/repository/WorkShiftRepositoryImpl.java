@@ -23,24 +23,17 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
 
     @Inject
     public WorkShiftRepositoryImpl() {
-        // Mock data for employee "Lê Văn C" (NV001) across multiple weeks in March 2026
+        // Dữ liệu mẫu cho nhân viên "Lê Văn C" (NV001) trong tháng 4/2026 như trong hình
         
-        // Week 1: 2/3 - 8/3
-        shiftList.add(new WorkShift("S1", "NV001", "Lê Văn C", "02/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S2", "NV001", "Lê Văn C", "03/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S3", "NV001", "Lê Văn C", "05/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S4", "NV001", "Lê Văn C", "07/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
+        // Tuần từ 13/4 - 19/4
+        shiftList.add(new WorkShift("S1", "NV001", "Lê Văn C", "13/04/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
+        shiftList.add(new WorkShift("S2", "NV001", "Lê Văn C", "14/04/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
+        shiftList.add(new WorkShift("S3", "NV001", "Lê Văn C", "16/04/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
+        shiftList.add(new WorkShift("S4", "NV001", "Lê Văn C", "18/04/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
 
-        // Week 2: 9/3 - 15/3
-        shiftList.add(new WorkShift("S5", "NV001", "Lê Văn C", "09/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S6", "NV001", "Lê Văn C", "11/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S7", "NV001", "Lê Văn C", "13/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-
-        // Week 0: 23/2 - 1/3 (Previous period)
-        shiftList.add(new WorkShift("S0", "NV001", "Lê Văn C", "25/02/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-
-        // Other employees
-        shiftList.add(new WorkShift("S8", "NV002", "Phạm Thị D", "02/03/2026", "14:00", "22:00", "Phục vụ", true, "Đã duyệt", "Đăng ký ca"));
+        // Các tuần khác
+        shiftList.add(new WorkShift("S5", "NV001", "Lê Văn C", "06/04/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
+        shiftList.add(new WorkShift("S6", "NV001", "Lê Văn C", "08/04/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
     }
 
     @Override

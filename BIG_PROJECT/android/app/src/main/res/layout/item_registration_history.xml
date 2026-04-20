@@ -68,10 +68,39 @@
                 android:textStyle="bold" />
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Action Buttons for Pending status -->
+        <LinearLayout
+            android:id="@+id/layoutActions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cvStatus">
+
+            <ImageView
+                android:id="@+id/btnEdit"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="6dp"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="#64748B" />
+
+            <ImageView
+                android:id="@+id/btnDelete"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:padding="6dp"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="#EF4444" />
+        </LinearLayout>
+
         <!-- For Leave type, show reason -->
         <TextView
             android:id="@+id/tvReason"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:background="@android:color/white"
@@ -80,6 +109,9 @@
             android:textColor="#1A1A1A"
             android:textSize="13sp"
             android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/layoutActions"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvSentTime" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

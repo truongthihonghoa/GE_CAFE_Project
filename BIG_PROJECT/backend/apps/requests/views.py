@@ -1,5 +1,7 @@
 from django.shortcuts import render
-
+from rest_framework.viewsets import ModelViewSet
+from .models import YeuCau
+from .serializers import YeuCauSerializer
 
 def _sample_requests():
     return [
@@ -136,3 +138,21 @@ def request_review_list_view(request):
 def request_list_view(request):
     """New view for the enhanced request list UI with mock data"""
     return render(request, 'requests/request_list.html')
+
+
+
+
+# API đăng ký lịch
+class DangKyLichViewSet(ModelViewSet):
+    serializer_class = YeuCauSerializer
+
+    def get_queryset(self):
+        return YeuCau.objects.filter(loai_yeu_cau__icontains="Đăng ký")
+
+
+# API nghỉ phép
+class NghiPhepViewSet(ModelViewSet):
+    serializer_class = YeuCauSerializer
+
+    def get_queryset(self):
+        return YeuCau.objects.filter(loai_yeu_cau__icontains="Nghỉ")
