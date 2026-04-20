@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="/urls (snapshot).py">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="/urls (snapshot).py" />
+              <option name="originalContent" value="from django.contrib import admin&#10;from django.urls import path, include&#10;from django.views.generic import RedirectView&#10;&#10;from rest_framework.authtoken import views&#10;urlpatterns = [&#10;    path('', RedirectView.as_view(pattern_name='dashboard', permanent=False)),&#10;    path('admin/', admin.site.urls),&#10;    path('accounts/', include('apps.accounts.urls')),&#10;    path('branches/', include('apps.branches.urls')),&#10;    path('employees/', include('apps.employees.urls')),&#10;    path('contracts/', include('apps.contracts.urls')),&#10;    path('payroll/', include('apps.payroll.urls')),&#10;    path('requests/', include('apps.requests.urls')),&#10;    path('schedules/', include('apps.schedules.urls')),&#10;    path('reports/', include('apps.reports.urls')),&#10;    path('api/', include('apps.branches.urls')),&#10;    path('api-token-auth/', views.obtain_auth_token),&#10;    path('api/employees/', include('apps.employees.urls')),&#10;    path('api/contracts/', include('apps.contracts.urls')),&#10;]&#10;" />
+              <option name="updatedContent" value="from django.contrib import admin&#10;from django.urls import path, include&#10;from django.views.generic import RedirectView&#10;&#10;from rest_framework.authtoken import views&#10;urlpatterns = [&#10;    path('', RedirectView.as_view(pattern_name='dashboard', permanent=False)),&#10;    path('admin/', admin.site.urls),&#10;    path('accounts/', include('apps.accounts.urls')),&#10;    path('branches/', include('apps.branches.urls')),&#10;    path('employees/', include('apps.employees.urls')),&#10;    path('contracts/', include('apps.contracts.urls')),&#10;    path('payroll/', include('apps.payroll.urls')),&#10;    path('requests/', include('apps.requests.urls')),&#10;    path('schedules/', include('apps.schedules.urls')),&#10;    path('reports/', include('apps.reports.urls')),&#10;    path('api/', include('apps.branches.urls')),&#10;    path('api-token-auth/', views.obtain_auth_token),&#10;    path('api/employees/', include('apps.employees.urls')),&#10;    path('api/contracts/', include('apps.contracts.api_urls')),&#10;]" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

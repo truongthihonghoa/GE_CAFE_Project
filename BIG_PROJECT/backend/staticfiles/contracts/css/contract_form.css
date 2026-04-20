@@ -1,0 +1,120 @@
+/* Container chính - thêm padding để không dính sát mép màn hình */
+.contract-form-page {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background: #f0f2f5; /* Màu nền nhẹ để nổi bật card */
+    min-height: 100vh;
+}
+
+.contract-form-card {
+    width: 100%;
+    max-width: 900px; /* Giới hạn chiều rộng tối đa */
+    max-height: 90vh; /* Giới hạn chiều cao card bằng 90% màn hình */
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    padding: 20px 25px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Để không bị tràn bo góc */
+}
+
+/* Phần tiêu đề cố định */
+.contract-form-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.contract-form-header h2 {
+    margin: 0;
+    color: #174d17;
+    font: 700 20px "Montserrat", sans-serif; /* Thu nhỏ từ 24px xuống 20px */
+}
+
+/* KHU VỰC CHÍNH ĐỂ CUỘN */
+.contract-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px 30px;
+    overflow-y: auto; /* Cho phép cuộn dọc nội dung form */
+    padding-right: 10px; /* Tránh dính thanh cuộn */
+    flex-grow: 1; /* Chiếm diện tích còn lại */
+}
+
+/* Tinh chỉnh Label */
+.contract-field label {
+    color: #4b2e1f;
+    font: 600 16px "Montserrat", sans-serif; /* Thu nhỏ từ 22px xuống 16px */
+    margin-bottom: 4px;
+}
+
+/* Tinh chỉnh Input & Select */
+.contract-field input,
+.contract-field select {
+    width: 100%;
+    height: 42px; /* Thu nhỏ từ 52px xuống 42px */
+    padding: 0 15px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd; /* Giảm độ dày border */
+    background: #fff;
+    color: #1e1e1e;
+    font: 500 15px "Montserrat", sans-serif; /* Thu nhỏ font input */
+}
+
+/* Phần nút bấm ở dưới cùng */
+.contract-form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+.contract-cancel-btn,
+.contract-save-btn {
+    min-width: 140px; /* Thu nhỏ từ 235px xuống 140px */
+    height: 45px;    /* Thu nhỏ từ 64px xuống 45px */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font: 600 16px "Montserrat", sans-serif; /* Thu nhỏ từ 22px xuống 16px */
+    transition: all 0.2s ease;
+}
+
+/* Màu sắc nút bấm giữ nguyên như bạn muốn hoặc đổi blue thành xanh đậm hơn */
+.contract-save-btn {
+    background: #174d17;
+    color: #fff;
+}
+
+.contract-cancel-btn:hover,
+.contract-save-btn:hover {
+    background: #0000bb; /* Đổi blue sáng thành xanh đậm cho dịu mắt */
+    color: #fff;
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp (Webkit) */
+.contract-form::-webkit-scrollbar {
+    width: 6px;
+}
+.contract-form::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+@media (max-width: 700px) {
+    .contract-form {
+        grid-template-columns: 1fr;
+    }
+    .contract-form-card {
+        max-height: 95vh;
+        margin: 10px;
+    }
+}

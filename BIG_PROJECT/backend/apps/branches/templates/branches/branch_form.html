@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Thêm chi nhánh{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'branches/css/branch_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Thêm chi nhánh</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div>
+            <label>Tên chi nhánh:</label>
+            <input type="text" name="ten_chi_nhanh" placeholder="Nhập tên chi nhánh..." required>
+        </div>
+
+        <div>
+            <label>Địa chỉ:</label>
+            <input type="text" name="dia_chi" placeholder="Nhập địa chỉ..." required>
+        </div>
+
+        <div>
+            <label>SĐT:</label>
+            <input type="text" name="sdt" placeholder="Nhập số điện thoại..." required>
+        </div>
+
+        <div>
+            <label>Quản lý:</label>
+            <select name="ma_nv_ql">
+                <option value="">-- Chọn quản lý --</option>
+                {% for nv in nhanviens %}
+                    <option value="{{ nv.id }}">{{ nv.ten_nv }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'branches:branch_list' %}" class="btn-cancel">Hủy</a>
+            <button type="submit">Lưu</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

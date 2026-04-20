@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="12dp">
+
+    <CheckBox
+        android:id="@+id/cbSelect"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:buttonTint="#0A4D1E" />
+
+    <TextView
+        android:id="@+id/tvEmployeeId"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1.2"
+        android:text="NV0001"
+        android:textColor="#94A3B8"
+        android:textSize="13sp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/tvEmployeeName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2.5"
+        android:text="Nguyễn Văn An"
+        android:textColor="#1E293B"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvHours"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="100.0"
+        android:textColor="#94A3B8"
+        android:textSize="13sp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/tvFactor"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:text="2.0"
+        android:textColor="#94A3B8"
+        android:textSize="13sp"
+        android:textStyle="italic" />
+
+</LinearLayout>

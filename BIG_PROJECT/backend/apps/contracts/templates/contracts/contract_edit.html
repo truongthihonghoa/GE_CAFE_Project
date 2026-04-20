@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sửa Hợp Đồng - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'contracts/css/contract_form.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/popup_error.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/popup_confirm_cancel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/popup_success.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contract-form-page">
+    <div class="contract-form-card">
+        <div class="contract-form-header">
+            <a href="{% url 'contract_list' %}" class="contract-back-link">
+                <img src="{% static 'images/back_icon.png' %}" alt="Quay lại">
+            </a>
+            <h2>CHỈNH SỬA HỢP ĐỒNG LAO ĐỘNG</h2>
+        </div>
+
+        <form class="contract-form" method="POST" data-contract-list-url="{% url 'contract_list' %}" data-success-title="Cập nhật hợp đồng thành công" data-success-message="Thông tin hợp đồng lao động đã được cập nhật.">
+            {% csrf_token %}
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="contract-field">
+                <label for="ma_nv">Mã nhân viên</label>
+                <input type="text" id="ma_nv" name="ma_nv" value="{{ contract.ma_nv.ma_nv }}" readonly>
+            </div>
+            <div class="contract-field">
+                <label for="ma_hd">Mã hợp đồng</label>
+                <input type="text" id="ma_hd" name="ma_hd" value="{{ contract.ma_hd }}" readonly>
+            </div>
+            <div class="contract-field">
+                <label for="ten_nv">Họ và tên</label>
+                <input type="text" id="ten_nv" name="ten_nv" value="{{ contract.ten_nv }}" readonly>
+            </div>
+            <div class="contract-field">
+                <label for="loai_hd">Loại hợp đồng <span class="required">*</span></label>
+                <select id="loai_hd" name="loai_hd" required>
+                    {% for contract_type in contract_types %}
+                    <option value="{{ contract_type }}" {% if contract.loai_hd == contract_type %}selected{% endif %}>{{ contract_type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="contract-field">
+                <label for="ngay_bd">Ngày bắt đầu <span class="required">*</span></label>
+                <input type="date" id="ngay_bd" name="ngay_bd" value="{{ contract.ngay_bd|date:'Y-m-d' }}" required>
+            </div>
+            <div class="contract-field">
+                <label for="ngay_kt">Ngày kết thúc <span class="required">*</span></label>
+                <input type="date" id="ngay_kt" name="ngay_kt" value="{{ contract.ngay_kt|date:'Y-m-d' }}" required>
+            </div>
+            <div class="contract-field">
+                <label for="chuc_vu">Chức vụ <span class="required">*</span></label>
+                <select id="chuc_vu" name="chuc_vu" required>
+                    {% for position in positions %}
+                    <option value="{{ position }}" {% if contract.chuc_vu == position %}selected{% endif %}>{{ position }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="contract-field">
+                <label for="luong_co_ban">Lương cơ bản</label>
+                <input type="number" id="luong_co_ban" name="luong_co_ban" value="{{ luong_co_ban }}" placeholder="0" min="0" step="1000">
+            </div>
+            <div class="contract-field">
+                <label for="luong_theo_gio">Lương/giờ</label>
+                <input type="number" id="luong_theo_gio" name="luong_theo_gio" value="{{ luong_theo_gio }}" placeholder="0" min="0" step="1000">
+            </div>
+            <div class="contract-field">
+                <label for="so_gio_lam">Số giờ làm</label>
+                <input type="number" id="so_gio_lam" name="so_gio_lam" value="{{ so_gio_lam }}" placeholder="0" min="0" step="0.5">
+            </div>
+            <div class="contract-field">
+                <label for="thuong">Thưởng (Nếu có)</label>
+                <input type="number" id="thuong" name="thuong" value="{{ thuong }}" placeholder="0" min="0" step="1000">
+            </div>
+            <div class="contract-field">
+                <label for="phat">Phạt (Nếu có)</label>
+                <input type="number" id="phat" name="phat" value="{{ phat }}" placeholder="0" min="0" step="1000">
+            </div>
+            <div class="contract-form-actions">
+                <button type="button" class="contract-cancel-btn">HỦY THAO TÁC</button>
+                <button type="submit" class="contract-save-btn">LƯU THÔNG TIN</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% include 'partials/popup_error.html' %}
+{% include 'partials/popup_confirm_cancel.html' %}
+{% include 'partials/popup_success.html' %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'contracts/js/contract_form.js' %}"></script>
+{% endblock %}
