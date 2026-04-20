@@ -4,103 +4,101 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
-
-    <!-- Top Bar -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/topBar"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@android:color/white"
-        android:paddingHorizontal="16dp"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="8dp"
-            android:src="@android:drawable/ic_menu_revert"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#1A1A1A" />
-
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="Tạo hợp đồng lao động"
-            android:textColor="#1A1A1A"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/btnBack"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    android:background="#FFFFFF">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topBar">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
-            android:paddingVertical="20dp">
+            android:paddingVertical="32dp">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:text="Tạo hợp đồng lao động"
+                android:textColor="#000000"
+                android:textSize="32sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nhân viên:"
-                android:textColor="#333333"
-                android:textSize="14sp"
+                android:textColor="#000000"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spinnerEmployee"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_input_field" />
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="12dp" />
+
+            <TextView
+                android:id="@+id/tvEmployeeError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="*Vui lòng chọn tên nhân viên"
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:text="Loại hợp đồng:"
-                android:textColor="#333333"
-                android:textSize="14sp"
+                android:textColor="#000000"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spinnerType"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_input_field" />
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="12dp" />
+
+            <TextView
+                android:id="@+id/tvTypeError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="*Vui lòng chọn Loại hợp đồng"
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:text="Ngày bắt đầu:"
-                android:textColor="#333333"
-                android:textSize="14sp"
+                android:textColor="#000000"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/btnStartDatePicker"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="6dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="16dp">
+                android:paddingHorizontal="20dp">
 
                 <TextView
                     android:id="@+id/tvStartDate"
@@ -108,14 +106,14 @@
                     android:layout_height="wrap_content"
                     android:hint="mm/dd/yyyy"
                     android:textColor="#1A1A1A"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_my_calendar"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -124,21 +122,32 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
+                android:id="@+id/tvStartDateError"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="4dp"
+                android:text="*Ngày bắt đầu không hợp lệ. Vui lòng nhập lại"
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Ngày kết thúc:"
-                android:textColor="#333333"
-                android:textSize="14sp"
+                android:textColor="#000000"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/btnEndDatePicker"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="6dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="16dp">
+                android:paddingHorizontal="20dp">
 
                 <TextView
                     android:id="@+id/tvEndDate"
@@ -146,14 +155,14 @@
                     android:layout_height="wrap_content"
                     android:hint="mm/dd/yyyy"
                     android:textColor="#1A1A1A"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_my_calendar"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -162,64 +171,102 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
+                android:id="@+id/tvEndDateError"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="4dp"
+                android:text="*Thông tin ngày kết thúc không hợp lệ. Vui lòng nhập lại"
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Mức lương:"
-                android:textColor="#333333"
-                android:textSize="14sp"
+                android:textColor="#000000"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/etSalary"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="6dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
                 android:hint="Nhập mức lương"
                 android:inputType="number"
-                android:paddingHorizontal="16dp"
-                android:textSize="14sp" />
+                android:paddingHorizontal="20dp"
+                android:textSize="16sp"
+                android:textColor="#222"
+                android:textColorHint="#9E9E9E" />
+
+            <TextView
+                android:id="@+id/tvSalaryError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="*Mức lương không hợp lệ. Vui lòng nhập lại"
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:text="Chức vụ:"
-                android:textColor="#333333"
-                android:textSize="14sp"
+                android:textColor="#000000"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spinnerPosition"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_input_field" />
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="12dp" />
+
+            <TextView
+                android:id="@+id/tvPositionError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="*Chức vụ không hợp lệ. Vui lòng nhập lại"
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
+                android:layout_height="64dp"
                 android:layout_marginTop="32dp"
-                android:backgroundTint="#0A4D1E"
+                android:backgroundTint="#264625"
                 android:text="Lưu hợp đồng"
                 android:textAllCaps="false"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                app:cornerRadius="12dp" />
+                android:textColor="#FFFFFF"
+                app:cornerRadius="32dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginTop="10dp"
+                android:layout_height="64dp"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#D1D1D1"
                 android:text="Hủy"
                 android:textAllCaps="false"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                app:cornerRadius="12dp" />
+                android:textColor="#333"
+                app:cornerRadius="32dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

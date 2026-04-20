@@ -3,15 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="12dp"
-    app:cardBackgroundColor="#F8F9FA"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="0dp">
+    android:layout_marginBottom="18dp"
+    app:cardBackgroundColor="#F8F9FB"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/tvEmployeeName"
@@ -19,7 +20,7 @@
             android:layout_height="wrap_content"
             android:text="Lê Văn C"
             android:textColor="#1A1A1A"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -28,13 +29,12 @@
             android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_status_tag"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
+            android:background="@drawable/bg_status_green_light"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp"
             android:text="Đang làm"
-            android:textColor="#2ECC71"
-            android:textSize="11sp"
-            android:textStyle="bold"
+            android:textColor="#2E7D32"
+            android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,7 +42,7 @@
             android:id="@+id/tvEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
             android:text="nhanvien@coffee.com"
             android:textColor="#757575"
             android:textSize="14sp"
@@ -50,73 +50,58 @@
             app:layout_constraintTop_toBottomOf="@id/tvEmployeeName" />
 
         <TextView
-            android:id="@+id/tvCccdLabel"
+            android:id="@+id/tvCccd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CCCD: "
+            android:layout_marginTop="4dp"
+            android:text="CCCD: 123456789012"
             android:textColor="#757575"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvEmail" />
 
         <TextView
-            android:id="@+id/tvCccd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="123456789012"
-            android:textColor="#1A1A1A"
-            android:textSize="14sp"
-            app:layout_constraintStart_toEndOf="@id/tvCccdLabel"
-            app:layout_constraintTop_toTopOf="@id/tvCccdLabel" />
-
-        <TextView
-            android:id="@+id/tvPhoneLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SĐT: "
-            android:textColor="#757575"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvCccdLabel" />
-
-        <TextView
             android:id="@+id/tvPhone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0923456789"
-            android:textColor="#1A1A1A"
+            android:layout_marginTop="4dp"
+            android:text="SĐT: 0923456789"
+            android:textColor="#757575"
             android:textSize="14sp"
-            app:layout_constraintStart_toEndOf="@id/tvPhoneLabel"
-            app:layout_constraintTop_toTopOf="@id/tvPhoneLabel" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCccd" />
 
         <TextView
             android:id="@+id/tvPosition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/bg_position_tag"
             android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp"
+            android:paddingVertical="6dp"
             android:text="Phục vụ"
-            android:textColor="#3498DB"
-            android:textSize="12sp"
+            android:textColor="#4169E1"
+            android:textSize="13sp"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvPhoneLabel" />
+            app:layout_constraintTop_toBottomOf="@id/tvPhone" />
 
         <LinearLayout
+            android:id="@+id/llActions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvPosition">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnEdit"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#E0E0E0"
                 app:strokeWidth="1dp">
@@ -131,13 +116,13 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnDelete"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:layout_marginStart="12dp"
                 app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#FFE8E8"
+                app:strokeColor="#E0E0E0"
                 app:strokeWidth="1dp">
 
                 <ImageView
@@ -145,7 +130,7 @@
                     android:layout_height="match_parent"
                     android:padding="10dp"
                     android:src="@android:drawable/ic_menu_delete"
-                    app:tint="#E74C3C" />
+                    app:tint="#FF4D4D" />
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
