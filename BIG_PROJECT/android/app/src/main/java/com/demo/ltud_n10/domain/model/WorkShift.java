@@ -13,6 +13,7 @@ public class WorkShift implements Serializable {
     private boolean isSent;
     private String status; // Chờ duyệt, Đã duyệt, Bị từ chối
     private String type; // Đăng ký ca, Nghỉ phép
+    private String sentTime; // HH:mm:ss dd/MM/yyyy
 
     public WorkShift() {
         this.status = "Chờ duyệt";
@@ -53,4 +54,6 @@ public class WorkShift implements Serializable {
     public void setStatus(String status) { this.status = status; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+    public String getSentTime() { return sentTime; }
+    public void setSentTime(String sentTime) { this.sentTime = sentTime; }
 }
