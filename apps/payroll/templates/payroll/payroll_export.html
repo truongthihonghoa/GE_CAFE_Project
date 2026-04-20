@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Xuất/In phiếu lương - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'payroll/css/payroll_export.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/popup_confirm_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="payroll-export-page">
+    <div class="payroll-export-header">
+        <h1>Xuất/In phiếu lương</h1>
+        <label class="payroll-export-month">
+            <input type="month" value="2026-01">
+        </label>
+    </div>
+
+    <div class="payroll-export-table-card">
+        <table class="payroll-export-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="export-select-all"></th>
+                    <th>Mã nhân viên</th>
+                    <th>Tên nhân viên</th>
+                    <th>Lương thực lãnh</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in payroll_rows %}
+                <tr>
+                    <td><input type="checkbox" class="export-row-checkbox"></td>
+                    <td>{{ row.ma_nv }}</td>
+                    <td>{{ row.ten_nv }}</td>
+                    <td>{{ row.thuc_linh }}đ</td>
+                    <td><span class="export-status is-{{ row.trang_thai_key }}">{{ row.trang_thai }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="payroll-export-actions">
+        <button type="button" class="payroll-export-btn payroll-export-btn-primary" id="approve-payroll-btn">Duyệt</button>
+        <button type="button" class="payroll-export-btn payroll-export-btn-dark">Chọn định dạng ▾</button>
+        <button type="button" class="payroll-export-btn payroll-export-btn-outline" id="export-payroll-btn">Xuất</button>
+        <button type="button" class="payroll-export-btn payroll-export-btn-dark" id="print-payroll-btn">In</button>
+    </div>
+</div>
+
+{% include 'partials/popup_confirm_delete.html' with delete_popup_title='Xác nhận thao tác' delete_popup_message_1='Bạn có chắc chắn muốn thực hiện thao tác này?' delete_popup_message_2_before='Phiếu lương được chọn sẽ chuyển sang trạng thái' delete_popup_highlight='"Đã duyệt".' %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'payroll/js/payroll_export.js' %}"></script>
+{% endblock %}

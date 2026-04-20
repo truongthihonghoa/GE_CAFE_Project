@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quản lý Chi nhánh{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'branches/css/branch_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- 🔍 TOOLBAR -->
+    <div class="toolbar">
+        <form method="get" class="search-box">
+            <input type="text" name="q" value="{{ keyword }}" placeholder="Nhập tên chi nhánh...">
+            <button type="submit" class="btn-search">Tìm kiếm</button>
+        </form>
+
+        <a href="{% url 'branches:branch_create' %}" class="btn-primary">+ Thêm</a>
+    </div>
+
+    <!-- 📊 TABLE -->
+    <div class="branch-table-card">
+        <table class="branch-table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã chi nhánh</th>
+                    <th>Tên chi nhánh</th>
+                    <th>Địa chỉ</th>
+                    <th>SĐT</th>
+                    <th>Quản lý CN</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for branch in branches %}
+                <tr class="{% if branch.trang_thai == 'inactive' %}branch-inactive{% endif %}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ branch.ma_chi_nhanh }}</td>
+                    <td>{{ branch.ten_chi_nhanh }}</td>
+                    <td>{{ branch.dia_chi }}</td>
+                    <td>{{ branch.sdt }}</td>
+
+                    <td>
+                        {{ branch.ma_nv_ql.ten_nv|default:"Chưa có" }}
+                    </td>
+
+                    <td class="branch-actions">
+                        <!-- 🔍 TÌM KIẾM -->
+                        <a href="{% url 'branches:branch_update' branch.ma_chi_nhanh %}" class="btn-action btn-search-icon" title="Xem chi tiết">
+                            <img src="{% static 'images/search_icon.png' %}" alt="Tìm kiếm">
+                        </a>
+
+                        <!-- ✏️ SỬA -->
+                        <a href="{% url 'branches:branch_update' branch.ma_chi_nhanh %}" class="btn-action btn-edit-icon" title="Chỉnh sửa">
+                            <img src="{% static 'images/edit_icon.png' %}" alt="Chỉnh sửa">
+                        </a>
+
+                        <!-- ❌ NGƯNG -->
+                        {% if branch.trang_thai == 'active' %}
+                        <a href="{% url 'branches:branch_delete' branch.ma_chi_nhanh %}"
+                           class="btn-action btn-delete-icon"
+                           onclick="return confirm('Bạn có chắc muốn ngưng hoạt động chi nhánh này?')"
+                           title="Xóa">
+                            <img src="{% static 'images/delete_icon.png' %}" alt="Xóa">
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align:center;">
+                        Không có chi nhánh nào
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% if messages %}
+    <div class="toast-container">
+        {% for message in messages %}
+            <div class="toast-message" id="success-toast">
+                <p>{{ message }}</p>
+                <div class="toast-icon">✓</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Tự động ẩn thông báo sau 3 giây
+        setTimeout(function() {
+            var toast = document.getElementById('success-toast');
+            if (toast) {
+                toast.style.display = 'none';
+            }
+        }, 3000);
+    </script>
+{% endif %}
+{% endblock %}

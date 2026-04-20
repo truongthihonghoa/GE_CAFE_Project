@@ -1,0 +1,175 @@
+/* File: branch_form.css */
+:root {
+    --pastel-green: #e8f5e9;    /* Nền xanh pastel nhẹ */
+    --medium-green: #c8e6c9;    /* Nền tiêu đề và footer */
+    --dark-green: #2e7d32;      /* Màu chữ và nút chính */
+    --hover-green: #1b5e20;
+    --white: #ffffff;
+    --gray-light: #e0e0e0;
+}
+
+body {
+    background-color: #f1f8e9;
+    font-family: 'Montserrat', sans-serif; /* Sử dụng font giống các bảng quản lý của bạn */
+}
+
+.container {
+    max-width: 600px;
+    margin: 60px auto;
+    background-color: var(--pastel-green);
+    border-radius: 24px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    overflow: hidden; /* Để bo tròn cả phần header và footer */
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Tiêu đề có màu xanh đậm hơn một chút */
+h2 {
+    background-color: var(--medium-green);
+    color: var(--dark-green);
+    margin: 0;
+    padding: 25px;
+    text-align: left;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+form {
+    padding: 40px;
+}
+
+form div {
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 10px;
+    color: var(--dark-green);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+input[type="text"],
+select {
+    padding: 14px 18px;
+    border: 1px solid var(--gray-light);
+    border-radius: 12px;
+    background-color: var(--white);
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+select:focus {
+    border-color: var(--dark-green);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+/* Phần footer chứa 2 nút có màu xanh đậm hơn */
+.form-actions button,
+.form-actions .btn-cancel {
+    width: 150px;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    box-sizing: border-box; /* QUAN TRỌNG */
+}
+.form-actions {
+    background-color: var(--medium-green);
+    padding: 25px 40px;
+    margin: 0 -40px -40px -40px;
+
+    display: flex !important; /* Ép buộc dùng flex */
+    flex-direction: row !important; /* Ép nằm hàng ngang, ghi đè cái column ở trên */
+    justify-content: flex-end; /* Đẩy hết về bên phải */
+    align-items: center;
+    gap: 15px;
+}
+
+/* Nút LƯU (Màu xanh đậm) */
+button[type="submit"] {
+    background-color: var(--dark-green);
+    color: var(--white);
+    border: none;
+    padding: 15px;
+    width: 150px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease
+}
+
+button[type="submit"]:hover {
+    background-color: var(--hover-green);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Nút HỦY (Màu xám nhạt giống ảnh mẫu) */
+.btn-cancel {
+    background-color: var(--gray-light);
+    color: #555;
+    text-decoration: none;
+    padding: 15px;
+    width: 150px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.3s ease;
+
+}
+
+.btn-cancel:hover {
+    background-color: #d5d5d5;
+    color: #333;
+}
+/* Style cho thông báo thành công */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-message {
+    background: #ffffff;
+    border-radius: 20px; /* Bo góc cực đại như ảnh mẫu */
+    padding: 15px 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: slideIn 0.5s ease forwards;
+}
+
+.toast-message p {
+    margin: 0;
+    font-weight: 700;
+    font-size: 18px;
+    color: #1a1a1a;
+}
+
+.toast-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #2ecc71; /* Màu tích xanh */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
