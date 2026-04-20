@@ -14,11 +14,14 @@ urlpatterns = [
     path('requests/', include('apps.requests.urls')),
     path('schedules/', include('apps.schedules.urls')),
     path('reports/', include('apps.reports.urls')),
-    path('api/branches', include('apps.branches.urls')),
+
     path('api/accounts', include('apps.accounts.urls')),
-    path('api/employees/', include('apps.employees.api_urls')),
-    path('api/contracts/', include('apps.contracts.api_urls')),
     path('api/attendances', include('apps.attendances.urls')),
     path('api/requests/', include('apps.requests.urls')),
-    path('api-token-auth/', views.obtain_auth_token),]
+    # path('api-token-auth/', views.obtain_auth_token),
+    path('api-token-auth/', views.obtain_auth_token),
+    path('api/branches/', include('apps.branches.api_urls')),
+    path('api/employees/', include('apps.employees.api_urls')),
+    path('api/contracts/', include('apps.contracts.api_urls')),
+]
 
