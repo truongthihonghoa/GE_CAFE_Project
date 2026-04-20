@@ -2,58 +2,64 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingHorizontal="12dp"
-    android:paddingVertical="12dp">
+    android:orientation="vertical">
 
-    <CheckBox
-        android:id="@+id/cbSelect"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:buttonTint="#0A4D1E" />
-
-    <TextView
-        android:id="@+id/tvEmployeeId"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_weight="1.2"
-        android:text="NV0001"
-        android:textColor="#94A3B8"
-        android:textSize="13sp"
-        android:textStyle="italic" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="14dp">
 
-    <TextView
-        android:id="@+id/tvEmployeeName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="2.5"
-        android:text="Nguyễn Văn An"
-        android:textColor="#1E293B"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+        <CheckBox
+            android:id="@+id/cbSelect"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:button="@null"
+            android:background="@drawable/custom_checkbox" />
 
-    <TextView
-        android:id="@+id/tvHours"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="100.0"
-        android:textColor="#94A3B8"
-        android:textSize="13sp"
-        android:textStyle="italic" />
+        <TextView
+            android:id="@+id/tvEmployeeId"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="NV0001"
+            android:textColor="#94A3B8"
+            android:textSize="12sp" />
 
-    <TextView
-        android:id="@+id/tvFactor"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="end"
-        android:text="2.0"
-        android:textColor="#94A3B8"
-        android:textSize="13sp"
-        android:textStyle="italic" />
+        <TextView
+            android:id="@+id/tvEmployeeName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Nguyễn Văn An"
+            android:textColor="#1E293B"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/tvHours"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="100.0"
+            android:textColor="#64748B"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvFactor"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="1.0"
+            android:textColor="#64748B"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="12dp"
+        android:background="#F1F5F9" />
 </LinearLayout>

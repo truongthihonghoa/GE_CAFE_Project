@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,7 +16,12 @@ import androidx.navigation.Navigation;
 
 import com.demo.ltud_n10.databinding.FragmentBranchDetailBinding;
 import com.demo.ltud_n10.domain.model.Branch;
+import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.repository.BranchRepository;
+import com.demo.ltud_n10.domain.repository.EmployeeRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -28,9 +34,15 @@ public class BranchDetailFragment extends Fragment {
     private Branch branch;
     private String title;
     private boolean isEditMode = false;
+    private boolean isReadOnly = false;
+    private String selectedManagerId;
+    private List<Employee> employeeList = new ArrayList<>();
 
     @Inject
     BranchRepository branchRepository;
+
+    @Inject
+    EmployeeRepository employeeRepository;
 
     @Nullable
     @Override
@@ -46,20 +58,61 @@ public class BranchDetailFragment extends Fragment {
         if (getArguments() != null) {
             branch = (Branch) getArguments().getSerializable("branch");
             title = getArguments().getString("title");
+            isReadOnly = getArguments().getBoolean("isReadOnly", false);
         }
 
         binding.tvTitle.setText(title);
         
+        loadEmployees();
+
         if (branch != null) {
-            setupViewMode();
+            if (isReadOnly) {
+                setupReadOnlyMode();
+            } else {
+                setupEditMode();
+            }
         } else {
             setupAddMode();
         }
 
         binding.ivBack.setOnClickListener(v -> handleCancel());
         binding.btnCancel.setOnClickListener(v -> handleCancel());
-        
         binding.cvStatus.setOnClickListener(v -> showStatusDialog());
+        binding.btnDelete.setOnClickListener(v -> showDeleteConfirmation());
+    }
+
+    private void loadEmployees() {
+        employeeRepository.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource != null && resource.data != null) {
+                employeeList = new ArrayList<>();
+                for (Employee e : resource.data) {
+                    if (e.getPosition() != null && 
+                        (e.getPosition().equalsIgnoreCase("Quản lý") || e.getPosition().equalsIgnoreCase("Chủ"))) {
+                        employeeList.add(e);
+                    }
+                }
+                setupManagerDropdown();
+            }
+        });
+    }
+
+    private void setupManagerDropdown() {
+        List<String> names = new ArrayList<>();
+        for (Employee e : employeeList) {
+            names.add(e.getName());
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, names);
+        binding.actvManager.setAdapter(adapter);
+        binding.actvManager.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedName = (String) parent.getItemAtPosition(position);
+            for (Employee e : employeeList) {
+                if (e.getName().equals(selectedName)) {
+                    selectedManagerId = e.getId();
+                    break;
+                }
+            }
+        });
     }
 
     private void showStatusDialog() {
@@ -90,28 +143,41 @@ public class BranchDetailFragment extends Fragment {
     private void setupAddMode() {
         isEditMode = true;
         binding.layoutStatus.setVisibility(View.GONE);
+        binding.btnDelete.setVisibility(View.GONE);
         binding.btnSubmit.setText("LƯU");
         binding.btnSubmit.setOnClickListener(v -> handleSave());
     }
 
-    private void setupViewMode() {
+    private void setupReadOnlyMode() {
         isEditMode = false;
         binding.etBranchName.setText(branch.getName());
         binding.etAddress.setText(branch.getAddress());
         binding.etPhoneNumber.setText(branch.getPhoneNumber());
-        binding.etManagerName.setText(branch.getManagerName());
+        binding.actvManager.setText(branch.getManagerName(), false);
+        selectedManagerId = branch.getManagerId();
         updateStatusUI(branch.getStatus());
         
         enableFields(false);
         binding.layoutStatus.setVisibility(View.VISIBLE);
-        binding.btnSubmit.setText("CHỈNH SỬA");
-        binding.btnSubmit.setOnClickListener(v -> setupEditMode());
+        binding.btnDelete.setVisibility(View.GONE);
+        binding.btnCancel.setVisibility(View.GONE);
+        
+        binding.btnSubmit.setText("XÁC NHẬN");
+        binding.btnSubmit.setOnClickListener(v -> Navigation.findNavController(requireView()).navigateUp());
     }
 
     private void setupEditMode() {
         isEditMode = true;
-        binding.tvTitle.setText("CHỈNH SỬA CHI NHÁNH");
+        binding.etBranchName.setText(branch.getName());
+        binding.etAddress.setText(branch.getAddress());
+        binding.etPhoneNumber.setText(branch.getPhoneNumber());
+        binding.actvManager.setText(branch.getManagerName(), false);
+        selectedManagerId = branch.getManagerId();
+        updateStatusUI(branch.getStatus());
+
         enableFields(true);
+        binding.layoutStatus.setVisibility(View.VISIBLE);
+        binding.btnDelete.setVisibility(View.VISIBLE);
         binding.btnSubmit.setText("LƯU");
         binding.btnSubmit.setOnClickListener(v -> handleUpdate());
     }
@@ -120,7 +186,7 @@ public class BranchDetailFragment extends Fragment {
         binding.etBranchName.setEnabled(enabled);
         binding.etAddress.setEnabled(enabled);
         binding.etPhoneNumber.setEnabled(enabled);
-        binding.etManagerName.setEnabled(enabled);
+        binding.actvManager.setEnabled(enabled);
     }
 
     private void handleSave() {
@@ -130,13 +196,17 @@ public class BranchDetailFragment extends Fragment {
         newBranch.setName(binding.etBranchName.getText().toString());
         newBranch.setAddress(binding.etAddress.getText().toString());
         newBranch.setPhoneNumber(binding.etPhoneNumber.getText().toString());
-        newBranch.setManagerName(binding.etManagerName.getText().toString());
+        newBranch.setManagerId(selectedManagerId);
         newBranch.setStatus("Đang hoạt động");
 
         branchRepository.addBranch(newBranch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.data != null) {
-                Toast.makeText(requireContext(), "Đã thêm chi nhánh mới thành công", Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigateUp();
+            if (resource != null) {
+                if (resource.data != null) {
+                    Toast.makeText(requireContext(), "Đã thêm chi nhánh mới thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                } else if (resource.message != null) {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -147,13 +217,37 @@ public class BranchDetailFragment extends Fragment {
         branch.setName(binding.etBranchName.getText().toString());
         branch.setAddress(binding.etAddress.getText().toString());
         branch.setPhoneNumber(binding.etPhoneNumber.getText().toString());
-        branch.setManagerName(binding.etManagerName.getText().toString());
+        branch.setManagerId(selectedManagerId);
         branch.setStatus(binding.tvStatus.getText().toString());
 
         branchRepository.updateBranch(branch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.data != null) {
-                Toast.makeText(requireContext(), "Đã cập nhật chi nhánh thành công", Toast.LENGTH_SHORT).show();
+            if (resource != null) {
+                if (resource.data != null) {
+                    Toast.makeText(requireContext(), "Đã cập nhật chi nhánh thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                } else if (resource.message != null) {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void showDeleteConfirmation() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa chi nhánh này?")
+                .setPositiveButton("Xóa", (d, w) -> handleDelete())
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void handleDelete() {
+        branchRepository.deleteBranch(branch.getId()).observe(getViewLifecycleOwner(), resource -> {
+            if (resource != null && resource.data != null && resource.data) {
+                Toast.makeText(requireContext(), "Đã xóa chi nhánh thành công", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).navigateUp();
+            } else if (resource != null && resource.message != null) {
+                Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -175,6 +269,7 @@ public class BranchDetailFragment extends Fragment {
         String name = binding.etBranchName.getText().toString();
         String address = binding.etAddress.getText().toString();
         String phone = binding.etPhoneNumber.getText().toString();
+        String manager = binding.actvManager.getText().toString();
 
         if (name.isEmpty()) {
             Toast.makeText(requireContext(), "Tên chi nhánh không được để trống", Toast.LENGTH_SHORT).show();
@@ -188,8 +283,8 @@ public class BranchDetailFragment extends Fragment {
             Toast.makeText(requireContext(), "SDT không được để trống", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (phone.length() != 10 || !phone.startsWith("0")) {
-            Toast.makeText(requireContext(), "Số điện thoại không hợp lệ. Vui lòng nhập 10 chữ số và bắt đầu bằng 0", Toast.LENGTH_SHORT).show();
+        if (manager.isEmpty()) {
+            Toast.makeText(requireContext(), "Vui lòng chọn người quản lý", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;

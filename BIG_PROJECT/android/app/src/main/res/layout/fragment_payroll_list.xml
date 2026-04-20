@@ -181,6 +181,7 @@
                 android:layout_marginTop="16dp"
                 android:orientation="horizontal">
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cvMonthSelector"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
                     android:layout_weight="1"
@@ -192,6 +193,7 @@
                         android:layout_height="match_parent"
                         android:paddingHorizontal="16dp">
                         <TextView
+                            android:id="@+id/tvSelectedMonth"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
@@ -208,6 +210,7 @@
                     </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cvYearSelector"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
                     android:layout_marginStart="12dp"
@@ -220,6 +223,7 @@
                         android:layout_height="match_parent"
                         android:paddingHorizontal="16dp">
                         <TextView
+                            android:id="@+id/tvSelectedYear"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"

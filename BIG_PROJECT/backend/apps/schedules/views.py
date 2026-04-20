@@ -57,7 +57,7 @@ def schedule_list_view(request):
                 'ngay_lam': schedule.ngay_lam.strftime('%d/%m/%Y'),
                 'khung_gio': schedule.ca_lam,
                 'trang_thai': schedule.trang_thai,
-                'nhan_vien': [{'ma_nv': schedule.ma_nv.ma_nv, 'ten_nv': schedule.ma_nv.ho_ten}]
+                'nhan_vien': [{'ma_nv': nv.ma_nv, 'ten_nv': nv.ho_ten} for nv in schedule.ma_nv.all()]
             })
     except (OperationalError, ProgrammingError):
         schedules = []
@@ -99,6 +99,7 @@ def schedule_delete_view(request, schedule_id):
 
 
 # 4. Hàm gửi thông báo
+@csrf_exempt
 @require_http_methods(["POST"])
 def schedule_send_notification_view(request):
     return JsonResponse({'success': True, 'message': 'Đã gửi thông báo'})
@@ -112,7 +113,7 @@ def schedule_detail_view(request, schedule_id):
         'ma_llv': schedule.ma_llv,
         'ngay_lam': schedule.ngay_lam.strftime('%d/%m/%Y'),
         'khung_gio': schedule.ca_lam,
-        'nhan_vien': [{'ma_nv': schedule.ma_nv.ma_nv, 'ten_nv': schedule.ma_nv.ho_ten}]
+        'nhan_vien': [{'ma_nv': nv.ma_nv, 'ten_nv': nv.ho_ten} for nv in schedule.ma_nv.all()]
     })
 
 
@@ -120,3 +121,27 @@ def schedule_detail_view(request, schedule_id):
 class ScheduleAPIViewSet(viewsets.ModelViewSet):
     queryset = LichLamViec.objects.all().order_by('-ngay_lam')
     serializer_class = ScheduleSerializer
+
+    def perform_create(self, serializer):
+        # Tự động tạo mã ma_llv nếu chưa có (Dạng LLV00001)
+        ma_llv = serializer.validated_data.get('ma_llv')
+        if not ma_llv:
+            last_schedule = LichLamViec.objects.order_by('ma_llv').last()
+            if not last_schedule:
+                new_id = "LLV00001"
+            else:
+                try:
+                    # Lấy phần số từ mã cuối cùng
+                    import re
+                    match = re.search(r'\d+', last_schedule.ma_llv)
+                    if match:
+                        last_num = int(match.group())
+                        new_id = f"LLV{last_num + 1:05d}"
+                    else:
+                        new_id = f"LLV{LichLamViec.objects.count() + 1:05d}"
+                except Exception:
+                    import uuid
+                    new_id = f"LLV-{uuid.uuid4().hex[:6].upper()}"
+            serializer.save(ma_llv=new_id)
+        else:
+            serializer.save()

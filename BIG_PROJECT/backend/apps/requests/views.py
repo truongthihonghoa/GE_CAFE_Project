@@ -156,3 +156,9 @@ class NghiPhepViewSet(ModelViewSet):
 
     def get_queryset(self):
         return YeuCau.objects.filter(loai_yeu_cau__icontains="Nghỉ")
+
+
+# API chung cho tất cả yêu cầu
+class YeuCauViewSet(ModelViewSet):
+    queryset = YeuCau.objects.all()
+    serializer_class = YeuCauSerializer

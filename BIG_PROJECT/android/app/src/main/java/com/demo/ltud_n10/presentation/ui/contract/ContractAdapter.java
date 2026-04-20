@@ -18,6 +18,7 @@ public class ContractAdapter extends RecyclerView.Adapter<ContractAdapter.ViewHo
     private final OnContractClickListener listener;
 
     public interface OnContractClickListener {
+        void onItemClick(Contract contract);
         void onEdit(Contract contract);
         void onDelete(Contract contract);
     }
@@ -64,6 +65,7 @@ public class ContractAdapter extends RecyclerView.Adapter<ContractAdapter.ViewHo
             binding.tvSalary.setText(String.format("%,.0f VNĐ", contract.getSalary()));
             binding.tvStatus.setText(contract.getStatus());
 
+            binding.getRoot().setOnClickListener(v -> listener.onItemClick(contract));
             binding.btnEdit.setOnClickListener(v -> listener.onEdit(contract));
             binding.btnDelete.setOnClickListener(v -> listener.onDelete(contract));
         }

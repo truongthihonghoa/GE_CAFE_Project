@@ -1,27 +1,46 @@
 package com.demo.ltud_n10.domain.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorkShift implements Serializable {
     private String id;
-    private String employeeId;
-    private String employeeName;
+    private List<EmployeeAssignment> employeeAssignments = new ArrayList<>();
+    private String employeeName; // Display string
     private String date; // dd/MM/yyyy
     private String startTime; // HH:mm
     private String endTime; // HH:mm
-    private String position; // Phục vụ, Pha chế, Giữ xe
+    private String position; // Primary position or note
     private boolean isSent;
     private String status; // Chờ duyệt, Đã duyệt, Bị từ chối
     private String type; // Đăng ký ca, Nghỉ phép
+
+    public static class EmployeeAssignment implements Serializable {
+        private String employeeId;
+        private String employeeName;
+        private String position;
+
+        public EmployeeAssignment(String employeeId, String employeeName, String position) {
+            this.employeeId = employeeId;
+            this.employeeName = employeeName;
+            this.position = position;
+        }
+
+        public String getEmployeeId() { return employeeId; }
+        public String getEmployeeName() { return employeeName; }
+        public String getPosition() { return position; }
+        public void setPosition(String position) { this.position = position; }
+    }
 
     public WorkShift() {
         this.status = "Chờ duyệt";
         this.type = "Đăng ký ca";
     }
 
-    public WorkShift(String id, String employeeId, String employeeName, String date, String startTime, String endTime, String position, boolean isSent, String status, String type) {
+    public WorkShift(String id, List<EmployeeAssignment> employeeAssignments, String employeeName, String date, String startTime, String endTime, String position, boolean isSent, String status, String type) {
         this.id = id;
-        this.employeeId = employeeId;
+        this.employeeAssignments = employeeAssignments;
         this.employeeName = employeeName;
         this.date = date;
         this.startTime = startTime;
@@ -35,8 +54,8 @@ public class WorkShift implements Serializable {
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    public String getEmployeeId() { return employeeId; }
-    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+    public List<EmployeeAssignment> getEmployeeAssignments() { return employeeAssignments; }
+    public void setEmployeeAssignments(List<EmployeeAssignment> employeeAssignments) { this.employeeAssignments = employeeAssignments; }
     public String getEmployeeName() { return employeeName; }
     public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
     public String getDate() { return date; }

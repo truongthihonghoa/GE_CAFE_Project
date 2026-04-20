@@ -71,13 +71,18 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/spinnerEmployee"
+            <TextView
+                android:id="@+id/tvSelectedEmployees"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="12dp" />
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="12dp"
+                android:text="Nhấn để chọn nhân viên"
+                android:textColor="#1A1A1A"
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -117,70 +122,22 @@
                     app:tint="#1A1A1A" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:orientation="horizontal">
+                android:text="Khung giờ làm việc"
+                android:textColor="#1A1A1A"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Giờ bắt đầu"
-                        android:textColor="#1A1A1A"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/etStartTime"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_input_field"
-                        android:drawableEnd="@android:drawable/ic_menu_recent_history"
-                        android:focusable="false"
-                        android:hint="-- : -- --"
-                        android:paddingHorizontal="16dp"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="16dp"
-                    android:layout_height="0dp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Giờ kết thúc"
-                        android:textColor="#1A1A1A"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/etEndTime"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_input_field"
-                        android:drawableEnd="@android:drawable/ic_menu_recent_history"
-                        android:focusable="false"
-                        android:hint="-- : -- --"
-                        android:paddingHorizontal="16dp"
-                        android:textSize="14sp" />
-                </LinearLayout>
-            </LinearLayout>
+            <Spinner
+                android:id="@+id/spinnerShift"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="12dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -198,6 +155,20 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
                 android:paddingHorizontal="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConfirm"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:text="Xác nhận"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:backgroundTint="#2E7D32"
+                app:cornerRadius="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"

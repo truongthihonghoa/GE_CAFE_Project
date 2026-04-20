@@ -11,7 +11,6 @@ class EmployeeBaseForm(forms.ModelForm):
             "ngay_sinh",
             "cccd",
             "sdt",
-            "tk_ngan_hang",
             "chuc_vu",
             "ma_chi_nhanh",
             "dia_chi",
@@ -22,7 +21,6 @@ class EmployeeBaseForm(forms.ModelForm):
             "ngay_sinh": forms.DateInput(attrs={"type": "date"}),
             "cccd": forms.TextInput(attrs={"placeholder": "Nhập CCCD"}),
             "sdt": forms.TextInput(attrs={"placeholder": "Nhập số điện thoại"}),
-            "tk_ngan_hang": forms.TextInput(attrs={"placeholder": "Nhập tài khoản ngân hàng"}),
             "dia_chi": forms.Textarea(attrs={"placeholder": "Nhập địa chỉ", "rows": 4}),
         }
 
@@ -54,7 +52,6 @@ class EmployeeUpdateForm(EmployeeBaseForm):
             "ngay_sinh",
             "cccd",
             "sdt",
-            "tk_ngan_hang",
             "chuc_vu",
             "ma_chi_nhanh",
             "dia_chi",

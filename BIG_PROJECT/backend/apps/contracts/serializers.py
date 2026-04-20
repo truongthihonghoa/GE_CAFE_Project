@@ -4,7 +4,7 @@ from .models import HopDongLaoDong, HopDongLD_CT
 class HopDongLDCTSerializer(serializers.ModelSerializer):
     class Meta:
         model = HopDongLD_CT
-        fields = '__all__'
+        exclude = ('ma_hd',)
 
 
 

@@ -127,3 +127,21 @@ from .serializers import NhanVienSerializer
 class NhanVienViewSet(viewsets.ModelViewSet):
     queryset = NhanVien.objects.all()
     serializer_class = NhanVienSerializer
+
+    def perform_create(self, serializer):
+        # Tự động tạo mã nhân viên mới dạng NV0000X
+        last_employee = NhanVien.objects.order_by('ma_nv').last()
+        if last_employee:
+            last_id = int(last_employee.ma_nv[2:])
+            new_id = f"NV{str(last_id + 1).zfill(5)}"
+        else:
+            new_id = "NV00001"
+            
+        # Kiểm tra nếu thiếu chi nhánh thì gán mặc định CN01
+        ma_chi_nhanh = self.request.data.get('ma_chi_nhanh')
+        if not ma_chi_nhanh:
+            from apps.branches.models import ChiNhanh
+            branch = ChiNhanh.objects.first()
+            serializer.save(ma_nv=new_id, ma_chi_nhanh=branch)
+        else:
+            serializer.save(ma_nv=new_id)

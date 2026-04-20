@@ -16,10 +16,12 @@ import com.demo.ltud_n10.domain.model.Employee;
 public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewHolder> {
 
     private final OnEmployeeClickListener listener;
+    private boolean isAdmin = true;
 
     public interface OnEmployeeClickListener {
         void onEditClick(Employee employee);
         void onDeleteClick(Employee employee);
+        void onViewClick(Employee employee);
     }
 
     public EmployeeAdapter(OnEmployeeClickListener listener) {
@@ -39,6 +41,11 @@ public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewH
         this.listener = listener;
     }
 
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -56,13 +63,17 @@ public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewH
         holder.tvPosition.setText(employee.getPosition());
         holder.tvStatus.setText(employee.getStatus());
 
+        holder.btnEdit.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        holder.btnDelete.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+
         holder.btnEdit.setOnClickListener(v -> listener.onEditClick(employee));
         holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(employee));
+        holder.btnView.setOnClickListener(v -> listener.onViewClick(employee));
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvEmail, tvCccd, tvPhone, tvPosition, tvStatus;
-        View btnEdit, btnDelete;
+        View btnEdit, btnDelete, btnView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -74,6 +85,7 @@ public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewH
             tvStatus = itemView.findViewById(R.id.tvStatus);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnView = itemView.findViewById(R.id.btnView);
         }
     }
 }

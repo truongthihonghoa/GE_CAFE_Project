@@ -8,26 +8,27 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.ltud_n10.databinding.ItemAccountBinding;
-import com.demo.ltud_n10.domain.model.User;
+import com.demo.ltud_n10.domain.model.Account;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.ViewHolder> {
 
-    private List<User> items = new ArrayList<>();
-    private OnItemClickListener listener;
+    private List<Account> items = new ArrayList<>();
+    private OnAccountActionListener listener;
 
-    public interface OnItemClickListener {
-        void onEditClick(User user);
-        void onItemClick(User user);
+    public interface OnAccountActionListener {
+        void onView(Account account);
+        void onEdit(Account account);
+        void onDelete(Account account);
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener) {
+    public void setOnAccountActionListener(OnAccountActionListener listener) {
         this.listener = listener;
     }
 
-    public void setItems(List<User> items) {
+    public void setItems(List<Account> items) {
         this.items = items;
         notifyDataSetChanged();
     }
@@ -58,26 +59,32 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.ViewHold
             this.binding = binding;
         }
 
-        void bind(User user) {
-            binding.tvName.setText(user.getName());
-            binding.tvUsername.setText(user.getUsername());
-            binding.tvRole.setText(user.getRole());
-            binding.tvStatus.setText(user.getStatus());
+        void bind(Account account) {
+            binding.tvUsername.setText(account.getUsername());
+            binding.tvEmployeeName.setText(account.getEmployeeName());
+            binding.tvRole.setText(account.getRole());
+            binding.tvStatus.setText(account.getStatus());
 
-            if ("Ngưng hoạt động".equals(user.getStatus())) {
-                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#F8D7DA"));
+            if ("Ngưng hoạt động".equals(account.getStatus())) {
                 binding.tvStatus.setTextColor(Color.parseColor("#721C24"));
             } else {
-                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#E8F8EF"));
-                binding.tvStatus.setTextColor(Color.parseColor("#2ECC71"));
+                binding.tvStatus.setTextColor(Color.parseColor("#1B431C"));
             }
 
+            binding.ivView.setOnClickListener(v -> {
+                if (listener != null) listener.onView(account);
+            });
+
             binding.ivEdit.setOnClickListener(v -> {
-                if (listener != null) listener.onEditClick(user);
+                if (listener != null) listener.onEdit(account);
+            });
+
+            binding.ivDelete.setOnClickListener(v -> {
+                if (listener != null) listener.onDelete(account);
             });
 
             binding.getRoot().setOnClickListener(v -> {
-                if (listener != null) listener.onItemClick(user);
+                if (listener != null) listener.onView(account);
             });
         }
     }

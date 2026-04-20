@@ -7,16 +7,18 @@ public class Branch implements Serializable {
     private String name;
     private String address;
     private String phoneNumber;
+    private String managerId;
     private String managerName;
     private String status; // "Đang hoạt động", "Ngưng hoạt động"
 
     public Branch() {}
 
-    public Branch(String id, String name, String address, String phoneNumber, String managerName, String status) {
+    public Branch(String id, String name, String address, String phoneNumber, String managerId, String managerName, String status) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.phoneNumber = phoneNumber;
+        this.managerId = managerId;
         this.managerName = managerName;
         this.status = status;
     }
@@ -29,6 +31,8 @@ public class Branch implements Serializable {
     public void setAddress(String address) { this.address = address; }
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public String getManagerId() { return managerId; }
+    public void setManagerId(String managerId) { this.managerId = managerId; }
     public String getManagerName() { return managerName; }
     public void setManagerName(String managerName) { this.managerName = managerName; }
     public String getStatus() { return status; }

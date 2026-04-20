@@ -136,6 +136,16 @@ public class WorkShiftListFragment extends Fragment {
                 Bundle args = new Bundle();
                 args.putSerializable("shift", shift);
                 args.putString("title", "Xem chi tiết ca làm việc");
+                args.putBoolean("isViewOnly", true);
+                Navigation.findNavController(requireView()).navigate(R.id.action_scheduleListFragment_to_scheduleDetailFragment, args);
+            }
+
+            @Override
+            public void onEditClick(WorkShift shift) {
+                Bundle args = new Bundle();
+                args.putSerializable("shift", shift);
+                args.putString("title", "Sửa lịch làm việc");
+                args.putBoolean("isViewOnly", false);
                 Navigation.findNavController(requireView()).navigate(R.id.action_scheduleListFragment_to_scheduleDetailFragment, args);
             }
 

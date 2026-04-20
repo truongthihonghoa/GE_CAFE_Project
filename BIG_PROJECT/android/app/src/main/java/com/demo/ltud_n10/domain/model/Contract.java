@@ -6,12 +6,19 @@ public class Contract implements Serializable {
     private String id;
     private String employeeId;
     private String employeeName;
-    private String type; // Part-time, Full-time, v.v.
-    private String startDate; // dd/MM/yyyy
-    private String endDate; // dd/MM/yyyy
+    private String type;
+    private String startDate;
+    private String endDate;
     private double salary;
     private String position;
-    private String status; // Hiệu lực, Chờ hiệu lực, Hết hạn
+    private String status;
+    
+    // Additional fields from detail
+    private double hourlySalary;
+    private double workHours;
+    private String terms;
+    private String responsibilities;
+    private String notes;
 
     public Contract() {}
 
@@ -46,4 +53,15 @@ public class Contract implements Serializable {
     public void setPosition(String position) { this.position = position; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public double getHourlySalary() { return hourlySalary; }
+    public void setHourlySalary(double hourlySalary) { this.hourlySalary = hourlySalary; }
+    public double getWorkHours() { return workHours; }
+    public void setWorkHours(double workHours) { this.workHours = workHours; }
+    public String getTerms() { return terms; }
+    public void setTerms(String terms) { this.terms = terms; }
+    public String getResponsibilities() { return responsibilities; }
+    public void setResponsibilities(String responsibilities) { this.responsibilities = responsibilities; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

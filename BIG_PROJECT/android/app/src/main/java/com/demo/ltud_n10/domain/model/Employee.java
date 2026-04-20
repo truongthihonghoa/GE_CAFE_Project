@@ -13,6 +13,7 @@ public class Employee implements Serializable {
     private String address;
     private String position; // "Quản lý", "Pha chế", "Phục vụ", v.v.
     private String status; // "Đang làm", "Ngừng hoạt động"
+    private String branchId;
 
     public Employee() {}
 
@@ -50,4 +51,6 @@ public class Employee implements Serializable {
     public void setPosition(String position) { this.position = position; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getBranchId() { return branchId; }
+    public void setBranchId(String branchId) { this.branchId = branchId; }
 }

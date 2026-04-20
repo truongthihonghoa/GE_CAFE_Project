@@ -36,14 +36,26 @@ public class EmployeeListFragment extends Fragment {
         return binding.getRoot();
     }
 
+    private com.demo.ltud_n10.data.local.SharedPrefsManager prefsManager;
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(EmployeeViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(EmployeeViewModel.class);
+        prefsManager = new com.demo.ltud_n10.data.local.SharedPrefsManager(requireContext());
 
         setupUI();
         setupRecyclerView();
         observeViewModel();
+        
+        // Phân quyền giao diện
+        String role = prefsManager.getUserRole();
+        boolean isAdmin = !"STAFF".equals(role);
+        
+        if (!isAdmin) {
+            binding.btnAddEmployee.setVisibility(View.GONE);
+        }
+        adapter.setIsAdmin(isAdmin);
     }
 
     private void setupUI() {
@@ -85,23 +97,64 @@ public class EmployeeListFragment extends Fragment {
             public void onDeleteClick(Employee employee) {
                 showDeleteConfirmation(employee);
             }
+
+            @Override
+            public void onViewClick(Employee employee) {
+                Bundle args = new Bundle();
+                args.putSerializable("employee", employee);
+                args.putString("title", "Chi tiết nhân viên");
+                args.putBoolean("isReadOnly", true);
+                Navigation.findNavController(requireView()).navigate(R.id.action_employeeListFragment_to_employeeDetailFragment, args);
+            }
         });
         binding.rvEmployees.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvEmployees.setAdapter(adapter);
     }
+
+    private java.util.List<Employee> fullList = new java.util.ArrayList<>();
 
     private void observeViewModel() {
         viewModel.getEmployees().observe(getViewLifecycleOwner(), resource -> {
             if (resource == null) return;
             switch (resource.status) {
                 case SUCCESS:
-                    adapter.submitList(resource.data);
+                    fullList = resource.data;
+                    adapter.submitList(fullList);
                     break;
                 case ERROR:
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
                     break;
             }
         });
+
+        binding.etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterEmployees(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+    }
+
+    private void filterEmployees(String query) {
+        if (query.isEmpty()) {
+            adapter.submitList(fullList);
+            return;
+        }
+        
+        java.util.List<Employee> filtered = new java.util.ArrayList<>();
+        for (Employee e : fullList) {
+            if (e.getName().toLowerCase().contains(query.toLowerCase()) || 
+                e.getId().toLowerCase().contains(query.toLowerCase())) {
+                filtered.add(e);
+            }
+        }
+        adapter.submitList(filtered);
     }
 
     private void showDeleteConfirmation(Employee employee) {

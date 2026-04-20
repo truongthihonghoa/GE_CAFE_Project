@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.ltud_n10.databinding.ItemApprovalGroupBinding;
-import com.demo.ltud_n10.domain.model.WorkShift;
+import com.demo.ltud_n10.domain.model.Request;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,23 +19,23 @@ import java.util.TreeMap;
 public class ApprovalGroupAdapter extends RecyclerView.Adapter<ApprovalGroupAdapter.ViewHolder> {
 
     private List<String> days = new ArrayList<>();
-    private Map<String, List<WorkShift>> groupedItems = new TreeMap<>();
+    private Map<String, List<Request>> groupedItems = new TreeMap<>();
     private ApprovalRequestAdapter.OnActionListener actionListener;
 
     public void setOnActionListener(ApprovalRequestAdapter.OnActionListener listener) {
         this.actionListener = listener;
     }
 
-    public void setData(List<WorkShift> shifts) {
+    public void setData(List<Request> requests) {
         groupedItems.clear();
         days.clear();
-        for (WorkShift shift : shifts) {
-            String day = shift.getDate();
+        for (Request request : requests) {
+            String day = request.getStartDate(); // Grouping by start date
             if (!groupedItems.containsKey(day)) {
                 groupedItems.put(day, new ArrayList<>());
                 days.add(day);
             }
-            groupedItems.get(day).add(shift);
+            groupedItems.get(day).add(request);
         }
         notifyDataSetChanged();
     }
@@ -67,19 +67,19 @@ public class ApprovalGroupAdapter extends RecyclerView.Adapter<ApprovalGroupAdap
             this.binding = binding;
         }
 
-        void bind(String date, List<WorkShift> shifts) {
+        void bind(String date, List<Request> requests) {
             binding.tvDayOfMonth.setText(date.split("/")[0]);
             // Simplified day of week for demo
             binding.tvDayOfWeek.setText("Thứ " + (getAdapterPosition() + 2));
             
             ApprovalRequestAdapter childAdapter = new ApprovalRequestAdapter();
             childAdapter.setOnActionListener(actionListener);
-            childAdapter.setItems(shifts);
+            childAdapter.setItems(requests);
             
             binding.rvRequestsInDay.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
             binding.rvRequestsInDay.setAdapter(childAdapter);
             
-            binding.tvNoRequests.setVisibility(shifts.isEmpty() ? View.VISIBLE : View.GONE);
+            binding.tvNoRequests.setVisibility(requests.isEmpty() ? View.VISIBLE : View.GONE);
         }
     }
 }

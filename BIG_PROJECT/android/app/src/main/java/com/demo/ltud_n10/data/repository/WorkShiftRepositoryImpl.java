@@ -1,12 +1,11 @@
 package com.demo.ltud_n10.data.repository;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.remote.ApiService;
+import com.demo.ltud_n10.data.remote.dto.ScheduleDto;
 import com.demo.ltud_n10.domain.model.WorkShift;
 import com.demo.ltud_n10.domain.repository.WorkShiftRepository;
 
@@ -16,80 +15,213 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 @Singleton
 public class WorkShiftRepositoryImpl implements WorkShiftRepository {
 
-    private final List<WorkShift> shiftList = new ArrayList<>();
+    private final ApiService apiService;
 
     @Inject
-    public WorkShiftRepositoryImpl() {
-        // Mock data for employee "Lê Văn C" (NV001) across multiple weeks in March 2026
-        
-        // Week 1: 2/3 - 8/3
-        shiftList.add(new WorkShift("S1", "NV001", "Lê Văn C", "02/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S2", "NV001", "Lê Văn C", "03/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S3", "NV001", "Lê Văn C", "05/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S4", "NV001", "Lê Văn C", "07/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-
-        // Week 2: 9/3 - 15/3
-        shiftList.add(new WorkShift("S5", "NV001", "Lê Văn C", "09/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S6", "NV001", "Lê Văn C", "11/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S7", "NV001", "Lê Văn C", "13/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-
-        // Week 0: 23/2 - 1/3 (Previous period)
-        shiftList.add(new WorkShift("S0", "NV001", "Lê Văn C", "25/02/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-
-        // Other employees
-        shiftList.add(new WorkShift("S8", "NV002", "Phạm Thị D", "02/03/2026", "14:00", "22:00", "Phục vụ", true, "Đã duyệt", "Đăng ký ca"));
+    public WorkShiftRepositoryImpl(ApiService apiService) {
+        this.apiService = apiService;
     }
 
     @Override
     public LiveData<Resource<List<WorkShift>>> getWorkShifts() {
         MutableLiveData<Resource<List<WorkShift>>> result = new MutableLiveData<>();
-        result.setValue(Resource.success(new ArrayList<>(shiftList)));
+        result.setValue(Resource.loading(null));
+
+        apiService.getSchedules().enqueue(new Callback<List<ScheduleDto>>() {
+            @Override
+            public void onResponse(Call<List<ScheduleDto>> call, Response<List<ScheduleDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<WorkShift> shifts = new ArrayList<>();
+                    for (ScheduleDto dto : response.body()) {
+                        shifts.add(mapToDomain(dto));
+                    }
+                    result.setValue(Resource.success(shifts));
+                } else {
+                    result.setValue(Resource.error("Lỗi lấy lịch làm: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<ScheduleDto>> call, Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            }
+        });
+
         return result;
     }
 
     @Override
     public LiveData<Resource<WorkShift>> addWorkShift(WorkShift shift) {
         MutableLiveData<Resource<WorkShift>> result = new MutableLiveData<>();
-        shift.setId(String.valueOf(System.currentTimeMillis()));
-        shiftList.add(shift);
-        result.setValue(Resource.success(shift));
+        result.setValue(Resource.loading(null));
+
+        apiService.addSchedule(mapToDto(shift)).enqueue(new Callback<ScheduleDto>() {
+            @Override
+            public void onResponse(Call<ScheduleDto> call, Response<ScheduleDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    result.setValue(Resource.success(mapToDomain(response.body())));
+                } else {
+                    result.setValue(Resource.error("Lỗi thêm ca làm: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ScheduleDto> call, Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            }
+        });
+
         return result;
     }
 
     @Override
     public LiveData<Resource<WorkShift>> updateWorkShift(WorkShift shift) {
         MutableLiveData<Resource<WorkShift>> result = new MutableLiveData<>();
-        for (int i = 0; i < shiftList.size(); i++) {
-            if (shiftList.get(i).getId().equals(shift.getId())) {
-                shiftList.set(i, shift);
-                result.setValue(Resource.success(shift));
-                return result;
+        result.setValue(Resource.loading(null));
+
+        apiService.updateSchedule(shift.getId(), mapToDto(shift)).enqueue(new Callback<ScheduleDto>() {
+            @Override
+            public void onResponse(Call<ScheduleDto> call, Response<ScheduleDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    result.setValue(Resource.success(mapToDomain(response.body())));
+                } else {
+                    result.setValue(Resource.error("Lỗi cập nhật ca làm: " + response.code(), null));
+                }
             }
-        }
-        result.setValue(Resource.error("Không tìm thấy ca làm", null));
+
+            @Override
+            public void onFailure(Call<ScheduleDto> call, Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            }
+        });
+
         return result;
     }
 
     @Override
     public LiveData<Resource<Boolean>> deleteWorkShift(String shiftId) {
         MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        shiftList.removeIf(s -> s.getId().equals(shiftId));
-        result.setValue(Resource.success(true));
+        result.setValue(Resource.loading(null));
+
+        apiService.deleteSchedule(shiftId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    result.setValue(Resource.success(true));
+                } else {
+                    result.setValue(Resource.error("Lỗi xóa ca làm: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            }
+        });
+
         return result;
     }
 
     @Override
     public LiveData<Resource<Boolean>> sendNotifications(List<String> shiftIds) {
         MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        for (WorkShift shift : shiftList) {
-            if (shiftIds.contains(shift.getId())) {
-                shift.setSent(true);
+        result.setValue(Resource.loading(null));
+
+        apiService.sendScheduleNotifications(shiftIds).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    result.setValue(Resource.success(true));
+                } else {
+                    result.setValue(Resource.error("Lỗi gửi thông báo: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            }
+        });
+
+        return result;
+    }
+
+    private WorkShift mapToDomain(ScheduleDto dto) {
+        // ... (date/time parsing remains same)
+        String start = "08:00";
+        String end = "16:00";
+        if (dto.getCaLam() != null && dto.getCaLam().contains(" - ")) {
+            String[] times = dto.getCaLam().split(" - ");
+            if (times.length == 2) {
+                start = times[0];
+                end = times[1];
             }
         }
-        result.setValue(Resource.success(true));
-        return result;
+
+        String date = dto.getNgayLam();
+        if (date != null && date.contains("-")) {
+            String[] p = date.split("-");
+            if (p.length == 3) {
+                date = p[2] + "/" + p[1] + "/" + p[0];
+            }
+        }
+
+        List<WorkShift.EmployeeAssignment> assignments = new ArrayList<>();
+        if (dto.getChiTietNhanVien() != null) {
+            for (ScheduleDto.ScheduleDetailDto detail : dto.getChiTietNhanVien()) {
+                assignments.add(new WorkShift.EmployeeAssignment(detail.getMaNv(), "", detail.getViTri()));
+            }
+        }
+
+        return new WorkShift(
+                dto.getMaLlv(),
+                assignments,
+                dto.getHoTenNv() != null ? dto.getHoTenNv() : "Nhiều nhân viên",
+                date,
+                start,
+                end,
+                "Nhân viên",
+                "Đã gửi".equals(dto.getTrangThai()),
+                dto.getTrangThai(),
+                dto.getGhiChu()
+        );
+    }
+
+    private ScheduleDto mapToDto(WorkShift domain) {
+        ScheduleDto dto = new ScheduleDto();
+        dto.setMaLlv(domain.getId());
+        
+        List<ScheduleDto.ScheduleDetailDto> details = new ArrayList<>();
+        for (WorkShift.EmployeeAssignment assignment : domain.getEmployeeAssignments()) {
+            details.add(new ScheduleDto.ScheduleDetailDto(assignment.getEmployeeId(), assignment.getPosition()));
+        }
+        dto.setChiTietNhanVien(details);
+
+        dto.setCaLam(domain.getStartTime() + " - " + domain.getEndTime());
+        dto.setTrangThai(domain.getStatus());
+        dto.setGhiChu(domain.getType());
+        dto.setMaChiNhanh("CN01");
+
+        // Chuyển DD/MM/YYYY sang YYYY-MM-DD
+        String date = domain.getDate();
+        if (date != null && date.contains("/")) {
+            String[] p = date.split("/");
+            if (p.length == 3) {
+                dto.setNgayLam(p[2] + "-" + p[1] + "-" + p[0]);
+            }
+        } else {
+            dto.setNgayLam(date);
+        }
+        
+        dto.setNgayTao(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
+
+        return dto;
     }
 }

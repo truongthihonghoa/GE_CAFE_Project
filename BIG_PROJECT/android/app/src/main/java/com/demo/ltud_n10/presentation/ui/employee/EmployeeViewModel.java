@@ -8,8 +8,9 @@ import com.demo.ltud_n10.core.Resource;
 import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.repository.EmployeeRepository;
 
+import com.demo.ltud_n10.data.remote.dto.BranchDto;
+import java.util.ArrayList;
 import java.util.List;
-
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
@@ -27,6 +28,10 @@ public class EmployeeViewModel extends ViewModel {
 
     public LiveData<Resource<List<Employee>>> getEmployees() {
         return repository.getEmployees();
+    }
+
+    public LiveData<Resource<List<BranchDto>>> getBranches() {
+        return repository.getBranches();
     }
 
     public LiveData<Resource<Employee>> addEmployee(Employee employee) {

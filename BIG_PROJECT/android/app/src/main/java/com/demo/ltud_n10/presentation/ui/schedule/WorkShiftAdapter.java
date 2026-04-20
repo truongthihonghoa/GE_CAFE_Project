@@ -21,6 +21,7 @@ public class WorkShiftAdapter extends ListAdapter<WorkShift, WorkShiftAdapter.Vi
 
     public interface OnShiftClickListener {
         void onShiftClick(WorkShift shift);
+        void onEditClick(WorkShift shift);
         void onMoreClick(WorkShift shift, View view);
         void onToggleSelect(WorkShift shift);
     }

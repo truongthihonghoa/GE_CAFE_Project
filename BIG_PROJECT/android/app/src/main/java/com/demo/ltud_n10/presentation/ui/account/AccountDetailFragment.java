@@ -1,10 +1,10 @@
 package com.demo.ltud_n10.presentation.ui.account;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -13,9 +13,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.demo.ltud_n10.R;
+import com.google.android.material.textfield.TextInputEditText;
 import com.demo.ltud_n10.databinding.FragmentAccountDetailBinding;
-import com.demo.ltud_n10.domain.model.User;
-import com.demo.ltud_n10.domain.repository.UserRepository;
+import com.demo.ltud_n10.domain.model.Account;
+import com.demo.ltud_n10.domain.model.Employee;
+import com.demo.ltud_n10.domain.repository.AccountRepository;
+import com.demo.ltud_n10.domain.repository.EmployeeRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -25,12 +33,17 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class AccountDetailFragment extends Fragment {
 
     private FragmentAccountDetailBinding binding;
-    private User user;
+    private Account account;
     private String title;
-    private boolean isEditMode = false;
+    private boolean isReadOnly = false;
+    private String selectedEmployeeId;
+    private List<Employee> employeeList = new ArrayList<>();
 
     @Inject
-    UserRepository userRepository;
+    AccountRepository accountRepository;
+
+    @Inject
+    EmployeeRepository employeeRepository;
 
     @Nullable
     @Override
@@ -44,146 +57,173 @@ public class AccountDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         if (getArguments() != null) {
-            user = (User) getArguments().getSerializable("user");
+            account = (Account) getArguments().getSerializable("account");
             title = getArguments().getString("title");
+            isReadOnly = getArguments().getBoolean("isReadOnly", false);
         }
 
         binding.tvTitle.setText(title);
+        
+        loadEmployees();
 
-        if (user != null) {
-            setupEditMode();
+        if (account != null) {
+            if (isReadOnly) {
+                setupReadOnlyMode();
+            } else {
+                setupEditMode();
+            }
         } else {
             setupAddMode();
         }
 
-        binding.ivBack.setOnClickListener(v -> handleCancel());
-        binding.btnCancel.setOnClickListener(v -> handleCancel());
-        binding.cvRole.setOnClickListener(v -> showRoleDialog());
-        binding.cvStatus.setOnClickListener(v -> showStatusDialog());
+        binding.ivBack.setOnClickListener(v -> Navigation.findNavController(requireView()).navigateUp());
+        binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(requireView()).navigateUp());
+    }
+
+    private void loadEmployees() {
+        employeeRepository.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource != null && resource.data != null) {
+                employeeList = resource.data;
+                setupEmployeeDropdown();
+            }
+        });
+    }
+
+    private void setupEmployeeDropdown() {
+        List<String> names = employeeList.stream().map(Employee::getName).collect(Collectors.toList());
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, names);
+        binding.actvEmployee.setAdapter(adapter);
+        binding.actvEmployee.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedName = (String) parent.getItemAtPosition(position);
+            for (Employee e : employeeList) {
+                if (e.getName().equals(selectedName)) {
+                    selectedEmployeeId = e.getId();
+                    break;
+                }
+            }
+        });
     }
 
     private void setupAddMode() {
-        isEditMode = true;
         binding.layoutStatus.setVisibility(View.GONE);
-        binding.btnSave.setOnClickListener(v -> handleSave());
+        binding.btnDelete.setVisibility(View.GONE);
+        binding.btnChangePassword.setVisibility(View.GONE);
+        binding.btnSubmit.setOnClickListener(v -> handleCreate());
+    }
+
+    private void setupReadOnlyMode() {
+        fillData();
+        enableFields(false);
+        binding.btnSubmit.setText("XÁC NHẬN");
+        binding.btnSubmit.setOnClickListener(v -> Navigation.findNavController(requireView()).navigateUp());
+        binding.btnCancel.setVisibility(View.GONE);
+        binding.btnDelete.setVisibility(View.GONE);
+        binding.btnChangePassword.setVisibility(View.GONE);
+        binding.tilPassword.setVisibility(View.GONE);
     }
 
     private void setupEditMode() {
-        isEditMode = true;
-        binding.etUsername.setText(user.getUsername());
-        binding.etPassword.setText(user.getPassword());
-        binding.etName.setText(user.getName());
-        binding.tvRole.setText(user.getRole());
-        updateStatusUI(user.getStatus());
-        
-        binding.layoutStatus.setVisibility(View.VISIBLE);
-        binding.btnSave.setOnClickListener(v -> handleUpdate());
+        fillData();
+        binding.tilEmployee.setEnabled(false);
+        binding.etUsername.setEnabled(false);
+        binding.btnSubmit.setOnClickListener(v -> handleUpdate());
+        binding.btnDelete.setVisibility(View.VISIBLE);
+        binding.btnDelete.setOnClickListener(v -> showDeleteConfirmation());
+        binding.btnChangePassword.setVisibility(View.VISIBLE);
+        binding.btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
+        binding.tilPassword.setVisibility(View.GONE);
     }
 
-    private void updateStatusUI(String status) {
-        binding.tvStatus.setText(status);
-        if ("Ngưng hoạt động".equals(status)) {
-            binding.cvStatus.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(Color.parseColor("#F8D7DA")));
-            binding.tvStatus.setTextColor(Color.parseColor("#721C24"));
-        } else {
-            binding.cvStatus.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(Color.parseColor("#E8F8EF")));
-            binding.tvStatus.setTextColor(Color.parseColor("#2ECC71"));
+    private void fillData() {
+        binding.etUsername.setText(account.getUsername());
+        binding.actvEmployee.setText(account.getEmployeeName(), false);
+        binding.switchIsStaff.setChecked("Quản lý".equals(account.getRole()) || "Chủ".equals(account.getRole()));
+        binding.switchIsActive.setChecked("Đang hoạt động".equals(account.getStatus()));
+    }
+
+    private void enableFields(boolean enabled) {
+        binding.tilEmployee.setEnabled(enabled);
+        binding.etUsername.setEnabled(enabled);
+        binding.etPassword.setEnabled(enabled);
+        binding.switchIsStaff.setEnabled(enabled);
+        binding.switchIsActive.setEnabled(enabled);
+    }
+
+    private void handleCreate() {
+        String username = binding.etUsername.getText().toString();
+        String password = binding.etPassword.getText().toString();
+        boolean isStaff = binding.switchIsStaff.isChecked();
+
+        if (username.isEmpty() || password.isEmpty() || selectedEmployeeId == null) {
+            Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
 
-    private void showRoleDialog() {
-        String[] roles = {"ADMIN", "EMPLOYEE"};
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Chọn quyền hạn")
-                .setItems(roles, (dialog, which) -> {
-                    binding.tvRole.setText(roles[which]);
-                })
-                .show();
-    }
+        Account newAcc = new Account();
+        newAcc.setUsername(username);
+        newAcc.setEmployeeId(selectedEmployeeId);
 
-    private void showStatusDialog() {
-        String[] statuses = {"Đang hoạt động", "Ngưng hoạt động"};
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Chọn trạng thái")
-                .setItems(statuses, (dialog, which) -> {
-                    if ("Ngưng hoạt động".equals(statuses[which])) {
-                        confirmSuspendAccount();
-                    } else {
-                        updateStatusUI(statuses[which]);
-                    }
-                })
-                .show();
-    }
-
-    private void confirmSuspendAccount() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Xác nhận")
-                .setMessage("Bạn có chắc chắn muốn ngưng hoạt động tài khoản này không?")
-                .setPositiveButton("Đồng ý", (dialog, which) -> {
-                    updateStatusUI("Ngưng hoạt động");
-                })
-                .setNegativeButton("Không", null)
-                .show();
-    }
-
-    private void handleSave() {
-        if (!validate()) return;
-
-        User newUser = new User();
-        newUser.setUsername(binding.etUsername.getText().toString());
-        newUser.setPassword(binding.etPassword.getText().toString());
-        newUser.setName(binding.etName.getText().toString());
-        newUser.setRole(binding.tvRole.getText().toString());
-        newUser.setStatus("Đang hoạt động");
-
-        userRepository.addUser(newUser).observe(getViewLifecycleOwner(), resource -> {
-            if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                Toast.makeText(requireContext(), "Thêm thông tin thành công", Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigateUp();
-            } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
-                Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
+        accountRepository.createAccount(newAcc, password, isStaff).observe(getViewLifecycleOwner(), resource -> {
+            if (resource != null) {
+                if (resource.data != null) {
+                    Toast.makeText(requireContext(), "Cấp tài khoản thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                } else if (resource.message != null) {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
     private void handleUpdate() {
-        if (!validate()) return;
+        boolean isStaff = binding.switchIsStaff.isChecked();
+        boolean isActive = binding.switchIsActive.isChecked();
 
-        user.setUsername(binding.etUsername.getText().toString());
-        user.setPassword(binding.etPassword.getText().toString());
-        user.setName(binding.etName.getText().toString());
-        user.setRole(binding.tvRole.getText().toString());
-        user.setStatus(binding.tvStatus.getText().toString());
-
-        userRepository.updateUser(user).observe(getViewLifecycleOwner(), resource -> {
-            if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                Toast.makeText(requireContext(), "Cập nhật tài khoản thành công", Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigateUp();
+        accountRepository.updateAccount(account, null, isStaff, isActive).observe(getViewLifecycleOwner(), resource -> {
+            if (resource != null) {
+                if (resource.data != null) {
+                    Toast.makeText(requireContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                }
             }
         });
     }
 
-    private void handleCancel() {
+    private void showChangePasswordDialog() {
+        View view = LayoutInflater.from(requireContext()).inflate(com.demo.ltud_n10.R.layout.dialog_change_password, null);
+        TextInputEditText etNewPass = view.findViewById(com.demo.ltud_n10.R.id.etNewPassword);
+
         new AlertDialog.Builder(requireContext())
-                .setMessage("Bạn có thông tin thay đổi chưa được lưu, xác nhận hủy?")
-                .setPositiveButton("Đồng ý", (d, w) -> Navigation.findNavController(requireView()).navigateUp())
-                .setNegativeButton("Không", null)
+                .setTitle("Đổi mật khẩu")
+                .setView(view)
+                .setPositiveButton("Cập nhật", (d, w) -> {
+                    String newPass = etNewPass.getText().toString();
+                    if (!newPass.isEmpty()) {
+                        accountRepository.changePassword(account.getId(), newPass).observe(getViewLifecycleOwner(), resource -> {
+                            if (resource != null && resource.data != null && resource.data) {
+                                Toast.makeText(requireContext(), "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("Hủy", null)
                 .show();
     }
 
-    private boolean validate() {
-        String username = binding.etUsername.getText().toString();
-        String password = binding.etPassword.getText().toString();
-
-        if (username.isEmpty()) {
-            Toast.makeText(requireContext(), "Tên đăng nhập trống. vui lòng nhập lại.", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (password.length() < 6) {
-            Toast.makeText(requireContext(), "Mật khẩu không hợp lệ. Vui lòng nhập theo quy định.", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        return true;
+    private void showDeleteConfirmation() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa tài khoản này?")
+                .setPositiveButton("Xóa", (d, w) -> {
+                    accountRepository.deleteAccount(account.getId()).observe(getViewLifecycleOwner(), resource -> {
+                        if (resource != null && resource.data != null && resource.data) {
+                            Toast.makeText(requireContext(), "Đã xóa tài khoản", Toast.LENGTH_SHORT).show();
+                            Navigation.findNavController(requireView()).navigateUp();
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
 
     @Override

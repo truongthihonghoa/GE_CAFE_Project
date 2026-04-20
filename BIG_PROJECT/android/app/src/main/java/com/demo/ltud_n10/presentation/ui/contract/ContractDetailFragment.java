@@ -18,9 +18,12 @@ import androidx.navigation.Navigation;
 import com.demo.ltud_n10.core.Resource;
 import com.demo.ltud_n10.databinding.FragmentContractDetailBinding;
 import com.demo.ltud_n10.domain.model.Contract;
+import com.demo.ltud_n10.domain.model.Employee;
+import com.demo.ltud_n10.presentation.ui.employee.EmployeeViewModel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.UUID;
+import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -29,8 +32,14 @@ public class ContractDetailFragment extends Fragment {
 
     private FragmentContractDetailBinding binding;
     private ContractViewModel viewModel;
+    private EmployeeViewModel employeeViewModel;
     private Contract currentContract;
     private String title;
+    private boolean isViewOnly = false;
+
+    private List<Employee> allEmployees = new ArrayList<>();
+    private final String[] typeOptions = {"FULLTIME", "PARTTIME"};
+    private final String[] positionOptions = {"THU_NGAN", "QUAN_LY", "PHUC_VU", "PHA_CHE"};
 
     @Nullable
     @Override
@@ -43,108 +52,169 @@ public class ContractDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(ContractViewModel.class);
+        employeeViewModel = new ViewModelProvider(requireActivity()).get(EmployeeViewModel.class);
 
         if (getArguments() != null) {
             currentContract = (Contract) getArguments().getSerializable("contract");
             title = getArguments().getString("title");
+            isViewOnly = getArguments().getBoolean("isViewOnly", false);
         }
 
         setupUI();
-        if (currentContract != null) {
-            populateData();
-        }
+        loadEmployees();
     }
 
     private void setupUI() {
         binding.tvTitle.setText(title);
-        binding.btnBack.setOnClickListener(v -> handleCancel());
+        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
-        // Mock Data for Spinners
-        String[] employees = {"Lê Văn C", "Phạm Thị D", "Hoàng Văn E"};
-        ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, employees);
-        empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerEmployee.setAdapter(empAdapter);
-
-        String[] types = {"Part time", "Full time"};
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, types);
+        // Setup Type Spinner
+        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, typeOptions);
         typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerType.setAdapter(typeAdapter);
 
-        String[] positions = {"Nhân viên pha chế", "Nhân viên phục vụ", "Giữ xe"};
-        ArrayAdapter<String> posAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, positions);
+        // Setup Position Spinner
+        ArrayAdapter<String> posAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, positionOptions);
         posAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerPosition.setAdapter(posAdapter);
 
-        binding.btnStartDatePicker.setOnClickListener(v -> showDatePicker(true));
-        binding.btnEndDatePicker.setOnClickListener(v -> showDatePicker(false));
+        binding.btnStartDatePicker.setOnClickListener(v -> { if (!isViewOnly) showDatePicker(true); });
+        binding.btnEndDatePicker.setOnClickListener(v -> { if (!isViewOnly) showDatePicker(false); });
 
         binding.btnSave.setOnClickListener(v -> saveContract());
-        binding.btnCancel.setOnClickListener(v -> handleCancel());
+        binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
+        binding.btnConfirm.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
+
+        if (isViewOnly) {
+            applyViewOnlyMode();
+        }
+    }
+
+    private void applyViewOnlyMode() {
+        binding.spinnerEmployee.setEnabled(false);
+        binding.spinnerType.setEnabled(false);
+        binding.spinnerPosition.setEnabled(false);
+        binding.etSalary.setEnabled(false);
+        binding.etHourlySalary.setEnabled(false);
+        binding.etWorkHours.setEnabled(false);
+        binding.etTerms.setEnabled(false);
+        binding.etResponsibilities.setEnabled(false);
+        binding.etNotes.setEnabled(false);
+        binding.btnStartDatePicker.setEnabled(false);
+        binding.btnEndDatePicker.setEnabled(false);
+
+        binding.btnSave.setVisibility(View.GONE);
+        binding.btnCancel.setVisibility(View.GONE);
+        binding.btnConfirm.setVisibility(View.VISIBLE);
+    }
+
+    private void loadEmployees() {
+        employeeViewModel.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                allEmployees = resource.data;
+                setupEmployeeSpinner();
+                if (currentContract != null) {
+                    populateData();
+                }
+            }
+        });
+    }
+
+    private void setupEmployeeSpinner() {
+        List<String> names = new ArrayList<>();
+        for (Employee e : allEmployees) names.add(e.getName() + " (" + e.getId() + ")");
+        
+        ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, names);
+        empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerEmployee.setAdapter(empAdapter);
     }
 
     private void populateData() {
         binding.tvStartDate.setText(currentContract.getStartDate());
         binding.tvEndDate.setText(currentContract.getEndDate());
-        binding.etSalary.setText(String.valueOf((long)currentContract.getSalary()));
+        binding.etSalary.setText(String.format("%.0f", currentContract.getSalary()));
+        binding.etHourlySalary.setText(String.format("%.0f", currentContract.getHourlySalary()));
+        binding.etWorkHours.setText(String.valueOf(currentContract.getWorkHours()));
+        binding.etTerms.setText(currentContract.getTerms());
+        binding.etResponsibilities.setText(currentContract.getResponsibilities());
+        binding.etNotes.setText(currentContract.getNotes());
 
-        setSpinnerSelection(binding.spinnerEmployee, currentContract.getEmployeeName());
-        setSpinnerSelection(binding.spinnerType, currentContract.getType());
-        setSpinnerSelection(binding.spinnerPosition, currentContract.getPosition());
-    }
+        // Set Employee Selection
+        for (int i = 0; i < allEmployees.size(); i++) {
+            if (allEmployees.get(i).getId().equals(currentContract.getEmployeeId())) {
+                binding.spinnerEmployee.setSelection(i);
+                break;
+            }
+        }
 
-    private void setSpinnerSelection(android.widget.Spinner spinner, String value) {
-        ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinner.getAdapter();
-        int pos = adapter.getPosition(value);
-        if (pos >= 0) spinner.setSelection(pos);
+        // Set Type Selection
+        for (int i = 0; i < typeOptions.length; i++) {
+            if (typeOptions[i].equals(currentContract.getType())) {
+                binding.spinnerType.setSelection(i);
+                break;
+            }
+        }
+
+        // Set Position Selection
+        for (int i = 0; i < positionOptions.length; i++) {
+            if (positionOptions[i].equals(currentContract.getPosition())) {
+                binding.spinnerPosition.setSelection(i);
+                break;
+            }
+        }
     }
 
     private void showDatePicker(boolean isStart) {
         final Calendar c = Calendar.getInstance();
         new DatePickerDialog(requireContext(), (view, year, month, day) -> {
-            String date = String.format("%02d/%02d/%04d", day, month + 1, year);
+            String date = String.format("%04d-%02d-%02d", year, month + 1, day);
             if (isStart) binding.tvStartDate.setText(date);
             else binding.tvEndDate.setText(date);
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     private void saveContract() {
-        String empName = binding.spinnerEmployee.getSelectedItem().toString();
+        if (allEmployees.isEmpty()) return;
+        
+        int empPos = binding.spinnerEmployee.getSelectedItemPosition();
+        Employee selectedEmp = allEmployees.get(empPos);
+        
         String type = binding.spinnerType.getSelectedItem().toString();
+        String pos = binding.spinnerPosition.getSelectedItem().toString();
         String startDate = binding.tvStartDate.getText().toString();
         String endDate = binding.tvEndDate.getText().toString();
         String salaryStr = binding.etSalary.getText().toString();
-        String pos = binding.spinnerPosition.getSelectedItem().toString();
+        String hourlyStr = binding.etHourlySalary.getText().toString();
+        String hoursStr = binding.etWorkHours.getText().toString();
 
-        if (startDate.isEmpty() || endDate.isEmpty() || salaryStr.isEmpty()) {
-            Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ thông int", Toast.LENGTH_SHORT).show();
+        if (startDate.isEmpty() || salaryStr.isEmpty()) {
+            Toast.makeText(requireContext(), "Vui lòng nhập ngày bắt đầu và lương", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        double salary = Double.parseDouble(salaryStr);
-        if (salary <= 0) {
-            Toast.makeText(requireContext(), "Mức lương phải lớn hơn 0", Toast.LENGTH_SHORT).show();
-            return;
+        Contract contract = currentContract != null ? currentContract : new Contract();
+        if (currentContract == null) {
+            contract.setId("HD" + System.currentTimeMillis() / 10000);
         }
 
-        Contract contract = currentContract;
-        if (contract == null) {
-            contract = new Contract();
-            contract.setId("HD" + System.currentTimeMillis() / 1000);
-        }
-
-        contract.setEmployeeName(empName);
-        contract.setEmployeeId("NV" + UUID.randomUUID().toString().substring(0, 4));
+        contract.setEmployeeId(selectedEmp.getId());
+        contract.setEmployeeName(selectedEmp.getName());
         contract.setType(type);
-        contract.setStartDate(startDate);
-        contract.setEndDate(endDate);
-        contract.setSalary(salary);
         contract.setPosition(pos);
-        contract.setStatus("Còn hiệu lực");
+        contract.setStartDate(startDate);
+        contract.setEndDate(endDate.isEmpty() ? null : endDate);
+        contract.setSalary(Double.parseDouble(salaryStr));
+        contract.setHourlySalary(hourlyStr.isEmpty() ? 0 : Double.parseDouble(hourlyStr));
+        contract.setWorkHours(hoursStr.isEmpty() ? 0 : Double.parseDouble(hoursStr));
+        contract.setTerms(binding.etTerms.getText().toString());
+        contract.setResponsibilities(binding.etResponsibilities.getText().toString());
+        contract.setNotes(binding.etNotes.getText().toString());
+        contract.setStatus("CON_HAN");
 
         if (currentContract == null) {
-            viewModel.addContract(contract).observe(getViewLifecycleOwner(), resource -> handleResult(resource, "Tạo hợp đồng lao động thành công"));
+            viewModel.addContract(contract).observe(getViewLifecycleOwner(), resource -> handleResult(resource, "Tạo hợp đồng thành công"));
         } else {
-            viewModel.updateContract(contract).observe(getViewLifecycleOwner(), resource -> handleResult(resource, "Chỉnh sửa hợp đồng lao động thành công"));
+            viewModel.updateContract(contract).observe(getViewLifecycleOwner(), resource -> handleResult(resource, "Cập nhật hợp đồng thành công"));
         }
     }
 
@@ -155,15 +225,6 @@ public class ContractDetailFragment extends Fragment {
         } else if (resource.status == Resource.Status.ERROR) {
             Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void handleCancel() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("XÁC NHẬN HỦY")
-                .setMessage("Bạn có thông tin chưa lưu, xác nhận hủy?")
-                .setPositiveButton("Đồng ý", (d, w) -> Navigation.findNavController(requireView()).popBackStack())
-                .setNegativeButton("Không", null)
-                .show();
     }
 
     @Override

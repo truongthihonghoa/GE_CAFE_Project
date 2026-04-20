@@ -15,8 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.demo.ltud_n10.MainActivity;
 import com.demo.ltud_n10.databinding.FragmentApprovalBinding;
-import com.demo.ltud_n10.domain.model.WorkShift;
-import com.demo.ltud_n10.domain.repository.WorkShiftRepository;
+import com.demo.ltud_n10.domain.model.Request;
+import com.demo.ltud_n10.domain.repository.RequestRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +31,11 @@ public class ApprovalFragment extends Fragment {
 
     private FragmentApprovalBinding binding;
     private ApprovalGroupAdapter adapter;
-    private List<WorkShift> allShifts = new ArrayList<>();
+    private List<Request> allRequests = new ArrayList<>();
     private String currentType = "Đăng ký ca";
 
     @Inject
-    WorkShiftRepository workShiftRepository;
+    RequestRepository requestRepository;
 
     @Nullable
     @Override
@@ -66,18 +66,13 @@ public class ApprovalFragment extends Fragment {
         adapter = new ApprovalGroupAdapter();
         adapter.setOnActionListener(new ApprovalRequestAdapter.OnActionListener() {
             @Override
-            public void onApprove(WorkShift shift) {
-                handleApprove(shift);
+            public void onApprove(Request request) {
+                handleApprove(request);
             }
 
             @Override
-            public void onReject(WorkShift shift) {
-                handleReject(shift);
-            }
-
-            @Override
-            public void onTimeChanged(WorkShift shift) {
-                handleTimeChanged(shift);
+            public void onReject(Request request) {
+                handleReject(request);
             }
         });
 
@@ -114,56 +109,44 @@ public class ApprovalFragment extends Fragment {
     }
 
     private void loadData() {
-        workShiftRepository.getWorkShifts().observe(getViewLifecycleOwner(), resource -> {
+        requestRepository.getRequests().observe(getViewLifecycleOwner(), resource -> {
             if (resource != null && resource.data != null) {
-                allShifts = resource.data;
+                allRequests = resource.data;
                 filterData();
             }
         });
     }
 
     private void filterData() {
-        List<WorkShift> filtered = allShifts.stream()
-                .filter(s -> s.getType().equals(currentType))
+        List<Request> filtered = allRequests.stream()
+                .filter(r -> r.getType().contains(currentType))
                 .collect(Collectors.toList());
         adapter.setData(filtered);
     }
 
-    private void handleApprove(WorkShift shift) {
-        shift.setStatus("Đã duyệt");
-        workShiftRepository.updateWorkShift(shift).observe(getViewLifecycleOwner(), resource -> {
+    private void handleApprove(Request request) {
+        requestRepository.updateRequestStatus(request.getId(), "Đã duyệt").observe(getViewLifecycleOwner(), resource -> {
             if (resource != null && resource.data != null) {
-                Toast.makeText(requireContext(), "Đã duyệt yêu cầu của " + shift.getEmployeeName(), Toast.LENGTH_SHORT).show();
-                filterData();
+                Toast.makeText(requireContext(), "Đã duyệt yêu cầu của " + request.getEmployeeName(), Toast.LENGTH_SHORT).show();
+                loadData(); // Reload to get fresh status
             }
         });
     }
 
-    private void handleReject(WorkShift shift) {
+    private void handleReject(Request request) {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Từ chối yêu cầu")
                 .setMessage("Bạn có chắc chắn muốn từ chối yêu cầu này?")
                 .setPositiveButton("Từ chối", (d, w) -> {
-                    shift.setStatus("Bị từ chối");
-                    workShiftRepository.updateWorkShift(shift).observe(getViewLifecycleOwner(), resource -> {
+                    requestRepository.updateRequestStatus(request.getId(), "Bị từ chối").observe(getViewLifecycleOwner(), resource -> {
                         if (resource != null && resource.data != null) {
                             Toast.makeText(requireContext(), "Đã từ chối yêu cầu", Toast.LENGTH_SHORT).show();
-                            filterData();
+                            loadData();
                         }
                     });
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
-    }
-
-    private void handleTimeChanged(WorkShift shift) {
-        workShiftRepository.updateWorkShift(shift).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.data != null) {
-                Toast.makeText(requireContext(), "Đã cập nhật thời gian làm việc", Toast.LENGTH_SHORT).show();
-                // Data already updated in local list via observer or re-filter
-                filterData();
-            }
-        });
     }
 
     @Override

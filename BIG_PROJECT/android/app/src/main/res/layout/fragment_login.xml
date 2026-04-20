@@ -97,8 +97,7 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
-                android:hint="owner@coffee.com"
-                android:text="owner@coffee.com"
+                android:hint="Nhập email"
                 android:inputType="textEmailAddress"
                 android:paddingHorizontal="16dp"
                 android:textSize="15sp" />
@@ -118,8 +117,7 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
-                android:hint="password123"
-                android:text="password123"
+                android:hint="Nhập mật khẩu"
                 android:inputType="textPassword"
                 android:paddingHorizontal="16dp"
                 android:textSize="15sp" />

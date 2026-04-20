@@ -35,7 +35,6 @@ class NhanVien(models.Model):
         blank=True,
         verbose_name="Giới tính",
     )
-    tk_ngan_hang = models.CharField(max_length=30, unique=True, verbose_name="Tài khoản ngân hàng")
     ma_chi_nhanh = models.ForeignKey(
         "branches.ChiNhanh",
         on_delete=models.CASCADE,

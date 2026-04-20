@@ -96,16 +96,9 @@ class ChiNhanhViewSet(ModelViewSet):
 
     # 👇 Xem dữ liệu
     def get_queryset(self):
-        user = self.request.user
-
-        # admin → thấy tất cả
-        if user.is_staff:
+        # Cho phép tất cả người dùng đã đăng nhập xem toàn bộ chi nhánh
+        if self.request.user.is_authenticated:
             return ChiNhanh.objects.all()
-
-        # nhân viên → chỉ thấy chi nhánh mình
-        if hasattr(user, 'nhanvien'):
-            return ChiNhanh.objects.filter(ma_nv_ql=user.nhanvien)
-
         return ChiNhanh.objects.none()
 
     # 👇 thêm

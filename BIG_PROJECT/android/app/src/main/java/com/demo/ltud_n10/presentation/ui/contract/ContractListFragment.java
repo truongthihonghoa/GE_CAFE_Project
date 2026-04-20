@@ -1,6 +1,8 @@
 package com.demo.ltud_n10.presentation.ui.contract;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,9 @@ import com.demo.ltud_n10.core.Resource;
 import com.demo.ltud_n10.databinding.FragmentContractListBinding;
 import com.demo.ltud_n10.domain.model.Contract;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -28,6 +33,7 @@ public class ContractListFragment extends Fragment {
     private FragmentContractListBinding binding;
     private ContractViewModel viewModel;
     private ContractAdapter adapter;
+    private List<Contract> fullList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -44,6 +50,7 @@ public class ContractListFragment extends Fragment {
         setupUI();
         setupRecyclerView();
         observeViewModel();
+        setupSearch();
     }
 
     private void setupUI() {
@@ -60,13 +67,49 @@ public class ContractListFragment extends Fragment {
         });
     }
 
+    private void setupSearch() {
+        binding.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filter(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void filter(String query) {
+        List<Contract> filteredList = new ArrayList<>();
+        for (Contract contract : fullList) {
+            if (contract.getEmployeeName().toLowerCase().contains(query.toLowerCase()) ||
+                contract.getId().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(contract);
+            }
+        }
+        adapter.setContracts(filteredList);
+    }
+
     private void setupRecyclerView() {
         adapter = new ContractAdapter(new ContractAdapter.OnContractClickListener() {
+            @Override
+            public void onItemClick(Contract contract) {
+                Bundle args = new Bundle();
+                args.putSerializable("contract", contract);
+                args.putString("title", "Xem hợp đồng lao động");
+                args.putBoolean("isViewOnly", true);
+                Navigation.findNavController(requireView()).navigate(R.id.action_contractListFragment_to_contractDetailFragment, args);
+            }
+
             @Override
             public void onEdit(Contract contract) {
                 Bundle args = new Bundle();
                 args.putSerializable("contract", contract);
                 args.putString("title", "Chỉnh sửa hợp đồng lao động");
+                args.putBoolean("isViewOnly", false);
                 Navigation.findNavController(requireView()).navigate(R.id.action_contractListFragment_to_contractDetailFragment, args);
             }
 
@@ -82,7 +125,8 @@ public class ContractListFragment extends Fragment {
     private void observeViewModel() {
         viewModel.getContracts().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS) {
-                adapter.setContracts(resource.data);
+                fullList = resource.data;
+                adapter.setContracts(fullList);
             }
         });
     }

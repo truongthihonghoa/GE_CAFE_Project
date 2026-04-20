@@ -11,11 +11,10 @@ class NhanVienAdmin(admin.ModelAdmin):
         "ngay_sinh",
         "cccd",
         "sdt",
-        "tk_ngan_hang",
         "chuc_vu",
         "ma_chi_nhanh",
     )
-    search_fields = ("ma_nv", "ho_ten", "cccd", "sdt", "tk_ngan_hang")
+    search_fields = ("ma_nv", "ho_ten", "cccd", "sdt")
     list_filter = ("gioi_tinh", "chuc_vu", "ma_chi_nhanh")
     ordering = ("ma_nv",)
     list_per_page = 25
@@ -28,7 +27,7 @@ class NhanVienAdmin(admin.ModelAdmin):
             "fields": ("chuc_vu", "ma_chi_nhanh"),
         }),
         ("Bổ sung", {
-            "fields": ("tk_ngan_hang", "dia_chi"),
+            "fields": ("dia_chi",),
         }),
     )
 

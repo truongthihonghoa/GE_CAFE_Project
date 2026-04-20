@@ -152,7 +152,9 @@ public class RegistrationFragment extends Fragment {
         String dateStr = sdf.format(new Date(binding.calendarShift.getDate()));
 
         WorkShift shift = new WorkShift();
-        shift.setEmployeeId(user.getId());
+        List<WorkShift.EmployeeAssignment> assignments = new ArrayList<>();
+        assignments.add(new WorkShift.EmployeeAssignment(user.getId(), user.getName(), selectedShift));
+        shift.setEmployeeAssignments(assignments);
         shift.setEmployeeName(user.getName());
         shift.setDate(dateStr);
         shift.setStartTime(selectedStartTime);
@@ -184,7 +186,9 @@ public class RegistrationFragment extends Fragment {
         String endDate = sdf.format(new Date(binding.calendarEnd.getDate()));
 
         WorkShift leave = new WorkShift();
-        leave.setEmployeeId(user.getId());
+        List<WorkShift.EmployeeAssignment> assignments = new ArrayList<>();
+        assignments.add(new WorkShift.EmployeeAssignment(user.getId(), user.getName(), reason));
+        leave.setEmployeeAssignments(assignments);
         leave.setEmployeeName(user.getName());
         leave.setDate(startDate + " - " + endDate);
         leave.setStartTime("00:00");

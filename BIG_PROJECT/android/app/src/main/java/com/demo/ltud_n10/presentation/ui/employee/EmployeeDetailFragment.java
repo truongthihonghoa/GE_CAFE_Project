@@ -15,8 +15,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.demo.ltud_n10.data.remote.dto.BranchDto;
 import com.demo.ltud_n10.databinding.FragmentEmployeeDetailBinding;
 import com.demo.ltud_n10.domain.model.Employee;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.util.Calendar;
 
@@ -29,6 +32,8 @@ public class EmployeeDetailFragment extends Fragment {
     private EmployeeViewModel viewModel;
     private Employee currentEmployee;
     private String title;
+    private List<BranchDto> branchList = new ArrayList<>();
+    private boolean isReadOnly = false;
 
     @Nullable
     @Override
@@ -45,6 +50,7 @@ public class EmployeeDetailFragment extends Fragment {
         if (getArguments() != null) {
             currentEmployee = (Employee) getArguments().getSerializable("employee");
             title = getArguments().getString("title");
+            isReadOnly = getArguments().getBoolean("isReadOnly", false);
         }
 
         setupUI();
@@ -71,10 +77,14 @@ public class EmployeeDetailFragment extends Fragment {
 
         binding.btnDatePicker.setOnClickListener(v -> showDatePicker());
 
+        loadBranches();
+
         binding.btnSave.setOnClickListener(v -> saveEmployee());
         binding.btnCancel.setOnClickListener(v -> handleBackAction());
         
-        if (currentEmployee != null) {
+        if (isReadOnly) {
+            disableInputs();
+        } else if (currentEmployee != null) {
             binding.btnSave.setText("Chỉnh sửa");
         }
     }
@@ -95,6 +105,44 @@ public class EmployeeDetailFragment extends Fragment {
                 break;
             }
         }
+    }
+
+    private void loadBranches() {
+        viewModel.getBranches().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS && resource.data != null) {
+                branchList = resource.data;
+                ArrayAdapter<BranchDto> branchAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, branchList);
+                branchAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                binding.spinnerBranch.setAdapter(branchAdapter);
+
+                // If editing, select current branch
+                if (currentEmployee != null && currentEmployee.getBranchId() != null) {
+                    for (int i = 0; i < branchList.size(); i++) {
+                        if (branchList.get(i).getMaChiNhanh().equals(currentEmployee.getBranchId())) {
+                            binding.spinnerBranch.setSelection(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void disableInputs() {
+        binding.etName.setEnabled(false);
+        binding.etCccd.setEnabled(false);
+        binding.etPhone.setEnabled(false);
+        binding.etAddress.setEnabled(false);
+        binding.spinnerGender.setEnabled(false);
+        binding.spinnerPosition.setEnabled(false);
+        binding.spinnerBranch.setEnabled(false);
+        binding.btnDatePicker.setEnabled(false);
+        
+        // Đổi nút Lưu thành Xác nhận và ẩn nút Hủy
+        binding.btnSave.setText("Xác nhận");
+        binding.btnSave.setVisibility(View.VISIBLE);
+        binding.btnSave.setOnClickListener(v -> Navigation.findNavController(requireView()).popBackStack());
+        binding.btnCancel.setVisibility(View.GONE);
     }
 
     private void showDatePicker() {
@@ -135,10 +183,17 @@ public class EmployeeDetailFragment extends Fragment {
         employee.setPosition(position);
         employee.setStatus("Đang làm");
 
+        if (binding.spinnerBranch.getSelectedItem() != null) {
+            BranchDto selectedBranch = (BranchDto) binding.spinnerBranch.getSelectedItem();
+            employee.setBranchId(selectedBranch.getMaChiNhanh());
+        }
+
         if (currentEmployee == null) {
             viewModel.addEmployee(employee).observe(getViewLifecycleOwner(), resource -> {
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                     showSuccessDialog("Thêm nhân viên thành công");
+                } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                    Toast.makeText(requireContext(), "Lỗi: " + resource.message, Toast.LENGTH_LONG).show();
                 }
             });
         } else {
@@ -146,6 +201,8 @@ public class EmployeeDetailFragment extends Fragment {
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                     Toast.makeText(requireContext(), "Cập nhật thông tin nhân viên thành công", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
+                } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                    Toast.makeText(requireContext(), "Lỗi cập nhật: " + resource.message, Toast.LENGTH_LONG).show();
                 }
             });
         }

@@ -4,15 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    app:cardBackgroundColor="#FFFFFF"
     app:cardCornerRadius="24dp"
-    app:cardElevation="0dp">
+    app:cardElevation="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Header Section -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="64dp"
             android:background="#0A4D1E"
@@ -21,24 +24,23 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tính lương"
-                android:textColor="@android:color/white"
+                android:layout_centerVertical="true"
+                android:text="Tính toán lương"
+                android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:textStyle="bold" />
 
             <ImageView
                 android:id="@+id/ivClose"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="6dp"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@android:color/white" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                app:tint="#FFFFFF" />
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,116 +48,94 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- Selection Summary -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:background="#F8F9FA"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center_vertical">
 
                 <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Kỳ lương áp dụng:"
+                    android:textColor="#64748B"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvSelectedMonth"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chọn tháng"
-                    android:textColor="#1A1A1A"
-                    android:textSize="15sp"
+                    android:text="Tháng 4/2026"
+                    android:textColor="#0F172A"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:layout_marginStart="16dp"
-                    app:cardBackgroundColor="#F8F9FA"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:paddingHorizontal="12dp">
-
-                        <TextView
-                            android:id="@+id/tvSelectedMonth"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="02/2026"
-                            android:textColor="#1A1A1A"
-                            android:textSize="14sp" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:layout_marginStart="8dp"
-                            android:src="@android:drawable/ic_menu_my_calendar"
-                            app:tint="#757575" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Employee Table Header -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="12dp"
+                android:text="Chọn nhân viên tính lương"
+                android:textColor="#0F172A"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <!-- Table Header -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="20dp"
-                android:background="#0A4D1E"
+                android:layout_height="40dp"
+                android:background="#E2E8F0"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:paddingHorizontal="12dp">
 
                 <CheckBox
                     android:id="@+id/cbSelectAll"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:buttonTint="@android:color/white" />
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:button="@null"
+                    android:background="@drawable/custom_checkbox" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:text="MÃ NV"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
                     android:text="HỌ TÊN"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
+                    android:textColor="#475569"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="50dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:text="GIỜ"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
+                    android:textColor="#475569"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="50dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="end"
+                    android:gravity="center"
                     android:text="HỆ SỐ"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
+                    android:textColor="#475569"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvEmployeeSelection"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="300dp"
                 tools:listitem="@layout/item_employee_salary_select" />
 
+            <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -164,32 +144,34 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancel"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="54dp"
-                    android:layout_marginEnd="12dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#8DB099"
-                    android:text="Hủy"
+                    android:text="Hủy bỏ"
                     android:textAllCaps="false"
-                    android:textColor="@android:color/white"
+                    android:textColor="#64748B"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    app:cornerRadius="12dp" />
+                    app:cornerRadius="12dp"
+                    app:strokeColor="#CBD5E1"
+                    app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCalculate"
                     android:layout_width="0dp"
                     android:layout_height="54dp"
-                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1.2"
                     android:backgroundTint="#0A4D1E"
-                    android:text="Tính lương"
+                    android:text="Bắt đầu tính lương"
                     android:textAllCaps="false"
-                    android:textColor="@android:color/white"
+                    android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:cornerRadius="12dp" />
+                    app:cornerRadius="12dp"
+                    app:elevation="2dp" />
             </LinearLayout>
-
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

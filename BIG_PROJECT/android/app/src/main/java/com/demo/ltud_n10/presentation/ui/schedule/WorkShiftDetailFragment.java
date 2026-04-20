@@ -1,7 +1,6 @@
 package com.demo.ltud_n10.presentation.ui.schedule;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,10 +17,13 @@ import androidx.navigation.Navigation;
 
 import com.demo.ltud_n10.core.Resource;
 import com.demo.ltud_n10.databinding.FragmentScheduleDetailBinding;
+import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.model.WorkShift;
+import com.demo.ltud_n10.presentation.ui.employee.EmployeeViewModel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.UUID;
+import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -30,8 +32,15 @@ public class WorkShiftDetailFragment extends Fragment {
 
     private FragmentScheduleDetailBinding binding;
     private WorkShiftViewModel viewModel;
+    private EmployeeViewModel employeeViewModel;
     private WorkShift currentShift;
     private String title;
+    private boolean isViewOnly = false;
+
+    private List<Employee> allEmployees = new ArrayList<>();
+    private List<WorkShift.EmployeeAssignment> selectedAssignments = new ArrayList<>();
+    private String[] shiftOptions = {"07:00 - 11:00", "13:00 - 17:00", "18:00 - 22:00"};
+    private String[] positionOptions = {"Pha chế", "Phục vụ", "Giữ xe", "Thu ngân"};
 
     @Nullable
     @Override
@@ -44,15 +53,23 @@ public class WorkShiftDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(WorkShiftViewModel.class);
+        employeeViewModel = new ViewModelProvider(requireActivity()).get(EmployeeViewModel.class);
 
         if (getArguments() != null) {
             currentShift = (WorkShift) getArguments().getSerializable("shift");
             title = getArguments().getString("title");
+            isViewOnly = getArguments().getBoolean("isViewOnly", false);
         }
 
         setupUI();
+        loadEmployees();
+        
         if (currentShift != null) {
             populateData();
+        }
+
+        if (isViewOnly) {
+            applyViewOnlyMode();
         }
     }
 
@@ -60,39 +77,121 @@ public class WorkShiftDetailFragment extends Fragment {
         binding.tvTitle.setText(title);
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
-        // Mock employees for dropdown
-        String[] employees = {"Lê Văn C", "Phạm Thị D", "Lê Văn D"};
-        ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, employees);
-        empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerEmployee.setAdapter(empAdapter);
+        ArrayAdapter<String> shiftAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, shiftOptions);
+        shiftAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerShift.setAdapter(shiftAdapter);
 
-        // Positions dropdown
-        String[] positions = {"Phục vụ", "Pha chế", "Giữ xe"};
-        ArrayAdapter<String> posAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, positions);
-        posAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerPosition.setAdapter(posAdapter);
+        binding.spinnerPosition.setVisibility(View.GONE);
+        binding.tvSelectedEmployees.setOnClickListener(v -> {
+            if (!isViewOnly) showEmployeeSelectionDialog();
+        });
 
-        binding.btnDatePicker.setOnClickListener(v -> showDatePicker());
-        binding.etStartTime.setOnClickListener(v -> showTimePicker(true));
-        binding.etEndTime.setOnClickListener(v -> showTimePicker(false));
+        binding.btnDatePicker.setOnClickListener(v -> {
+            if (!isViewOnly) showDatePicker();
+        });
 
         binding.btnSave.setOnClickListener(v -> saveShift());
         binding.btnCancel.setOnClickListener(v -> handleCancel());
+        binding.btnConfirm.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
+    }
+
+    private void applyViewOnlyMode() {
+        // Khóa các ô nhập liệu
+        binding.spinnerShift.setEnabled(false);
+        binding.tvSelectedEmployees.setEnabled(false);
+        binding.btnDatePicker.setEnabled(false);
+        
+        // Ẩn nút Lưu/Hủy, hiện nút Xác nhận
+        binding.btnSave.setVisibility(View.GONE);
+        binding.btnCancel.setVisibility(View.GONE);
+        binding.btnConfirm.setVisibility(View.VISIBLE);
+    }
+
+    private void loadEmployees() {
+        employeeViewModel.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                allEmployees = resource.data;
+            }
+        });
+    }
+
+    private void showEmployeeSelectionDialog() {
+        if (allEmployees.isEmpty()) {
+            Toast.makeText(requireContext(), "Đang tải danh sách nhân viên...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] employeeNames = new String[allEmployees.size()];
+        boolean[] checkedItems = new boolean[allEmployees.size()];
+
+        for (int i = 0; i < allEmployees.size(); i++) {
+            employeeNames[i] = allEmployees.get(i).getName();
+            checkedItems[i] = isEmployeeSelected(allEmployees.get(i).getId());
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Chọn nhân viên")
+                .setMultiChoiceItems(employeeNames, checkedItems, (dialog, which, isChecked) -> {
+                    Employee emp = allEmployees.get(which);
+                    if (isChecked) {
+                        if (!isEmployeeSelected(emp.getId())) {
+                            showPositionSelectionDialog(emp);
+                        }
+                    } else {
+                        removeEmployeeAssignment(emp.getId());
+                        updateSelectedEmployeesText();
+                    }
+                })
+                .setPositiveButton("Xác nhận", (dialog, which) -> updateSelectedEmployeesText())
+                .show();
+    }
+
+    private boolean isEmployeeSelected(String id) {
+        for (WorkShift.EmployeeAssignment a : selectedAssignments) {
+            if (a.getEmployeeId().equals(id)) return true;
+        }
+        return false;
+    }
+
+    private void removeEmployeeAssignment(String id) {
+        selectedAssignments.removeIf(a -> a.getEmployeeId().equals(id));
+    }
+
+    private void showPositionSelectionDialog(Employee emp) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Chọn vị trí cho " + emp.getName())
+                .setItems(positionOptions, (dialog, which) -> {
+                    selectedAssignments.add(new WorkShift.EmployeeAssignment(emp.getId(), emp.getName(), positionOptions[which]));
+                    updateSelectedEmployeesText();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void updateSelectedEmployeesText() {
+        if (selectedAssignments.isEmpty()) {
+            binding.tvSelectedEmployees.setText("Nhấn để chọn nhân viên");
+        } else {
+            List<String> displayList = new ArrayList<>();
+            for (WorkShift.EmployeeAssignment a : selectedAssignments) {
+                displayList.add(a.getEmployeeName() + " (" + a.getPosition() + ")");
+            }
+            binding.tvSelectedEmployees.setText(String.join(", ", displayList));
+        }
     }
 
     private void populateData() {
         binding.tvDob.setText(currentShift.getDate());
-        binding.etStartTime.setText(currentShift.getStartTime());
-        binding.etEndTime.setText(currentShift.getEndTime());
+        selectedAssignments = new ArrayList<>(currentShift.getEmployeeAssignments());
+        updateSelectedEmployeesText();
         
-        // Set spinner selections based on currentShift data
-        ArrayAdapter<String> empAdapter = (ArrayAdapter<String>) binding.spinnerEmployee.getAdapter();
-        int empPos = empAdapter.getPosition(currentShift.getEmployeeName());
-        if (empPos >= 0) binding.spinnerEmployee.setSelection(empPos);
-
-        ArrayAdapter<String> posAdapter = (ArrayAdapter<String>) binding.spinnerPosition.getAdapter();
-        int posIdx = posAdapter.getPosition(currentShift.getPosition());
-        if (posIdx >= 0) binding.spinnerPosition.setSelection(posIdx);
+        String shiftTime = currentShift.getStartTime() + " - " + currentShift.getEndTime();
+        for (int i = 0; i < shiftOptions.length; i++) {
+            if (shiftOptions[i].equals(shiftTime)) {
+                binding.spinnerShift.setSelection(i);
+                break;
+            }
+        }
     }
 
     private void showDatePicker() {
@@ -103,39 +202,31 @@ public class WorkShiftDetailFragment extends Fragment {
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
     }
 
-    private void showTimePicker(boolean isStart) {
-        final Calendar c = Calendar.getInstance();
-        new TimePickerDialog(requireContext(), (view, hour, minute) -> {
-            String time = String.format("%02d:%02d", hour, minute);
-            if (isStart) binding.etStartTime.setText(time);
-            else binding.etEndTime.setText(time);
-        }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show();
-    }
-
     private void saveShift() {
-        String employeeName = binding.spinnerEmployee.getSelectedItem().toString();
         String date = binding.tvDob.getText().toString();
-        String startTime = binding.etStartTime.getText().toString();
-        String endTime = binding.etEndTime.getText().toString();
-        String position = binding.spinnerPosition.getSelectedItem().toString();
+        String shiftTime = binding.spinnerShift.getSelectedItem().toString();
 
-        if (date.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
-            Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+        if (date.isEmpty() || selectedAssignments.isEmpty()) {
+            Toast.makeText(requireContext(), "Vui lòng chọn ngày và ít nhất 1 nhân viên", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        String[] times = shiftTime.split(" - ");
+        String startTime = times[0];
+        String endTime = times[1];
 
         WorkShift shift = currentShift;
         if (shift == null) {
             shift = new WorkShift();
-            shift.setId(UUID.randomUUID().toString());
+            shift.setId(null);
         }
 
-        shift.setEmployeeName(employeeName);
-        shift.setEmployeeId("EMP01"); // Mock ID
+        shift.setEmployeeAssignments(selectedAssignments);
+        shift.setEmployeeName("Nhiều nhân viên");
         shift.setDate(date);
         shift.setStartTime(startTime);
         shift.setEndTime(endTime);
-        shift.setPosition(position);
+        shift.setPosition("Nhiều vị trí");
         shift.setSent(false);
 
         if (currentShift == null) {

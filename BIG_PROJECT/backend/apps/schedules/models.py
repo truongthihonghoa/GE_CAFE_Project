@@ -12,14 +12,24 @@ class LichLamViec(models.Model):
     ma_chi_nhanh = models.ForeignKey(
         'branches.ChiNhanh',
         on_delete=models.CASCADE,
-        default=1,
+        default='CN01',
         related_name='lich_lam_viec'
     )
-    ma_nv = models.ForeignKey(
+    # Nhiều nhân viên, mỗi người có 1 vị trí riêng thông qua bảng ChiTietLichLamViec
+    ma_nv = models.ManyToManyField(
         'employees.NhanVien',
-        on_delete=models.CASCADE,
+        through='ChiTietLichLamViec',
         related_name='lich_lam_viec'
     )
+
+    class Meta:
+        verbose_name = "Lịch làm việc"
+        verbose_name_plural = "Lịch làm việc"
+
+class ChiTietLichLamViec(models.Model):
+    ma_llv = models.ForeignKey(LichLamViec, on_delete=models.CASCADE)
+    ma_nv = models.ForeignKey('employees.NhanVien', on_delete=models.CASCADE)
+    vi_tri = models.CharField(max_length=50, verbose_name="Vị trí làm việc")
 
     class Meta:
         unique_together = ('ma_llv', 'ma_nv')

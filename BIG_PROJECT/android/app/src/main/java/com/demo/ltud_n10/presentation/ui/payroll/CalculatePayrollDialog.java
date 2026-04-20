@@ -1,33 +1,43 @@
 package com.demo.ltud_n10.presentation.ui.payroll;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.demo.ltud_n10.core.Resource;
 import com.demo.ltud_n10.databinding.DialogCalculatePayrollBinding;
-import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.repository.EmployeeRepository;
 import com.demo.ltud_n10.domain.repository.PayrollRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class CalculatePayrollDialog extends Dialog {
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
+public class CalculatePayrollDialog extends DialogFragment {
 
     private DialogCalculatePayrollBinding binding;
-    private final EmployeeRepository employeeRepository;
-    private final PayrollRepository payrollRepository;
-    private final String month;
-    private final String year;
+    
+    @Inject
+    EmployeeRepository employeeRepository;
+    
+    @Inject
+    PayrollRepository payrollRepository;
+    
+    private int month;
+    private int year;
     private OnCalculateSuccessListener listener;
     private EmployeeSalarySelectAdapter adapter;
 
@@ -35,31 +45,31 @@ public class CalculatePayrollDialog extends Dialog {
         void onSuccess();
     }
 
-    public CalculatePayrollDialog(@NonNull Context context, 
-                                  EmployeeRepository employeeRepository,
-                                  PayrollRepository payrollRepository,
-                                  String month, String year,
-                                  OnCalculateSuccessListener listener) {
-        super(context);
-        this.employeeRepository = employeeRepository;
-        this.payrollRepository = payrollRepository;
+    public CalculatePayrollDialog() {}
+
+    public CalculatePayrollDialog(int month, int year) {
         this.month = month;
         this.year = year;
+    }
+
+    public void setOnCalculateSuccessListener(OnCalculateSuccessListener listener) {
         this.listener = listener;
     }
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = DialogCalculatePayrollBinding.inflate(LayoutInflater.from(getContext()));
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(binding.getRoot());
-
-        if (getWindow() != null) {
-            getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = DialogCalculatePayrollBinding.inflate(inflater, container, false);
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
+        return binding.getRoot();
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         setupUI();
         loadEmployees();
     }
@@ -85,23 +95,43 @@ public class CalculatePayrollDialog extends Dialog {
                 return;
             }
             
-            payrollRepository.calculatePayroll(month, year, selectedIds).observeForever(resource -> {
-                if (resource != null && resource.data != null) {
+            binding.btnCalculate.setEnabled(false);
+            binding.btnCalculate.setText("Đang xử lý...");
+            
+            payrollRepository.calculatePayroll(String.valueOf(month), String.valueOf(year), selectedIds).observe(getViewLifecycleOwner(), resource -> {
+                if (resource.status == Resource.Status.SUCCESS) {
                     Toast.makeText(getContext(), "Tính lương thành công!", Toast.LENGTH_SHORT).show();
                     if (listener != null) listener.onSuccess();
                     dismiss();
+                } else if (resource.status == Resource.Status.ERROR) {
+                    Toast.makeText(getContext(), resource.message, Toast.LENGTH_SHORT).show();
+                    binding.btnCalculate.setEnabled(true);
+                    binding.btnCalculate.setText("Bắt đầu tính lương");
                 }
             });
         });
     }
 
     private void loadEmployees() {
-        employeeRepository.getEmployees().observeForever(resource -> {
-            if (resource != null && resource.data != null) {
+        employeeRepository.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
                 adapter.setEmployees(resource.data);
-                // Mặc định chọn tất cả khi mới load
                 binding.cbSelectAll.setChecked(true);
             }
         });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

@@ -26,12 +26,20 @@ public class NetworkModule {
 
     @Provides
     @Singleton
-    public static OkHttpClient provideOkHttpClient() {
+    public static OkHttpClient provideOkHttpClient(com.demo.ltud_n10.data.local.SharedPrefsManager prefsManager) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         return new OkHttpClient.Builder()
                 .addInterceptor(loggingInterceptor)
+                .addInterceptor(chain -> {
+                    String token = prefsManager.getToken();
+                    okhttp3.Request.Builder builder = chain.request().newBuilder();
+                    if (token != null) {
+                        builder.addHeader("Authorization", "Token " + token);
+                    }
+                    return chain.proceed(builder.build());
+                })
                 .build();
     }
 
@@ -39,9 +47,15 @@ public class NetworkModule {
     @Singleton
     public static Retrofit provideRetrofit(OkHttpClient okHttpClient, Gson gson) {
         return new Retrofit.Builder()
-                .baseUrl("https://api.example.com/") // Placeholder URL
+                .baseUrl("http://10.0.2.2:8000/") // Local emulator address
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
+    }
+
+    @Provides
+    @Singleton
+    public static com.demo.ltud_n10.data.remote.ApiService provideApiService(Retrofit retrofit) {
+        return retrofit.create(com.demo.ltud_n10.data.remote.ApiService.class);
     }
 }

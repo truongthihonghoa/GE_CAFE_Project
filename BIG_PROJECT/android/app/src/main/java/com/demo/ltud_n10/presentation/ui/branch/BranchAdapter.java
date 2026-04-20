@@ -16,13 +16,15 @@ import java.util.List;
 public class BranchAdapter extends RecyclerView.Adapter<BranchAdapter.ViewHolder> {
 
     private List<Branch> items = new ArrayList<>();
-    private OnItemClickListener listener;
+    private OnBranchActionListener listener;
 
-    public interface OnItemClickListener {
-        void onItemClick(Branch branch);
+    public interface OnBranchActionListener {
+        void onView(Branch branch);
+        void onEdit(Branch branch);
+        void onDelete(Branch branch);
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener) {
+    public void setOnBranchActionListener(OnBranchActionListener listener) {
         this.listener = listener;
     }
 
@@ -60,22 +62,32 @@ public class BranchAdapter extends RecyclerView.Adapter<BranchAdapter.ViewHolder
         void bind(Branch branch) {
             binding.tvBranchName.setText(branch.getName());
             binding.tvAddress.setText(branch.getAddress());
-            binding.tvPhoneNumber.setText(branch.getPhoneNumber());
+            binding.tvManagerName.setText("Quản lý: " + (branch.getManagerName() != null ? branch.getManagerName() : "Chưa có"));
+            binding.tvStatusLabel.setText(branch.getStatus());
 
             if ("Ngưng hoạt động".equals(branch.getStatus())) {
-                binding.tvBranchName.setTextColor(Color.RED);
-                binding.tvAddress.setTextColor(Color.RED);
-                binding.tvPhoneNumber.setTextColor(Color.RED);
+                binding.tvStatusLabel.setBackgroundResource(com.demo.ltud_n10.R.drawable.bg_status_branch);
+                binding.tvStatusLabel.setTextColor(Color.parseColor("#721C24"));
             } else {
-                binding.tvBranchName.setTextColor(Color.parseColor("#64748B"));
-                binding.tvAddress.setTextColor(Color.parseColor("#1E293B"));
-                binding.tvPhoneNumber.setTextColor(Color.parseColor("#1B431C"));
+                binding.tvStatusLabel.setBackgroundResource(com.demo.ltud_n10.R.drawable.bg_status_branch);
+                binding.tvStatusLabel.setTextColor(Color.parseColor("#1B431C"));
             }
 
+            binding.ivView.setOnClickListener(v -> {
+                if (listener != null) listener.onView(branch);
+            });
+
+            binding.ivEdit.setOnClickListener(v -> {
+                if (listener != null) listener.onEdit(branch);
+            });
+
+            binding.ivDelete.setOnClickListener(v -> {
+                if (listener != null) listener.onDelete(branch);
+            });
+            
+            // Mặc định nhấn vào card là xem chi tiết
             binding.getRoot().setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onItemClick(branch);
-                }
+                if (listener != null) listener.onView(branch);
             });
         }
     }

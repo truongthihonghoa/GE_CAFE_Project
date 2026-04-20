@@ -14,5 +14,6 @@ public interface PayrollRepository {
     LiveData<Resource<Boolean>> approvePayrollDetail(String detailId);
     LiveData<Resource<Boolean>> rejectPayrollDetail(String detailId);
     LiveData<Resource<Boolean>> deletePayrollPeriod(String periodId);
+    LiveData<Resource<Boolean>> deletePayrollDetail(String detailId);
     LiveData<Resource<Boolean>> approvePayrollPeriod(String periodId);
 }

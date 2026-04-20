@@ -13,6 +13,10 @@ class ChiNhanh(models.Model):
         null=True,
         blank=True
     )
+    trang_thai = models.CharField(
+        max_length=50,
+        default='Đang hoạt động'
+    )
 
     def save(self, *args, **kwargs):
         if not self.ma_chi_nhanh:

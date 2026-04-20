@@ -22,6 +22,7 @@ public class PayrollDetailAdapter extends RecyclerView.Adapter<PayrollDetailAdap
         void onDelete(PayrollDetail detail);
         void onApprove(PayrollDetail detail);
         void onReject(PayrollDetail detail);
+        void onView(PayrollDetail detail);
     }
 
     public void setOnItemActionListener(OnItemActionListener listener) {
@@ -86,6 +87,10 @@ public class PayrollDetailAdapter extends RecyclerView.Adapter<PayrollDetailAdap
             });
             binding.btnReject.setOnClickListener(v -> {
                 if (listener != null) listener.onReject(detail);
+            });
+
+            binding.getRoot().setOnClickListener(v -> {
+                if (listener != null) listener.onView(detail);
             });
 
             // If already approved, hide or change UI

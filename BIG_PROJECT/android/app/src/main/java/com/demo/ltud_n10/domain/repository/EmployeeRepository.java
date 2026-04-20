@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface EmployeeRepository {
     LiveData<Resource<List<Employee>>> getEmployees();
+    LiveData<Resource<List<com.demo.ltud_n10.data.remote.dto.BranchDto>>> getBranches();
     LiveData<Resource<Employee>> addEmployee(Employee employee);
     LiveData<Resource<Employee>> updateEmployee(Employee employee);
     LiveData<Resource<Boolean>> deleteEmployee(String employeeId);

@@ -17,15 +17,17 @@ import javax.inject.Singleton;
 @Singleton
 public class AuthRepositoryImpl implements AuthRepository {
 
+    private final com.demo.ltud_n10.data.remote.ApiService apiService;
     private final SharedPrefsManager prefsManager;
     private final MutableLiveData<User> currentUser = new MutableLiveData<>(null);
 
     @Inject
-    public AuthRepositoryImpl(SharedPrefsManager prefsManager) {
+    public AuthRepositoryImpl(SharedPrefsManager prefsManager, com.demo.ltud_n10.data.remote.ApiService apiService) {
         this.prefsManager = prefsManager;
+        this.apiService = apiService;
         String role = prefsManager.getUserRole();
         if (role != null) {
-            String name = "ADMIN".equals(role) ? "Admin User" : "Lê Văn C";
+            String name = "ADMIN".equals(role) ? "Admin User" : "Nhân viên";
             currentUser.setValue(new User("0", "saved@user.com", name, role));
         }
     }
@@ -35,23 +37,29 @@ public class AuthRepositoryImpl implements AuthRepository {
         MutableLiveData<Resource<User>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if ("owner@coffee.com".equals(email) && "password123".equals(password)) {
-                User user = new User("1", email, "Admin User", "ADMIN");
-                prefsManager.saveToken("mock_admin_token");
-                prefsManager.saveUserRole("ADMIN");
-                currentUser.setValue(user);
-                result.setValue(Resource.success(user));
-            } else if ("staff@coffee.com".equals(email) && "password123".equals(password)) {
-                User user = new User("2", email, "Lê Văn C", "EMPLOYEE");
-                prefsManager.saveToken("mock_employee_token");
-                prefsManager.saveUserRole("EMPLOYEE");
-                currentUser.setValue(user);
-                result.setValue(Resource.success(user));
-            } else {
-                result.setValue(Resource.error("Email hoặc mật khẩu không đúng", null));
+        com.demo.ltud_n10.data.remote.dto.LoginRequest loginRequest = new com.demo.ltud_n10.data.remote.dto.LoginRequest(email, password);
+        apiService.login(loginRequest).enqueue(new retrofit2.Callback<com.demo.ltud_n10.data.remote.dto.LoginResponse>() {
+            @Override
+            public void onResponse(retrofit2.Call<com.demo.ltud_n10.data.remote.dto.LoginResponse> call, retrofit2.Response<com.demo.ltud_n10.data.remote.dto.LoginResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String token = response.body().getToken();
+                    prefsManager.saveToken(token);
+                    String role = response.body().getRole();
+                    prefsManager.saveUserRole(role);
+                    
+                    User user = new User("1", email, role.equals("ADMIN") ? "Admin User" : "Nhân viên", role);
+                    currentUser.setValue(user);
+                    result.setValue(Resource.success(user));
+                } else {
+                    result.setValue(Resource.error("Đăng nhập thất bại: " + response.code(), null));
+                }
             }
-        }, 1000);
+
+            @Override
+            public void onFailure(retrofit2.Call<com.demo.ltud_n10.data.remote.dto.LoginResponse> call, Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            }
+        });
 
         return result;
     }
