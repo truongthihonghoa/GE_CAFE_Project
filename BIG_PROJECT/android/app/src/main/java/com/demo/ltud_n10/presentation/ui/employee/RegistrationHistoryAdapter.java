@@ -17,6 +17,16 @@ import java.util.List;
 public class RegistrationHistoryAdapter extends RecyclerView.Adapter<RegistrationHistoryAdapter.ViewHolder> {
 
     private List<WorkShift> items = new ArrayList<>();
+    private OnActionClickListener listener;
+
+    public interface OnActionClickListener {
+        void onEdit(WorkShift shift);
+        void onDelete(WorkShift shift);
+    }
+
+    public void setOnActionClickListener(OnActionClickListener listener) {
+        this.listener = listener;
+    }
 
     public void setItems(List<WorkShift> items) {
         this.items = items;
@@ -55,22 +65,41 @@ public class RegistrationHistoryAdapter extends RecyclerView.Adapter<Registratio
             if ("Nghỉ phép".equals(shift.getType())) {
                 binding.tvShiftDetail.setText("Xin nghỉ phép");
                 binding.tvReason.setVisibility(View.VISIBLE);
-                binding.tvReason.setText(shift.getPosition()); // Note is in position field for mock
+                binding.tvReason.setText(shift.getPosition()); 
             } else {
                 binding.tvShiftDetail.setText("Ca " + shift.getPosition() + " • " + shift.getStartTime() + " - " + shift.getEndTime());
                 binding.tvReason.setVisibility(View.GONE);
             }
 
             binding.tvStatus.setText(shift.getStatus());
+            
+            // Hiển thị thời gian gửi thực tế
+            if (shift.getSentTime() != null) {
+                binding.tvSentTime.setText("Gửi lúc: " + shift.getSentTime());
+            }
+
+            // Show actions only for "Chờ duyệt"
             if ("Chờ duyệt".equals(shift.getStatus())) {
                 binding.cvStatus.setCardBackgroundColor(Color.parseColor("#FFF3CD"));
                 binding.tvStatus.setTextColor(Color.parseColor("#856404"));
-            } else if ("Đã duyệt".equals(shift.getStatus())) {
-                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#E8F8EF"));
-                binding.tvStatus.setTextColor(Color.parseColor("#2ECC71"));
+                binding.layoutActions.setVisibility(View.VISIBLE);
+                
+                binding.btnEdit.setOnClickListener(v -> {
+                    if (listener != null) listener.onEdit(shift);
+                });
+                
+                binding.btnDelete.setOnClickListener(v -> {
+                    if (listener != null) listener.onDelete(shift);
+                });
             } else {
-                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#F8D7DA"));
-                binding.tvStatus.setTextColor(Color.parseColor("#721C24"));
+                binding.layoutActions.setVisibility(View.GONE);
+                if ("Đã duyệt".equals(shift.getStatus())) {
+                    binding.cvStatus.setCardBackgroundColor(Color.parseColor("#E8F8EF"));
+                    binding.tvStatus.setTextColor(Color.parseColor("#2ECC71"));
+                } else {
+                    binding.cvStatus.setCardBackgroundColor(Color.parseColor("#F8D7DA"));
+                    binding.tvStatus.setTextColor(Color.parseColor("#721C24"));
+                }
             }
         }
     }
