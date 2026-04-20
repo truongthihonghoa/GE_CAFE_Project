@@ -1,7 +1,10 @@
-from django.urls import path
-
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
+
+router = DefaultRouter()
+router.register(r'api', views.ScheduleAPIViewSet, basename='schedule-api')
 
 urlpatterns = [
     path('', views.schedule_list_view, name='schedule_list'),
@@ -9,5 +12,7 @@ urlpatterns = [
     path('edit/<str:schedule_id>/', views.schedule_edit_view, name='schedule_edit'),
     path('delete/<str:schedule_id>/', views.schedule_delete_view, name='schedule_delete'),
     path('detail/<str:schedule_id>/', views.schedule_detail_view, name='schedule_detail'),
-    path('send-notification/', views.schedule_send_notification_view, name='schedule_send_notification'),
+    path('send-notification/', views.schedule_send_notification_view, name='schedule_send_notification'),\
+
+    path('data/', include(router.urls)),
 ]
