@@ -18,6 +18,7 @@ import java.util.List;
 public class DayScheduleAdapter extends RecyclerView.Adapter<DayScheduleAdapter.ViewHolder> {
 
     private List<DaySchedule> daySchedules = new ArrayList<>();
+    private List<String> selectedIds = new ArrayList<>();
     private final WorkShiftAdapter.OnShiftClickListener shiftClickListener;
 
     public DayScheduleAdapter(WorkShiftAdapter.OnShiftClickListener shiftClickListener) {
@@ -26,6 +27,11 @@ public class DayScheduleAdapter extends RecyclerView.Adapter<DayScheduleAdapter.
 
     public void setDaySchedules(List<DaySchedule> daySchedules) {
         this.daySchedules = daySchedules;
+        notifyDataSetChanged();
+    }
+
+    public void setSelectedIds(List<String> selectedIds) {
+        this.selectedIds = selectedIds;
         notifyDataSetChanged();
     }
 
@@ -52,6 +58,7 @@ public class DayScheduleAdapter extends RecyclerView.Adapter<DayScheduleAdapter.
             WorkShiftAdapter adapter = new WorkShiftAdapter(shiftClickListener);
             holder.rvShifts.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
             holder.rvShifts.setAdapter(adapter);
+            adapter.setSelectedIds(selectedIds);
             adapter.submitList(day.getShifts());
         }
     }

@@ -1,22 +1,28 @@
 package com.demo.ltud_n10.presentation.ui.employee;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.databinding.FragmentEmployeeDetailBinding;
 import com.demo.ltud_n10.domain.model.Employee;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.Calendar;
 
@@ -55,7 +61,7 @@ public class EmployeeDetailFragment extends Fragment {
 
     private void setupUI() {
         binding.tvTitle.setText(title);
-        binding.btnBack.setOnClickListener(v -> handleBackAction());
+        binding.btnBack.setOnClickListener(v -> showCancelConfirmDialog());
 
         // Setup Gender Spinner
         String[] genders = {"Nam", "Nữ"};
@@ -72,7 +78,7 @@ public class EmployeeDetailFragment extends Fragment {
         binding.btnDatePicker.setOnClickListener(v -> showDatePicker());
 
         binding.btnSave.setOnClickListener(v -> saveEmployee());
-        binding.btnCancel.setOnClickListener(v -> handleBackAction());
+        binding.btnCancel.setOnClickListener(v -> showCancelConfirmDialog());
         
         if (currentEmployee != null) {
             binding.btnSave.setText("Chỉnh sửa");
@@ -111,6 +117,30 @@ public class EmployeeDetailFragment extends Fragment {
         datePickerDialog.show();
     }
 
+    private void showCancelConfirmDialog() {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_confirm_cancel);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        MaterialButton btnNo = dialog.findViewById(R.id.btnDialogCancel);
+        MaterialButton btnYes = dialog.findViewById(R.id.btnDialogConfirm);
+
+        btnNo.setOnClickListener(v -> dialog.dismiss());
+        
+        btnYes.setOnClickListener(v -> {
+            dialog.dismiss();
+            Navigation.findNavController(requireView()).navigateUp();
+        });
+
+        dialog.show();
+    }
+
     private void saveEmployee() {
         String name = binding.etName.getText().toString();
         String cccd = binding.etCccd.getText().toString();
@@ -138,7 +168,8 @@ public class EmployeeDetailFragment extends Fragment {
         if (currentEmployee == null) {
             viewModel.addEmployee(employee).observe(getViewLifecycleOwner(), resource -> {
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                    showSuccessDialog("Thêm nhân viên thành công");
+                    Toast.makeText(requireContext(), "Thêm nhân viên thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
                 }
             });
         } else {
@@ -149,23 +180,6 @@ public class EmployeeDetailFragment extends Fragment {
                 }
             });
         }
-    }
-
-    private void showSuccessDialog(String msg) {
-        // Simple Toast for now, can be replaced with custom dialog if needed
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
-        Navigation.findNavController(requireView()).popBackStack();
-    }
-
-    private void handleBackAction() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("XÁC NHẬN HỦY")
-                .setMessage("Bạn có thông tin thay đổi chưa được lưu, xác nhận hủy?")
-                .setPositiveButton("Đồng ý", (dialog, which) -> {
-                    Navigation.findNavController(requireView()).popBackStack();
-                })
-                .setNegativeButton("Không", null)
-                .show();
     }
 
     @Override

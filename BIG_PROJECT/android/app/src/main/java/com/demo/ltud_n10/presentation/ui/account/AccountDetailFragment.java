@@ -1,10 +1,14 @@
 package com.demo.ltud_n10.presentation.ui.account;
 
+import android.app.Dialog;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -13,9 +17,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.databinding.FragmentAccountDetailBinding;
 import com.demo.ltud_n10.domain.model.User;
 import com.demo.ltud_n10.domain.repository.UserRepository;
+import com.google.android.material.button.MaterialButton;
 
 import javax.inject.Inject;
 
@@ -27,7 +33,6 @@ public class AccountDetailFragment extends Fragment {
     private FragmentAccountDetailBinding binding;
     private User user;
     private String title;
-    private boolean isEditMode = false;
 
     @Inject
     UserRepository userRepository;
@@ -56,20 +61,18 @@ public class AccountDetailFragment extends Fragment {
             setupAddMode();
         }
 
-        binding.ivBack.setOnClickListener(v -> handleCancel());
-        binding.btnCancel.setOnClickListener(v -> handleCancel());
+        binding.ivBack.setOnClickListener(v -> showCancelConfirmDialog());
+        binding.btnCancel.setOnClickListener(v -> showCancelConfirmDialog());
         binding.cvRole.setOnClickListener(v -> showRoleDialog());
         binding.cvStatus.setOnClickListener(v -> showStatusDialog());
     }
 
     private void setupAddMode() {
-        isEditMode = true;
         binding.layoutStatus.setVisibility(View.GONE);
         binding.btnSave.setOnClickListener(v -> handleSave());
     }
 
     private void setupEditMode() {
-        isEditMode = true;
         binding.etUsername.setText(user.getUsername());
         binding.etPassword.setText(user.getPassword());
         binding.etName.setText(user.getName());
@@ -126,6 +129,30 @@ public class AccountDetailFragment extends Fragment {
                 .show();
     }
 
+    private void showCancelConfirmDialog() {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_confirm_cancel);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        MaterialButton btnNo = dialog.findViewById(R.id.btnDialogCancel);
+        MaterialButton btnYes = dialog.findViewById(R.id.btnDialogConfirm);
+
+        btnNo.setOnClickListener(v -> dialog.dismiss());
+        
+        btnYes.setOnClickListener(v -> {
+            dialog.dismiss();
+            Navigation.findNavController(requireView()).navigateUp();
+        });
+
+        dialog.show();
+    }
+
     private void handleSave() {
         if (!validate()) return;
 
@@ -161,14 +188,6 @@ public class AccountDetailFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigateUp();
             }
         });
-    }
-
-    private void handleCancel() {
-        new AlertDialog.Builder(requireContext())
-                .setMessage("Bạn có thông tin thay đổi chưa được lưu, xác nhận hủy?")
-                .setPositiveButton("Đồng ý", (d, w) -> Navigation.findNavController(requireView()).navigateUp())
-                .setNegativeButton("Không", null)
-                .show();
     }
 
     private boolean validate() {

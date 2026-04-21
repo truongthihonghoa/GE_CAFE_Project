@@ -1,17 +1,22 @@
 package com.demo.ltud_n10.presentation.ui.schedule;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -21,6 +26,7 @@ import com.demo.ltud_n10.MainActivity;
 import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.databinding.FragmentScheduleListBinding;
 import com.demo.ltud_n10.domain.model.WorkShift;
+import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,7 +73,9 @@ public class WorkShiftListFragment extends Fragment {
         Calendar end = (Calendar) currentWeekStart.clone();
         end.add(Calendar.DAY_OF_YEAR, 6);
         String label = dateFormat.format(currentWeekStart.getTime()) + " - " + dateFormat.format(end.getTime()) + ", " + end.get(Calendar.YEAR);
-        binding.tvWeekRange.setText(label);
+        if (binding.tvWeekRange != null) {
+            binding.tvWeekRange.setText(label);
+        }
     }
 
     private void setupUI() {
@@ -79,7 +87,7 @@ public class WorkShiftListFragment extends Fragment {
 
         binding.btnCreateShift.setOnClickListener(v -> {
             Bundle args = new Bundle();
-            args.putString("title", "Tạo lịch làm việc");
+            args.putString("title", "Tạo lịch làm việc mới");
             Navigation.findNavController(v).navigate(R.id.action_scheduleListFragment_to_scheduleDetailFragment, args);
         });
 
@@ -95,7 +103,9 @@ public class WorkShiftListFragment extends Fragment {
             loadData();
         });
 
-        binding.tvWeekRange.setOnClickListener(v -> showDatePicker());
+        if (binding.tvWeekRange != null) {
+            binding.tvWeekRange.setOnClickListener(v -> showDatePicker());
+        }
 
         // Setup Spinner
         String[] employees = {"Tất cả nhân viên", "Lê Văn C", "Phạm Thị D", "Lê Văn D"};
@@ -103,7 +113,9 @@ public class WorkShiftListFragment extends Fragment {
         empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerEmployee.setAdapter(empAdapter);
 
-        binding.btnSend.setEnabled(false); // Initially disabled
+        // Initial button state
+        updateSendButtonState(false);
+
         binding.btnSend.setOnClickListener(v -> {
             viewModel.sendNotifications().observe(getViewLifecycleOwner(), resource -> {
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
@@ -116,7 +128,10 @@ public class WorkShiftListFragment extends Fragment {
             });
         });
 
-        binding.btnCancel.setOnClickListener(v -> viewModel.clearSelections());
+        binding.btnCancel.setOnClickListener(v -> {
+            viewModel.clearSelections();
+            Toast.makeText(requireContext(), "Đã huỷ chọn", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void showDatePicker() {
@@ -133,9 +148,11 @@ public class WorkShiftListFragment extends Fragment {
         adapter = new DayScheduleAdapter(new WorkShiftAdapter.OnShiftClickListener() {
             @Override
             public void onShiftClick(WorkShift shift) {
+                // Navigate to view details directly on row click
                 Bundle args = new Bundle();
                 args.putSerializable("shift", shift);
                 args.putString("title", "Xem chi tiết ca làm việc");
+                args.putBoolean("isViewOnly", true);
                 Navigation.findNavController(requireView()).navigate(R.id.action_scheduleListFragment_to_scheduleDetailFragment, args);
             }
 
@@ -145,8 +162,12 @@ public class WorkShiftListFragment extends Fragment {
             }
 
             @Override
-            public void onToggleSelect(WorkShift shift) {
-                viewModel.toggleShiftSelection(shift.getId());
+            public void onToggleSelect(String shiftId, boolean isChecked) {
+                if (isChecked) {
+                    viewModel.addShiftToSelection(shiftId);
+                } else {
+                    viewModel.removeShiftFromSelection(shiftId);
+                }
             }
         });
         binding.rvSchedule.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -154,27 +175,32 @@ public class WorkShiftListFragment extends Fragment {
     }
 
     private void observeViewModel() {
-        viewModel.getSelectedShiftIds().observe(getViewLifecycleOwner(), ids -> {
-            boolean hasUnsent = false;
-            if (ids != null && !ids.isEmpty()) {
-                for (WorkShift shift : allShifts) {
-                    if (ids.contains(shift.getId()) && !shift.isSent()) {
-                        hasUnsent = true;
-                        break;
-                    }
-                }
+        viewModel.getWorkShifts().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null) return;
+            if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                allShifts = resource.data;
+                adapter.setDaySchedules(groupShiftsByDay(allShifts));
             }
-            updateSendButtonState(hasUnsent);
         });
+
+        viewModel.getSelectedShiftIds().observe(getViewLifecycleOwner(), ids -> {
+            updateSendButtonState(!ids.isEmpty());
+            if (adapter != null) {
+                adapter.setSelectedIds(ids);
+            }
+        });
+
         loadData();
     }
 
     private void updateSendButtonState(boolean active) {
         binding.btnSend.setEnabled(active);
         if (active) {
-            binding.btnSend.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.primary_green));
+            binding.btnSend.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1B431C")));
+            binding.btnSend.setAlpha(1.0f);
         } else {
-            binding.btnSend.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.disabled_green));
+            binding.btnSend.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#B2CBB9")));
+            binding.btnSend.setAlpha(0.6f);
         }
     }
 
@@ -210,12 +236,16 @@ public class WorkShiftListFragment extends Fragment {
     }
 
     private void showOptionsDialog(WorkShift shift) {
-        String[] options = {"Chỉnh sửa", "Xóa"};
+        String[] options = {"Xem chi tiết", "Chỉnh sửa", "Xóa"};
         new AlertDialog.Builder(requireContext())
                 .setItems(options, (dialog, which) -> {
+                    Bundle args = new Bundle();
+                    args.putSerializable("shift", shift);
                     if (which == 0) {
-                        Bundle args = new Bundle();
-                        args.putSerializable("shift", shift);
+                        args.putString("title", "Xem chi tiết ca làm việc");
+                        args.putBoolean("isViewOnly", true);
+                        Navigation.findNavController(requireView()).navigate(R.id.action_scheduleListFragment_to_scheduleDetailFragment, args);
+                    } else if (which == 1) {
                         args.putString("title", "Chỉnh sửa lịch làm việc");
                         Navigation.findNavController(requireView()).navigate(R.id.action_scheduleListFragment_to_scheduleDetailFragment, args);
                     } else {
@@ -225,19 +255,32 @@ public class WorkShiftListFragment extends Fragment {
     }
 
     private void showDeleteDialog(WorkShift shift) {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("XÁC NHẬN XÓA")
-                .setMessage("Bạn có chắc chắn muốn xoá ca làm?")
-                .setPositiveButton("Đồng ý", (d, w) -> {
-                    viewModel.deleteWorkShift(shift.getId()).observe(getViewLifecycleOwner(), resource -> {
-                        if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                            Toast.makeText(requireContext(), "Xóa lịch làm việc thành công", Toast.LENGTH_SHORT).show();
-                            loadData();
-                        }
-                    });
-                })
-                .setNegativeButton("Không", null)
-                .show();
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_confirm_delete);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        MaterialButton btnNo = dialog.findViewById(R.id.btnDialogCancel);
+        MaterialButton btnYes = dialog.findViewById(R.id.btnDialogConfirm);
+
+        btnNo.setOnClickListener(v -> dialog.dismiss());
+
+        btnYes.setOnClickListener(v -> {
+            dialog.dismiss();
+            viewModel.deleteWorkShift(shift.getId()).observe(getViewLifecycleOwner(), resource -> {
+                if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                    Toast.makeText(requireContext(), "Xóa lịch làm việc thành công", Toast.LENGTH_SHORT).show();
+                    loadData();
+                }
+            });
+        });
+
+        dialog.show();
     }
 
     @Override

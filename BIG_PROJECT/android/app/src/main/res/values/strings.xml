@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">LTUD_N10</string>
+    <string name="coffee_hrm">Coffee HRM</string>
+    <string name="schedule_title">Lịch làm việc</string>
+    <string name="schedule_subtitle">Quản lý lịch làm việc nhân viên</string>
+    <string name="week_schedule">Lịch tuần</string>
+    <string name="create_shift">+ Tạo lịch làm việc</string>
+    <string name="week_range_sample">9 tháng 2 - 15 tháng 2, 2026</string>
+    <string name="cancel">Huỷ</string>
+    <string name="send_notification">Gửi thông báo</string>
+    <string name="employee_name_sample">Lê Văn C</string>
+    <string name="shift_time_sample">08:00 - 16:00</string>
+    <string name="status_sent">Đã gửi</string>
 </resources>

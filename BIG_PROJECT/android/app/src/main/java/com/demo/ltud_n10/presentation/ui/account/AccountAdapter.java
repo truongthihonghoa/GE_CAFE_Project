@@ -21,6 +21,7 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.ViewHold
     public interface OnItemClickListener {
         void onEditClick(User user);
         void onItemClick(User user);
+        void onChangePasswordClick(User user);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -74,6 +75,10 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.ViewHold
 
             binding.ivEdit.setOnClickListener(v -> {
                 if (listener != null) listener.onEditClick(user);
+            });
+
+            binding.ivChangePassword.setOnClickListener(v -> {
+                if (listener != null) listener.onChangePasswordClick(user);
             });
 
             binding.getRoot().setOnClickListener(v -> {

@@ -1,8 +1,5 @@
 package com.demo.ltud_n10.data.repository;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -23,24 +20,21 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
 
     @Inject
     public WorkShiftRepositoryImpl() {
-        // Mock data for employee "Lê Văn C" (NV001) across multiple weeks in March 2026
+        // Mock data matching the UI screenshot (Feb 2025)
+        // Week: 10 Feb - 16 Feb, 2025
+
+        // Tuesday (Th 3) - 11/02/2025
+        shiftList.add(new WorkShift("S1", "NV001", "Lê Văn C", "11/02/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
+        shiftList.add(new WorkShift("S2", "NV002", "Phạm Thị D", "11/02/2026", "14:00", "22:00", "Phục vụ", false, "Đã duyệt", "Đăng ký ca"));
+
+        // Wednesday (Th 4) - 12/02/2025
+        shiftList.add(new WorkShift("S3", "NV003", "Lê Văn D", "12/02/2026", "08:00", "16:00", "Giữ xe", true, "Đã duyệt", "Đăng ký ca"));
         
-        // Week 1: 2/3 - 8/3
-        shiftList.add(new WorkShift("S1", "NV001", "Lê Văn C", "02/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S2", "NV001", "Lê Văn C", "03/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S3", "NV001", "Lê Văn C", "05/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S4", "NV001", "Lê Văn C", "07/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
+        // Thursday (Th 5) - 13/02/2025
+        shiftList.add(new WorkShift("S4", "NV001", "Lê Văn C", "13/02/2026", "08:00", "16:00", "Pha chế", false, "Đã duyệt", "Đăng ký ca"));
 
-        // Week 2: 9/3 - 15/3
-        shiftList.add(new WorkShift("S5", "NV001", "Lê Văn C", "09/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S6", "NV001", "Lê Văn C", "11/03/2026", "14:00", "22:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-        shiftList.add(new WorkShift("S7", "NV001", "Lê Văn C", "13/03/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-
-        // Week 0: 23/2 - 1/3 (Previous period)
-        shiftList.add(new WorkShift("S0", "NV001", "Lê Văn C", "25/02/2026", "08:00", "16:00", "Pha chế", true, "Đã duyệt", "Đăng ký ca"));
-
-        // Other employees
-        shiftList.add(new WorkShift("S8", "NV002", "Phạm Thị D", "02/03/2026", "14:00", "22:00", "Phục vụ", true, "Đã duyệt", "Đăng ký ca"));
+        // Other mock data
+        shiftList.add(new WorkShift("S5", "NV004", "Trần Thị E", "14/02/2026", "08:00", "16:00", "Phục vụ", true, "Đã duyệt", "Đăng ký ca"));
     }
 
     @Override

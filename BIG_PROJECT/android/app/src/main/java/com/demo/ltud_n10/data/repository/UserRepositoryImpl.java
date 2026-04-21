@@ -26,7 +26,7 @@ public class UserRepositoryImpl implements UserRepository {
         // Mock data
         userList.add(new User("TK001", "owner@coffee.com", "password123", "Admin User", "ADMIN", "Đang hoạt động"));
         userList.add(new User("TK002", "staff@coffee.com", "password123", "Staff User", "EMPLOYEE", "Đang hoạt động"));
-        userList.add(new User("TK003", "levanc@coffee.com", "password123", "Lê Văn C", "EMPLOYEE", "Ngưng hoạt động"));
+        userList.add(new User("TK003", "staff@gmail.com", "password123", "Lê Văn C", "EMPLOYEE", "Đang hoạt động"));
     }
 
     @Override
