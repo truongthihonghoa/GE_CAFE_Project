@@ -55,18 +55,18 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-
-        'rest_framework.authentication.SessionAuthentication', # Thêm dòng này
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ],
-'DEFAULT_RENDERER_CLASSES': [
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',  # Thêm dòng này để có giao diện REST API
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ]
 }
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -143,21 +143,25 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-# settings.py
-# Cho phép Render gửi dữ liệu về mà không bị chặn bảo mật
-CSRF_TRUSTED_ORIGINS = ['https://thutao-api-deloy.onrender.com']
+
+# Cập nhật domain mới vào đây
+CSRF_TRUSTED_ORIGINS = [
+    'https://ge-cafe-project-1.onrender.com',
+    'https://ge-cafe-project-oru9.onrender.com',
+    'https://thutao-api-deloy.onrender.com'
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Nơi Render sẽ gom file CSS về
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media files (User uploaded files)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

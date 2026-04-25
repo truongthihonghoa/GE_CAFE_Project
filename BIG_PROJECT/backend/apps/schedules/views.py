@@ -5,13 +5,10 @@ from django.db import transaction
 from django.db.utils import OperationalError, ProgrammingError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django import forms
-from django.utils import timezone
-from django.core.exceptions import ValidationError
 
 # --- IMPORT MODELS ---
 from .models import LichLamViec
-from apps.employees.models import NhanVien
+from .models import NhanVien
 from rest_framework import viewsets
 from .serializers import ScheduleSerializer
 

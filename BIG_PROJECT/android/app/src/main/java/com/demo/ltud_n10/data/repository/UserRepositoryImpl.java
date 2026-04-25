@@ -1,12 +1,11 @@
 package com.demo.ltud_n10.data.repository;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.remote.AccountApiService;
+import com.demo.ltud_n10.data.remote.model.UserDto;
 import com.demo.ltud_n10.domain.model.User;
 import com.demo.ltud_n10.domain.repository.UserRepository;
 
@@ -16,78 +15,81 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 @Singleton
 public class UserRepositoryImpl implements UserRepository {
 
-    private final List<User> userList = new ArrayList<>();
+    private final AccountApiService apiService;
 
     @Inject
-    public UserRepositoryImpl() {
-        // Mock data
-        userList.add(new User("TK001", "owner@coffee.com", "password123", "Admin User", "ADMIN", "Đang hoạt động"));
-        userList.add(new User("TK002", "staff@coffee.com", "password123", "Staff User", "EMPLOYEE", "Đang hoạt động"));
-        userList.add(new User("TK003", "levanc@coffee.com", "password123", "Lê Văn C", "EMPLOYEE", "Ngưng hoạt động"));
+    public UserRepositoryImpl(AccountApiService apiService) {
+        this.apiService = apiService;
     }
 
     @Override
     public LiveData<Resource<List<User>>> getUsers() {
         MutableLiveData<Resource<List<User>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            result.setValue(Resource.success(new ArrayList<>(userList)));
-        }, 800);
+
+        apiService.getAccounts().enqueue(new Callback<List<UserDto>>() {
+            @Override
+            public void onResponse(Call<List<UserDto>> call, Response<List<UserDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<User> users = new ArrayList<>();
+                    for (UserDto dto : response.body()) {
+                        users.add(mapDtoToDomain(dto));
+                    }
+                    result.setValue(Resource.success(users));
+                } else {
+                    result.setValue(Resource.error("Lỗi khi tải danh sách tài khoản: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<UserDto>> call, Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối API tài khoản: " + t.getMessage(), null));
+            }
+        });
+
         return result;
+    }
+
+    private User mapDtoToDomain(UserDto dto) {
+        User user = new User();
+        user.setId(dto.getId());
+        user.setUsername(dto.getTenDangNhap());
+        user.setName(dto.getHoTen());
+        user.setStatus(dto.getTrangThai());
+        
+        // Map role
+        String vaiTro = dto.getVaiTro();
+        if ("Chủ".equals(vaiTro)) {
+            user.setRole("ADMIN");
+        } else {
+            user.setRole("EMPLOYEE");
+        }
+        
+        return user;
     }
 
     @Override
     public LiveData<Resource<User>> addUser(User user) {
-        MutableLiveData<Resource<User>> result = new MutableLiveData<>();
-        result.setValue(Resource.loading(null));
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            // Check username uniqueness
-            for (User u : userList) {
-                if (u.getUsername().equals(user.getUsername())) {
-                    result.setValue(Resource.error("Tên đăng nhập đã tồn tại", null));
-                    return;
-                }
-            }
-            user.setId("TK00" + (userList.size() + 1));
-            userList.add(user);
-            result.setValue(Resource.success(user));
-        }, 800);
-        return result;
+        // Tạm thời trả về thành công
+        return new MutableLiveData<>(Resource.success(user));
     }
 
     @Override
     public LiveData<Resource<User>> updateUser(User user) {
-        MutableLiveData<Resource<User>> result = new MutableLiveData<>();
-        result.setValue(Resource.loading(null));
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            for (int i = 0; i < userList.size(); i++) {
-                if (userList.get(i).getId().equals(user.getId())) {
-                    userList.set(i, user);
-                    result.setValue(Resource.success(user));
-                    return;
-                }
-            }
-            result.setValue(Resource.error("Không tìm thấy tài khoản", null));
-        }, 800);
-        return result;
+        // Tạm thời trả về thành công
+        return new MutableLiveData<>(Resource.success(user));
     }
 
     @Override
     public LiveData<Resource<Boolean>> toggleUserStatus(String userId) {
-        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            for (User u : userList) {
-                if (u.getId().equals(userId)) {
-                    u.setStatus(u.getStatus().equals("Đang hoạt động") ? "Ngưng hoạt động" : "Đang hoạt động");
-                    result.setValue(Resource.success(true));
-                    return;
-                }
-            }
-            result.setValue(Resource.error("Lỗi", false));
-        }, 500);
-        return result;
+        // Tạm thời trả về thành công
+        return new MutableLiveData<>(Resource.success(true));
     }
 }
