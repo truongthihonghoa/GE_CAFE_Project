@@ -1,5 +1,7 @@
 package com.demo.ltud_n10.presentation.ui.schedule;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,7 +9,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,14 +16,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.domain.model.WorkShift;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class WorkShiftAdapter extends ListAdapter<WorkShift, WorkShiftAdapter.ViewHolder> {
 
     private final OnShiftClickListener listener;
+    private Set<String> selectedIds = new HashSet<>();
 
     public interface OnShiftClickListener {
         void onShiftClick(WorkShift shift);
         void onMoreClick(WorkShift shift, View view);
-        void onToggleSelect(WorkShift shift);
+        void onToggleSelect(String shiftId, boolean isChecked);
     }
 
     public WorkShiftAdapter(OnShiftClickListener listener) {
@@ -42,6 +48,11 @@ public class WorkShiftAdapter extends ListAdapter<WorkShift, WorkShiftAdapter.Vi
         this.listener = listener;
     }
 
+    public void setSelectedIds(List<String> ids) {
+        this.selectedIds = new HashSet<>(ids);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -57,16 +68,19 @@ public class WorkShiftAdapter extends ListAdapter<WorkShift, WorkShiftAdapter.Vi
         
         if (shift.isSent()) {
             holder.tvStatus.setText("Đã gửi");
-            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_sent);
+            holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#0A4D1E")));
         } else {
             holder.tvStatus.setText("Chưa gửi");
-            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_unsent);
+            holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF0000")));
         }
 
         holder.cbSelect.setOnCheckedChangeListener(null);
-        // holder.cbSelect.setChecked(...); // Handle selection state from ViewModel later
+        holder.cbSelect.setChecked(selectedIds.contains(shift.getId()));
         
-        holder.cbSelect.setOnClickListener(v -> listener.onToggleSelect(shift));
+        holder.cbSelect.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            listener.onToggleSelect(shift.getId(), isChecked);
+        });
+
         holder.btnMore.setOnClickListener(v -> listener.onMoreClick(shift, v));
         holder.itemView.setOnClickListener(v -> listener.onShiftClick(shift));
     }

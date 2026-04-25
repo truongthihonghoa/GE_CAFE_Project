@@ -52,6 +52,23 @@ public class WorkShiftViewModel extends ViewModel {
         return repository.sendNotifications(ids);
     }
 
+    public void addShiftToSelection(String id) {
+        List<String> current = selectedShiftIds.getValue();
+        if (current == null) current = new ArrayList<>();
+        if (!current.contains(id)) {
+            current.add(id);
+            selectedShiftIds.setValue(current);
+        }
+    }
+
+    public void removeShiftFromSelection(String id) {
+        List<String> current = selectedShiftIds.getValue();
+        if (current != null && current.contains(id)) {
+            current.remove(id);
+            selectedShiftIds.setValue(current);
+        }
+    }
+
     public void toggleShiftSelection(String id) {
         List<String> current = selectedShiftIds.getValue();
         if (current == null) current = new ArrayList<>();

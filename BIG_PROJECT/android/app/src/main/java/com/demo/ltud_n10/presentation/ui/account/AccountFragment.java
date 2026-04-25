@@ -76,6 +76,12 @@ public class AccountFragment extends Fragment {
             public void onItemClick(User user) {
                 // View detail if needed
             }
+
+            @Override
+            public void onChangePasswordClick(User user) {
+                // Điều hướng sang trang đổi mật khẩu (đã được tạo ở bước trước)
+                Navigation.findNavController(requireView()).navigate(R.id.changePasswordFragment);
+            }
         });
 
         binding.rvAccounts.setLayoutManager(new LinearLayoutManager(requireContext()));

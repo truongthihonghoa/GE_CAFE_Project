@@ -174,6 +174,9 @@
         <action
             android:id="@+id/action_accountFragment_to_accountDetailFragment"
             app:destination="@id/accountDetailFragment" />
+        <action
+            android:id="@+id/action_accountFragment_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
     </fragment>
 
     <fragment
@@ -190,6 +193,12 @@
             android:name="title"
             app:argType="string" />
     </fragment>
+
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.demo.ltud_n10.presentation.ui.auth.ChangePasswordFragment"
+        android:label="Đổi mật khẩu"
+        tools:layout="@layout/fragment_change_password" />
 
     <!-- Luồng Nhân viên -->
     <fragment
@@ -232,6 +241,10 @@
         android:id="@+id/profileFragment"
         android:name="com.demo.ltud_n10.presentation.ui.employee.ProfileFragment"
         android:label="Tài khoản"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
+    </fragment>
 
 </navigation>

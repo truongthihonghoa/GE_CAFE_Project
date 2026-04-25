@@ -9,5 +9,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="primary_green">#0A4D1E</color>
-    <color name="disabled_green">#BDBDBD</color>
+    <color name="dark_green">#1B431C</color>
+    <color name="disabled_green">#CCCCCC</color>
+    <color name="status_red">#FF0000</color>
 </resources>
