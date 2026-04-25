@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface EmployeeRepository {
     LiveData<Resource<List<Employee>>> getEmployees();
+    LiveData<Resource<List<Employee>>> getStaffEmployees(); // Phương thức mới
     LiveData<Resource<Employee>> addEmployee(Employee employee);
     LiveData<Resource<Employee>> updateEmployee(Employee employee);
     LiveData<Resource<Boolean>> deleteEmployee(String employeeId);

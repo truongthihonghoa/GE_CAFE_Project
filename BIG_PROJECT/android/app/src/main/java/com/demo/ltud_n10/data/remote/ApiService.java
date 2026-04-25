@@ -52,7 +52,7 @@ public interface ApiService {
     @PUT("api/branches/{id}/")
     Call<BranchDto> updateBranch(@Path("id") String id, @Body BranchDto branch);
 
-    @DELETE("api/branches/{id}/")
+    @DELETE("api/branches/{id}/") // ĐẢM BẢO CÓ DẤU / Ở CUỐI
     Call<Void> deleteBranch(@Path("id") String id);
 
     // Employees

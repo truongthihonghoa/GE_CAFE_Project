@@ -33,6 +33,9 @@ public class EmployeeDto {
     @SerializedName("trang_thai")
     private String trangThai;
 
+    @SerializedName("is_staff") // Thêm trường is_staff theo yêu cầu
+    private Integer isStaff;
+
     // Getters and Setters
     public String getMaNv() { return maNv; }
     public void setMaNv(String maNv) { this.maNv = maNv; }
@@ -63,4 +66,7 @@ public class EmployeeDto {
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+
+    public Integer getIsStaff() { return isStaff; }
+    public void setIsStaff(Integer isStaff) { this.isStaff = isStaff; }
 }

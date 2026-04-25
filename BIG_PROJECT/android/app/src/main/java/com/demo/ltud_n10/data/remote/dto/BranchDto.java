@@ -19,6 +19,7 @@ public class BranchDto implements Serializable {
     @SerializedName("ma_nv_ql")
     private String managerName;
 
+    @SerializedName("trang_thai") // CỘT MỚI TRÊN CSDL CỦA BẠN
     private String status;
 
     // Getters and Setters
@@ -32,6 +33,9 @@ public class BranchDto implements Serializable {
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public String getManagerName() { return managerName; }
     public void setManagerName(String managerName) { this.managerName = managerName; }
-    public String getStatus() { return status != null ? status : "Đang hoạt động"; }
+    
+    public String getStatus() { 
+        return (status == null || status.isEmpty()) ? "Đang hoạt động" : status; 
+    }
     public void setStatus(String status) { this.status = status; }
 }

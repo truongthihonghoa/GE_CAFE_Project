@@ -80,11 +80,21 @@
                 android:paddingHorizontal="16dp"
                 android:textSize="14sp" />
 
+            <TextView
+                android:id="@+id/tvErrorName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tên chi nhánh không hợp lệ. Vui lòng nhập lại."
+                android:textColor="#DC3545"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
             <!-- Field: Address -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="16dp"
                 android:text="Địa chỉ *"
                 android:textColor="#5C3B2E"
                 android:textSize="15sp"
@@ -100,11 +110,21 @@
                 android:paddingHorizontal="16dp"
                 android:textSize="14sp" />
 
+            <TextView
+                android:id="@+id/tvErrorAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Địa chỉ không hợp lệ. Vui lòng nhập lại."
+                android:textColor="#DC3545"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
             <!-- Field: Phone Number -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="16dp"
                 android:text="Số điện thoại *"
                 android:textColor="#5C3B2E"
                 android:textSize="15sp"
@@ -121,11 +141,21 @@
                 android:paddingHorizontal="16dp"
                 android:textSize="14sp" />
 
+            <TextView
+                android:id="@+id/tvErrorPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Số điện thoại không hợp lệ. Vui lòng nhập lại."
+                android:textColor="#DC3545"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
             <!-- Field: Manager -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="16dp"
                 android:text="Tên quản lý"
                 android:textColor="#5C3B2E"
                 android:textSize="15sp"
