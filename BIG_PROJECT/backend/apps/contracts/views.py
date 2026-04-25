@@ -6,8 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django import forms
 from .models import HopDongLaoDong, HopDongLD_CT
-from apps.employees.models import NhanVien
-import datetime
+from ..employees.models import NhanVien
 
 
 class ContractForm(forms.Form):
@@ -163,7 +162,6 @@ def contract_add_view(request):
 def _get_employees():
     """Mock data cho dropdown nhân viên"""
     return [
-        {'ma_nv': 'NV00001', 'ho_ten': 'Nguyễn Văn An'},
         {'ma_nv': 'NV00002', 'ho_ten': 'Lê Hoài Bảo An'},
         {'ma_nv': 'NV00003', 'ho_ten': 'Trần Thị Mai Loan'},
         {'ma_nv': 'NV00004', 'ho_ten': 'Phạm Quang Bảo'},
@@ -282,11 +280,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import HopDongLaoDong
 from .serializers import HopDongLaoDongSerializer
-
+from rest_framework.authentication import SessionAuthentication
 
 class HopDongViewSet(viewsets.ModelViewSet):
     serializer_class = HopDongLaoDongSerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
