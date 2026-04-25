@@ -2,6 +2,8 @@ package com.demo.ltud_n10.presentation.ui.branch;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,20 +58,36 @@ public class BranchDetailFragment extends Fragment {
             setupAddMode();
         }
 
+        setupTextWatchers();
+
         binding.ivBack.setOnClickListener(v -> handleCancel());
         binding.btnCancel.setOnClickListener(v -> handleCancel());
         
-        binding.cvStatus.setOnClickListener(v -> showStatusDialog());
+        // SỬA LỖI: Cho phép nhấn vào Dropdown để chọn trạng thái
+        binding.cvStatus.setOnClickListener(v -> {
+            if (isEditMode) showStatusDialog();
+        });
+    }
+
+    private void setupTextWatchers() {
+        binding.etBranchName.addTextChangedListener(new SimpleTextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tvErrorName.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void showStatusDialog() {
-        if (!isEditMode) return;
-        
         String[] statuses = {"Đang hoạt động", "Ngưng hoạt động"};
         new AlertDialog.Builder(requireContext())
                 .setTitle("Chọn trạng thái")
                 .setItems(statuses, (dialog, which) -> {
-                    updateStatusUI(statuses[which]);
+                    String selectedStatus = statuses[which];
+                    updateStatusUI(selectedStatus);
+                    if (branch != null) {
+                        branch.setStatus(selectedStatus); // Cập nhật vào đối tượng
+                    }
                 })
                 .show();
     }
@@ -101,7 +119,6 @@ public class BranchDetailFragment extends Fragment {
         binding.etPhoneNumber.setText(branch.getPhoneNumber());
         binding.etManagerName.setText(branch.getManagerName());
         updateStatusUI(branch.getStatus());
-        
         enableFields(false);
         binding.layoutStatus.setVisibility(View.VISIBLE);
         binding.btnSubmit.setText("CHỈNH SỬA");
@@ -125,7 +142,6 @@ public class BranchDetailFragment extends Fragment {
 
     private void handleSave() {
         if (!validate()) return;
-
         Branch newBranch = new Branch();
         newBranch.setName(binding.etBranchName.getText().toString());
         newBranch.setAddress(binding.etAddress.getText().toString());
@@ -133,66 +149,44 @@ public class BranchDetailFragment extends Fragment {
         newBranch.setManagerName(binding.etManagerName.getText().toString());
         newBranch.setStatus("Đang hoạt động");
 
+        binding.btnSubmit.setEnabled(false);
         branchRepository.addBranch(newBranch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.data != null) {
-                Toast.makeText(requireContext(), "Đã thêm chi nhánh mới thành công", Toast.LENGTH_SHORT).show();
+            if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                Toast.makeText(requireContext(), "Thêm thành công", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).navigateUp();
+            } else {
+                binding.btnSubmit.setEnabled(true);
             }
         });
     }
 
     private void handleUpdate() {
         if (!validate()) return;
-
         branch.setName(binding.etBranchName.getText().toString());
         branch.setAddress(binding.etAddress.getText().toString());
         branch.setPhoneNumber(binding.etPhoneNumber.getText().toString());
         branch.setManagerName(binding.etManagerName.getText().toString());
-        branch.setStatus(binding.tvStatus.getText().toString());
+        branch.setStatus(binding.tvStatus.getText().toString()); // LẤY TỪ Dropdown
 
+        binding.btnSubmit.setEnabled(false);
         branchRepository.updateBranch(branch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.data != null) {
-                Toast.makeText(requireContext(), "Đã cập nhật chi nhánh thành công", Toast.LENGTH_SHORT).show();
+            if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                Toast.makeText(requireContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).navigateUp();
+            } else {
+                binding.btnSubmit.setEnabled(true);
+                Toast.makeText(requireContext(), "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void handleCancel() {
-        if (isEditMode) {
-            String message = branch == null ? "Bạn có thông tin chưa lưu, xác nhận hủy?" : "Bạn có thông tin chỉnh sửa, xác nhận hủy?";
-            new AlertDialog.Builder(requireContext())
-                    .setMessage(message)
-                    .setPositiveButton("Đồng ý", (d, w) -> Navigation.findNavController(requireView()).navigateUp())
-                    .setNegativeButton("Không", null)
-                    .show();
-        } else {
-            Navigation.findNavController(requireView()).navigateUp();
-        }
+    private boolean validate() {
+        return !binding.etBranchName.getText().toString().isEmpty();
     }
 
-    private boolean validate() {
-        String name = binding.etBranchName.getText().toString();
-        String address = binding.etAddress.getText().toString();
-        String phone = binding.etPhoneNumber.getText().toString();
-
-        if (name.isEmpty()) {
-            Toast.makeText(requireContext(), "Tên chi nhánh không được để trống", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (address.isEmpty()) {
-            Toast.makeText(requireContext(), "Địa chỉ không được để trống", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (phone.isEmpty()) {
-            Toast.makeText(requireContext(), "SDT không được để trống", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (phone.length() != 10 || !phone.startsWith("0")) {
-            Toast.makeText(requireContext(), "Số điện thoại không hợp lệ. Vui lòng nhập 10 chữ số và bắt đầu bằng 0", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        return true;
+    private abstract static class SimpleTextWatcher implements TextWatcher {
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void afterTextChanged(Editable s) {}
     }
 
     @Override

@@ -29,7 +29,10 @@ public class NetworkModule {
     @Provides
     @Singleton
     public static Gson provideGson() {
-        return new GsonBuilder().setLenient().create();
+        return new GsonBuilder()
+                .setLenient()
+                .serializeNulls() // QUAN TRỌNG: Cho phép gửi các trường có giá trị null lên server
+                .create();
     }
 
     @Provides
@@ -42,7 +45,6 @@ public class NetworkModule {
             Request originalRequest = chain.request();
             Request.Builder builder = originalRequest.newBuilder();
             
-            // LẤY TOKEN ĐỘNG TỪ BỘ NHỚ SAU KHI ĐĂNG NHẬP
             String token = prefsManager.getToken();
             if (token != null && !token.isEmpty()) {
                 builder.header("Authorization", "Bearer " + token);
