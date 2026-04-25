@@ -6,7 +6,7 @@ from .views import TaiKhoanViewSet
 
 app_name = 'accounts'
 router = DefaultRouter()
-router.register(r'accounts', TaiKhoanViewSet, basename='accounts')
+router.register(r'', TaiKhoanViewSet, basename='')
 
 urlpatterns = [
     path('', include(router.urls)),

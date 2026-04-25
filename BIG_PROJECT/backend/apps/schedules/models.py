@@ -23,3 +23,7 @@ class LichLamViec(models.Model):
 
     class Meta:
         unique_together = ('ma_llv', 'ma_nv')
+
+
+class NhanVien:
+    pass

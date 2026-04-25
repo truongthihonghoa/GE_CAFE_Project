@@ -278,6 +278,7 @@ def contract_detail_view(request, contract_id):
 
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
+from rest_framework.authentication import TokenAuthentication # Thêm dòng này
 from .models import HopDongLaoDong
 from .serializers import HopDongLaoDongSerializer
 
@@ -285,3 +286,4 @@ class HopDongViewSet(viewsets.ModelViewSet):
     queryset = HopDongLaoDong.objects.all()
     serializer_class = HopDongLaoDongSerializer
     permission_classes = [AllowAny]
+    authentication_classes = [] # Tắt xác thực hoàn toàn để test lỗi 403

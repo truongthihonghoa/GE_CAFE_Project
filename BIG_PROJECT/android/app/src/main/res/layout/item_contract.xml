@@ -3,10 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
-    app:cardBackgroundColor="#F8F9FA"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="0dp">
+    android:layout_marginBottom="18dp"
+    app:cardBackgroundColor="#F8F9FB"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -24,27 +25,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cvStatus"
+        <TextView
+            android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="#E8F8EF"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp"
+            android:background="@drawable/bg_status_green_light"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp"
+            android:text="Còn hiệu lực"
+            android:textColor="#1B5E20"
+            android:textSize="13sp"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp"
-                android:text="Còn hiệu lực"
-                android:textColor="#2ECC71"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-        </com.google.android.material.card.MaterialCardView>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvContractId"
@@ -88,6 +81,7 @@
             android:textColor="#4169E1"
             android:textSize="15sp"
             android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
             app:layout_constraintBottom_toBottomOf="@id/tvDateRange"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tvDateRange" />
@@ -107,15 +101,15 @@
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#F0F0F0"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#E0E0E0"
                 app:strokeWidth="1dp">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="12dp"
+                    android:padding="10dp"
                     android:src="@android:drawable/ic_menu_edit"
                     app:tint="#1A1A1A" />
             </com.google.android.material.card.MaterialCardView>
@@ -126,15 +120,15 @@
                 android:layout_height="44dp"
                 android:layout_marginStart="12dp"
                 app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#F0F0F0"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#E0E0E0"
                 app:strokeWidth="1dp">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="12dp"
+                    android:padding="10dp"
                     android:src="@android:drawable/ic_menu_delete"
                     app:tint="#FF4D4D" />
             </com.google.android.material.card.MaterialCardView>

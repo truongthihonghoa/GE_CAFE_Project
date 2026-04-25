@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="320dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="16dp"
+    android:layout_margin="24dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="24dp"
     app:cardElevation="8dp">
 
     <LinearLayout
@@ -14,10 +16,10 @@
         android:padding="24dp">
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:src="@android:drawable/ic_dialog_alert"
-            app:tint="#FF5252" />
+            app:tint="#E53935" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,45 +33,46 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Bạn có chắc chắn muốn xoá ca làm?"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Bạn có chắc chắn muốn xóa đăng ký này không?"
             android:textColor="#757575"
-            android:textSize="14sp"
-            android:gravity="center"/>
+            android:textSize="14sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDialogCancel"
+                android:id="@+id/btnDelete"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="12dp"
+                android:layout_height="56dp"
+                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:backgroundTint="#E0E0E0"
-                android:text="Không"
+                android:text="Có"
                 android:textAllCaps="false"
-                android:textColor="#424242"
+                android:textColor="#1A1A1A"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="12dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDialogConfirm"
+                android:id="@+id/btnCancel"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:backgroundTint="#1B431C"
-                android:text="Đồng ý"
+                android:text="Không"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:cornerRadius="8dp" />
-
+                app:cornerRadius="12dp" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
