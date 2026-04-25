@@ -35,7 +35,7 @@ public class NetworkModule {
                 .addInterceptor(chain -> {
                     String token = prefsManager.getToken();
                     if (token == null) {
-                        token = "9f81a8e737e6a5e6f8b0305623c6fe86efd6603b"; // Fallback token for testing
+                        token = "e9b0a9b8bc695e19e74f71f270505a5ac2d6ff48"; // Fallback token for testing (Chu)
                     }
                     okhttp3.Request.Builder builder = chain.request().newBuilder();
                     builder.addHeader("Authorization", "Token " + token);
