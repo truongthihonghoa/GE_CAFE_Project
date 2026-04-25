@@ -1,7 +1,12 @@
 package com.demo.ltud_n10.di;
 
+import com.demo.ltud_n10.data.remote.AccountApiService;
+import com.demo.ltud_n10.data.remote.AttendanceApiService;
+import com.demo.ltud_n10.data.remote.BranchApiService;
 import com.demo.ltud_n10.data.remote.ContractApiService;
 import com.demo.ltud_n10.data.remote.EmployeeApiService;
+import com.demo.ltud_n10.data.remote.RequestApiService;
+import com.demo.ltud_n10.data.remote.ScheduleApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -31,7 +36,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @InstallIn(SingletonComponent.class)
 public class NetworkModule {
 
-    // Đã cập nhật Token mới từ database link Render-1
     private static final String NEW_TOKEN = "9f81a8e737e6a5e6f8b0305623c6fe86efd6603b"; 
 
     @Provides
@@ -100,5 +104,35 @@ public class NetworkModule {
     @Singleton
     public static EmployeeApiService provideEmployeeApiService(Retrofit retrofit) {
         return retrofit.create(EmployeeApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public static BranchApiService provideBranchApiService(Retrofit retrofit) {
+        return retrofit.create(BranchApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public static AccountApiService provideAccountApiService(Retrofit retrofit) {
+        return retrofit.create(AccountApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public static AttendanceApiService provideAttendanceApiService(Retrofit retrofit) {
+        return retrofit.create(AttendanceApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public static RequestApiService provideRequestApiService(Retrofit retrofit) {
+        return retrofit.create(RequestApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public static ScheduleApiService provideScheduleApiService(Retrofit retrofit) {
+        return retrofit.create(ScheduleApiService.class);
     }
 }
