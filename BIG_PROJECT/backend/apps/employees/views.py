@@ -120,14 +120,61 @@ def employee_edit_view(request, employee_id):
     return render(request, "employees/employee_edit.html", context)
 
 
-from rest_framework import viewsets
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import AllowAny
 from .models import NhanVien
 from .serializers import NhanVienSerializer
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 class NhanVienViewSet(viewsets.ModelViewSet):
-    queryset = NhanVien.objects.all()
     serializer_class = NhanVienSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Phân quyền xem:
+        - Chủ (Admin): Xem toàn bộ nhân viên GÉ CAFE.
+        - Nhân viên: Chỉ xem được thông tin cá nhân của chính mình.
+        """
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return NhanVien.objects.all()
+
+        # Lọc thông qua bảng trung gian TaiKhoan nối với auth_user
+        # Sử dụng user_id để khớp với dữ liệu thực tế
+        return NhanVien.objects.filter(taikhoan__user_id=user.id)
+
+    def is_admin(self, request):
+        """Kiểm tra quyền Chủ (Admin)"""
+        return request.user.is_superuser or request.user.is_staff
+
+    def create(self, request, *args, **kwargs):
+        """Chỉ Chủ mới được thêm nhân viên mới"""
+        if not self.is_admin(request):
+            return Response(
+                {"detail": "Hành động bị từ chối. Chỉ Chủ cửa hàng mới có quyền thêm nhân viên."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Chỉ Chủ mới được sửa thông tin nhân viên"""
+        if not self.is_admin(request):
+            return Response(
+                {"detail": "Bạn không có quyền chỉnh sửa hồ sơ nhân viên này."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Chỉ Chủ mới được xóa nhân viên khỏi hệ thống"""
+        if not self.is_admin(request):
+            return Response(
+                {"detail": "Chỉ quản trị viên mới có thể xóa nhân viên."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)

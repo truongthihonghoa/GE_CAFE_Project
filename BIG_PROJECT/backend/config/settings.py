@@ -78,7 +78,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+from datetime import timedelta
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2), # Token sẽ có tác dụng trong 2 tiếng thay vì vài phút
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [

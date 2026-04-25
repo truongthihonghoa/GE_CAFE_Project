@@ -276,14 +276,54 @@ def contract_detail_view(request, contract_id):
     return JsonResponse(data)
 
 
-from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
-from rest_framework.authentication import TokenAuthentication # Thêm dòng này
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import HopDongLaoDong
 from .serializers import HopDongLaoDongSerializer
 
+
 class HopDongViewSet(viewsets.ModelViewSet):
-    queryset = HopDongLaoDong.objects.all()
     serializer_class = HopDongLaoDongSerializer
-    permission_classes = [AllowAny]
-    authentication_classes = [] # Tắt xác thực hoàn toàn để test lỗi 403
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return HopDongLaoDong.objects.all()
+
+        # Lọc hợp đồng của nhân viên có user_id khớp với người đang login
+        return HopDongLaoDong.objects.filter(ma_nv__taikhoan__user=user)
+
+    def check_admin_permission(self, request):
+        """Hàm phụ trợ kiểm tra quyền Quản lý"""
+        return request.user.is_superuser or request.user.is_staff
+
+    def create(self, request, *args, **kwargs):
+        """Chặn nhân viên thêm mới hợp đồng"""
+        if not self.check_admin_permission(request):
+            return Response(
+                {"detail": "Bạn không có quyền tạo hợp đồng mới. Vui lòng liên hệ Admin."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Chặn nhân viên chỉnh sửa hợp đồng"""
+        if not self.check_admin_permission(request):
+            return Response(
+                {"detail": "Bạn không có quyền chỉnh sửa thông tin hợp đồng."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Chặn nhân viên xóa hợp đồng"""
+        if not self.check_admin_permission(request):
+            return Response(
+                {"detail": "Chỉ quản lý mới có quyền xóa hợp đồng khỏi hệ thống."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)

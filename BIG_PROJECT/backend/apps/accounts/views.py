@@ -158,20 +158,32 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
 class TaiKhoanViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TaiKhoanSerializer
+    # Chỉ cho phép người đã đăng nhập (có Token) mới được gọi API
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
         user = self.request.user
 
+        # Kiểm tra quyền Staff trực tiếp từ Token của User
         if user.is_superuser:
-            # Chủ: xem tất cả tài khoản
             return TaiKhoan.objects.all()
-        elif user.is_staff:
-            # Quản lý: xem tài khoản trong chi nhánh mình quản lý
-            chi_nhanh_nv = getattr(user.taikhoan.ma_nv, 'ma_chi_nhanh', None)
-            return TaiKhoan.objects.filter(ma_nv__ma_chi_nhanh=chi_nhanh_nv)
-        else:
-            # Nhân viên: chỉ xem chính mình
-            return TaiKhoan.objects.filter(user=user)
+
+        if user.is_staff:
+            # Lấy chi nhánh của quản lý để lọc
+            # Đảm bảo model TaiKhoan có quan hệ ngược hoặc truy vấn đúng
+            try:
+                ma_chi_nhanh = user.taikhoan.ma_nv.ma_chi_nhanh
+                return TaiKhoan.objects.filter(ma_nv__ma_chi_nhanh=ma_chi_nhanh)
+            except AttributeError:
+                return TaiKhoan.objects.none()  # Trả về trống nếu ko tìm thấy chi nhánh
+
+        # Nếu là nhân viên thường, chỉ thấy chính mình
+        return TaiKhoan.objects.filter(user=user)

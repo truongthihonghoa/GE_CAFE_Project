@@ -3,16 +3,18 @@ from . import views
 from rest_framework.routers import DefaultRouter
 #
 from .views import TaiKhoanViewSet
-
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 app_name = 'accounts'
 router = DefaultRouter()
-router.register(r'', TaiKhoanViewSet, basename='')
+# Bạn nên đặt tên cho router để tránh bị trống URL, ví dụ 'taikhoan'
+router.register(r'taikhoan', TaiKhoanViewSet, basename='taikhoan')
 
 urlpatterns = [
     path('', include(router.urls)),
     path('login/', views.login_view, name='login'),
-    # path('logout/', views.logout_view, name='logout'),
-    # path('dashboard/', views.dashboard_view, name='dashboard'),
-    # path('employee/', views.account_employee_list_view, name='account_employee_list'),
-    # path('admin/', views.account_admin_list_view, name='account_admin_list'),
+
+    # --- THÊM LẠI 2 DÒNG NÀY ---
+    path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # ---------------------------
 ]

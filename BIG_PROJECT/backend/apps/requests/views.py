@@ -143,16 +143,54 @@ def request_list_view(request):
 
 
 # API đăng ký lịch
-class DangKyLichViewSet(ModelViewSet):
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
+class BaseYeuCauViewSet(viewsets.ModelViewSet):
     serializer_class = YeuCauSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def get_base_queryset(self, keyword):
+        user = self.request.user
+        # 1. Admin (Chủ): Thấy tất cả yêu cầu theo loại
+        if user.is_superuser or user.is_staff:
+            return YeuCau.objects.filter(loai_yeu_cau__icontains=keyword)
+
+        # 2. Nhân viên: Chỉ thấy yêu cầu của chính mình qua bảng trung gian
+        return YeuCau.objects.filter(
+            loai_yeu_cau__icontains=keyword,
+            ma_nv__taikhoan__user=user
+        )
+
+    @action(detail=True, methods=['patch'], url_path='duyet')
+    def duyet_yeu_cau(self, request, pk=None):
+        """Tính năng dành riêng cho Chủ để duyệt yêu cầu"""
+        if not (request.user.is_superuser or request.user.is_staff):
+            return Response({"detail": "Chỉ Chủ cửa hàng mới có quyền duyệt."}, status=403)
+
+        yeu_cau = self.get_object()
+        moi_status = request.data.get('trang_thai')  # Gửi lên: "Đã duyệt" hoặc "Từ chối"
+
+        if not moi_status:
+            return Response({"detail": "Vui lòng cung cấp trạng thái mới."}, status=400)
+
+        yeu_cau.trang_thai = moi_status
+        yeu_cau.save()
+        return Response({"detail": f"Đã cập nhật trạng thái thành: {moi_status}"})
+
+
+# --- Các ViewSet cụ thể ---
+
+class DangKyLichViewSet(BaseYeuCauViewSet):
     def get_queryset(self):
-        return YeuCau.objects.filter(loai_yeu_cau__icontains="Đăng ký")
+        return self.get_base_queryset("Đăng ký")
 
 
-# API nghỉ phép
-class NghiPhepViewSet(ModelViewSet):
-    serializer_class = YeuCauSerializer
-
+class NghiPhepViewSet(BaseYeuCauViewSet):
     def get_queryset(self):
-        return YeuCau.objects.filter(loai_yeu_cau__icontains="Nghỉ")
+        return self.get_base_queryset("Nghỉ")

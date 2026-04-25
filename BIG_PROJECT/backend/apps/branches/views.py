@@ -81,47 +81,53 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import ChiNhanh # Giả sử tên model của bạn
 
-
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework import status, permissions
-from .models import ChiNhanh
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .serializers import ChiNhanhSerializer
 
-class ChiNhanhViewSet(ModelViewSet):
+class ChiNhanhViewSet(viewsets.ModelViewSet):
     queryset = ChiNhanh.objects.all()
     serializer_class = ChiNhanhSerializer
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    # 👇 Xem dữ liệu
     def get_queryset(self):
         user = self.request.user
 
-        # admin → thấy tất cả
-        if user.is_staff:
+        # 1. Nếu là Chủ (Admin): Hiển thị tất cả chi nhánh
+        if user.is_staff or user.is_superuser:
             return ChiNhanh.objects.all()
 
-        # nhân viên → chỉ thấy chi nhánh mình
-        if hasattr(user, 'nhanvien'):
-            return ChiNhanh.objects.filter(ma_nv_ql=user.nhanvien)
+        # 2. Nếu là Nhân viên:
+        # Tìm chi nhánh mà nhân viên (có tài khoản là user hiện tại) đang thuộc về
+        # Dựa trên trường 'ma_chi_nhanh' trong bảng NhanVien
+        return ChiNhanh.objects.filter(
+            nhan_viens__taikhoan__user=user
+        ).distinct()
 
-        return ChiNhanh.objects.none()
+    def is_admin(self, request):
+        """Hàm kiểm tra nhanh xem có phải là Chủ (Admin) không"""
+        return request.user.is_superuser or request.user.is_staff
 
-    # 👇 thêm
     def create(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response({"error": "Không có quyền"}, status=403)
+        """Chặn nhân viên thêm chi nhánh"""
+        if not self.is_admin(request):
+            return Response({"detail": "Chỉ Chủ cửa hàng mới có quyền thêm chi nhánh mới."},
+                            status=status.HTTP_403_FORBIDDEN)
         return super().create(request, *args, **kwargs)
 
-    # 👇 sửa
     def update(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response({"error": "Không có quyền"}, status=403)
+        """Chặn nhân viên sửa chi nhánh"""
+        if not self.is_admin(request):
+            return Response({"detail": "Bạn không có quyền chỉnh sửa thông tin chi nhánh."},
+                            status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
-    # 👇 xoá
     def destroy(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response({"error": "Không có quyền"}, status=403)
+        """Chặn nhân viên xóa chi nhánh"""
+        if not self.is_admin(request):
+            return Response({"detail": "Hành động bị từ chối. Chỉ Chủ mới có thể xóa chi nhánh."},
+                            status=status.HTTP_403_FORBIDDEN)
         return super().destroy(request, *args, **kwargs)

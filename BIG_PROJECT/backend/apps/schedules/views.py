@@ -114,6 +114,61 @@ def schedule_detail_view(request, schedule_id):
 
 
 # --- PHẦN QUAN TRỌNG: API CHO APP MOBILE ---
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 class ScheduleAPIViewSet(viewsets.ModelViewSet):
-    queryset = LichLamViec.objects.all().order_by('-ngay_lam')
     serializer_class = ScheduleSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Logic phân quyền:
+        - Chủ (Admin): Thấy toàn bộ lịch làm việc của tất cả nhân viên.
+        - Nhân viên: Chỉ thấy lịch làm việc của chính mình.
+        """
+        user = self.request.user
+
+        # 1. Nếu là Chủ (is_staff hoặc is_superuser) -> Hiển thị tất cả
+        if user.is_staff or user.is_superuser:
+            return LichLamViec.objects.all().order_by('-ngay_lam')
+
+        # 2. Nếu là Nhân viên -> Lọc qua bảng trung gian TaiKhoan
+        # Giả sử trong model LichLamViec có trường 'ma_nv' nối tới model NhanVien
+        # Và trong model NhanVien có trường 'taikhoan' nối tới bảng trung gian
+        return LichLamViec.objects.filter(
+            ma_nv__taikhoan__user=user
+        ).order_by('-ngay_lam')
+
+    def is_admin(self, request):
+        return request.user.is_staff or request.user.is_superuser
+
+    def create(self, request, *args, **kwargs):
+        """Chỉ Chủ mới được sắp lịch làm việc"""
+        if not self.is_admin(request):
+            return Response(
+                {"detail": "Chỉ quản lý mới có quyền sắp xếp lịch làm việc."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Chỉ Chủ mới được sửa lịch làm việc"""
+        if not self.is_admin(request):
+            return Response(
+                {"detail": "Bạn không có quyền chỉnh sửa lịch làm việc này."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Chỉ Chủ mới được xóa lịch làm việc"""
+        if not self.is_admin(request):
+            return Response(
+                {"detail": "Hành động bị từ chối. Chỉ Chủ mới có thể xóa lịch."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
