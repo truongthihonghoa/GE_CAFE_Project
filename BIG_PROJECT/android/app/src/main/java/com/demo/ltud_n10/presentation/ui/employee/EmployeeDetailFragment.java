@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +21,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.demo.ltud_n10.R;
-import com.demo.ltud_n10.R;
-import com.demo.ltud_n10.databinding.DialogCustomConfirmBinding;
 import com.demo.ltud_n10.databinding.FragmentEmployeeDetailBinding;
 import com.demo.ltud_n10.domain.model.Employee;
 import com.google.android.material.button.MaterialButton;
@@ -64,8 +61,6 @@ public class EmployeeDetailFragment extends Fragment {
     }
 
     private void setupUI() {
-        binding.tvTitle.setText(title);
-        binding.btnBack.setOnClickListener(v -> showCancelConfirmDialog());
         if (title != null) {
             binding.tvTitle.setText(title);
         }
@@ -213,84 +208,16 @@ public class EmployeeDetailFragment extends Fragment {
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                     Toast.makeText(requireContext(), "Thêm nhân viên thành công", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
-                    showSuccessDialog("Thêm nhân viên thành công");
-                } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
-                    showErrorDialog("THÔNG BÁO LỖI", "Lỗi hệ thống. Vui lòng thử lại sau !");
                 }
             });
         } else {
             viewModel.updateEmployee(employee).observe(getViewLifecycleOwner(), resource -> {
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                    showSuccessDialog("Đã chỉnh sửa thông tin nhân viên thành công");
-                } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
-                    showErrorDialog("THÔNG BÁO LỖI", "Lỗi hệ thống. Vui lòng thử lại sau !");
+                    Toast.makeText(requireContext(), "Cập nhật thông tin nhân viên thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
                 }
             });
         }
-    }
-
-    private void showSuccessDialog(String msg) {
-        View layout = getLayoutInflater().inflate(R.layout.layout_custom_toast, null);
-        TextView tvMessage = layout.findViewById(R.id.tvMessage);
-        tvMessage.setText(msg);
-
-        Toast toast = new Toast(requireContext());
-        toast.setDuration(Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 100);
-        toast.setView(layout);
-        toast.show();
-
-        Navigation.findNavController(requireView()).popBackStack();
-    }
-
-    private void handleBackAction() {
-        showConfirmDialog("XÁC NHẬN HỦY", "Bạn có thông tin chưa lưu, xác nhận hủy ?", () -> {
-            Navigation.findNavController(requireView()).popBackStack();
-        });
-    }
-
-    private void showConfirmDialog(String title, String message, Runnable onConfirm) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
-        builder.setView(dialogBinding.getRoot());
-        AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
-        dialogBinding.tvTitle.setText(title);
-        dialogBinding.tvMessage.setText(message);
-        dialogBinding.ivIcon.setImageResource(R.drawable.ic_warning_outline);
-
-        dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
-        dialogBinding.btnPositive.setOnClickListener(v -> {
-            dialog.dismiss();
-            onConfirm.run();
-        });
-
-        dialog.show();
-    }
-
-    private void showErrorDialog(String title, String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
-        builder.setView(dialogBinding.getRoot());
-        AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
-        dialogBinding.tvTitle.setText(title);
-        dialogBinding.tvMessage.setText(message);
-        dialogBinding.ivIcon.setImageResource(R.drawable.ic_error_x);
-
-        dialogBinding.btnNegative.setText("Thoát");
-        dialogBinding.btnPositive.setText("Quay lại");
-
-        dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
-        dialogBinding.btnPositive.setOnClickListener(v -> dialog.dismiss());
-
-        dialog.show();
     }
 
     @Override
