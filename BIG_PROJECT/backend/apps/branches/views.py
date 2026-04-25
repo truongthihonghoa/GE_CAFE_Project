@@ -86,11 +86,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .serializers import ChiNhanhSerializer
+from rest_framework.authentication import SessionAuthentication
 
 class ChiNhanhViewSet(viewsets.ModelViewSet):
     queryset = ChiNhanh.objects.all()
     serializer_class = ChiNhanhSerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
