@@ -36,7 +36,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @InstallIn(SingletonComponent.class)
 public class NetworkModule {
 
-    private static final String NEW_TOKEN = "9f81a8e737e6a5e6f8b0305623c6fe86efd6603b"; 
+    // QUAN TRỌNG: Hãy đảm bảo Token này được lấy từ Admin của link ge-cafe-project.onrender.com
+    private static final String AUTH_TOKEN = "9f81a8e737e6a5e6f8b0305623c6fe86efd6603b"; 
 
     @Provides
     @Singleton
@@ -56,11 +57,13 @@ public class NetworkModule {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request originalRequest = chain.request();
+                
+                // Luôn gán Token và Accept header cho mọi request
                 Request requestWithHeaders = originalRequest.newBuilder()
-                        .header("Authorization", "Token " + NEW_TOKEN)
+                        .header("Authorization", "Token " + AUTH_TOKEN)
                         .header("Accept", "application/json")
                         .header("Content-Type", "application/json")
-                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                        .header("User-Agent", "Android-App")
                         .removeHeader("Cookie") 
                         .build();
                 return chain.proceed(requestWithHeaders);
@@ -68,11 +71,11 @@ public class NetworkModule {
         };
 
         return new OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
                 .addInterceptor(authInterceptor)
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
+                .addInterceptor(loggingInterceptor)
+                .connectTimeout(90, TimeUnit.SECONDS) // Tăng lên 90s cho Render Free
+                .readTimeout(90, TimeUnit.SECONDS)
+                .writeTimeout(90, TimeUnit.SECONDS)
                 .cookieJar(new CookieJar() {
                     @Override
                     public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {}

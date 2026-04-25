@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="320dp"
     android:layout_height="wrap_content"
+    app:cardBackgroundColor="#FFFFFF"
     app:cardCornerRadius="24dp"
-    app:cardElevation="8dp">
+    app:cardElevation="8dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:background="#FFFFFF">
 
         <ImageView
             android:id="@+id/ivIcon"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_warning_outline" />
+            android:src="@drawable/ic_warning_circle_outline"
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/tvTitle"
@@ -25,10 +30,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="XÁC NHẬN HỦY"
-            android:textColor="#5C3B2E"
+            android:textColor="#8B5E51"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/tvMessage"
@@ -38,7 +44,8 @@
             android:text="Bạn có thông tin chưa lưu, xác nhận hủy ?"
             android:textColor="#757575"
             android:textSize="14sp"
-            android:gravity="center" />
+            android:gravity="center"
+            tools:ignore="HardcodedText" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -59,7 +66,8 @@
                 android:textColor="#4F4F4F"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+                tools:ignore="HardcodedText" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPositive"
@@ -73,7 +81,8 @@
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
     </LinearLayout>

@@ -2,10 +2,12 @@ package com.demo.ltud_n10.presentation.ui.contract;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,7 +17,9 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.databinding.DialogCustomConfirmBinding;
 import com.demo.ltud_n10.databinding.FragmentContractDetailBinding;
 import com.demo.ltud_n10.domain.model.Contract;
 
@@ -185,20 +189,73 @@ public class ContractDetailFragment extends Fragment {
 
     private void handleResult(Resource<?> resource, String msg) {
         if (resource.status == Resource.Status.SUCCESS) {
-            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+            showToast(R.layout.layout_custom_toast, msg);
             Navigation.findNavController(requireView()).popBackStack();
         } else if (resource.status == Resource.Status.ERROR) {
-            Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
+            showErrorDialog("THÔNG BÁO LỖI", "Lỗi hệ thống. Vui lòng thử lại sau !");
         }
     }
 
+    private void showToast(int layoutRes, String msg) {
+        View layout = getLayoutInflater().inflate(layoutRes, null);
+        TextView tvMessage = layout.findViewById(R.id.tvMessage);
+        tvMessage.setText(msg);
+
+        Toast toast = new Toast(requireContext());
+        toast.setDuration(Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 100);
+        toast.setView(layout);
+        toast.show();
+    }
+
+    private void showErrorDialog(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        dialogBinding.tvTitle.setText(title);
+        dialogBinding.tvMessage.setText(message);
+        dialogBinding.ivIcon.setImageResource(R.drawable.ic_error_x);
+
+        dialogBinding.btnNegative.setText("Thoát");
+        dialogBinding.btnPositive.setText("Quay lại");
+
+        dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.btnPositive.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
     private void handleCancel() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("XÁC NHẬN HỦY")
-                .setMessage("Bạn có thông tin chưa lưu, xác nhận hủy?")
-                .setPositiveButton("Đồng ý", (d, w) -> Navigation.findNavController(requireView()).popBackStack())
-                .setNegativeButton("Không", null)
-                .show();
+        showConfirmDialog("XÁC NHẬN HỦY", "Bạn có thông tin chưa lưu, xác nhận hủy?", () -> {
+            Navigation.findNavController(requireView()).popBackStack();
+        });
+    }
+
+    private void showConfirmDialog(String title, String message, Runnable onConfirm) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        dialogBinding.tvTitle.setText(title);
+        dialogBinding.tvMessage.setText(message);
+        dialogBinding.ivIcon.setImageResource(R.drawable.ic_warning_outline);
+
+        dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.btnPositive.setOnClickListener(v -> {
+            dialog.dismiss();
+            onConfirm.run();
+        });
+
+        dialog.show();
     }
 
     @Override
