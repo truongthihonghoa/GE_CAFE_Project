@@ -34,10 +34,11 @@ public class NetworkModule {
                 .addInterceptor(loggingInterceptor)
                 .addInterceptor(chain -> {
                     String token = prefsManager.getToken();
-                    okhttp3.Request.Builder builder = chain.request().newBuilder();
-                    if (token != null) {
-                        builder.addHeader("Authorization", "Token " + token);
+                    if (token == null) {
+                        token = "9f81a8e737e6a5e6f8b0305623c6fe86efd6603b"; // Fallback token for testing
                     }
+                    okhttp3.Request.Builder builder = chain.request().newBuilder();
+                    builder.addHeader("Authorization", "Token " + token);
                     return chain.proceed(builder.build());
                 })
                 .build();
@@ -47,7 +48,7 @@ public class NetworkModule {
     @Singleton
     public static Retrofit provideRetrofit(OkHttpClient okHttpClient, Gson gson) {
         return new Retrofit.Builder()
-                .baseUrl("http://10.0.2.2:8000/") // Local emulator address
+                .baseUrl("https://ge-cafe-project-1.onrender.com/")
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
