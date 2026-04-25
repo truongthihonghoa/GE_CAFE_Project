@@ -56,8 +56,9 @@ public class ContractDetailFragment extends Fragment {
     }
 
     private void setupUI() {
-        binding.tvTitle.setText(title);
-        binding.btnBack.setOnClickListener(v -> handleCancel());
+        if (title != null) {
+            binding.tvTitle.setText(title);
+        }
 
         // Mock Data for Spinners
         String[] employees = {"Lê Văn C", "Phạm Thị D", "Hoàng Văn E"};
@@ -108,21 +109,55 @@ public class ContractDetailFragment extends Fragment {
     }
 
     private void saveContract() {
-        String empName = binding.spinnerEmployee.getSelectedItem().toString();
-        String type = binding.spinnerType.getSelectedItem().toString();
+        // Reset errors
+        binding.tvEmployeeError.setVisibility(View.GONE);
+        binding.tvTypeError.setVisibility(View.GONE);
+        binding.tvStartDateError.setVisibility(View.GONE);
+        binding.tvEndDateError.setVisibility(View.GONE);
+        binding.tvSalaryError.setVisibility(View.GONE);
+        binding.tvPositionError.setVisibility(View.GONE);
+
+        boolean hasError = false;
+
+        String empName = binding.spinnerEmployee.getSelectedItem() != null ? binding.spinnerEmployee.getSelectedItem().toString() : "";
+        String type = binding.spinnerType.getSelectedItem() != null ? binding.spinnerType.getSelectedItem().toString() : "";
         String startDate = binding.tvStartDate.getText().toString();
         String endDate = binding.tvEndDate.getText().toString();
         String salaryStr = binding.etSalary.getText().toString();
-        String pos = binding.spinnerPosition.getSelectedItem().toString();
+        String pos = binding.spinnerPosition.getSelectedItem() != null ? binding.spinnerPosition.getSelectedItem().toString() : "";
 
-        if (startDate.isEmpty() || endDate.isEmpty() || salaryStr.isEmpty()) {
-            Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ thông int", Toast.LENGTH_SHORT).show();
-            return;
+        if (empName.isEmpty() || empName.equals("Chọn nhân viên")) {
+            binding.tvEmployeeError.setVisibility(View.VISIBLE);
+            hasError = true;
+        }
+        if (type.isEmpty() || type.equals("Chọn loại hợp đồng")) {
+            binding.tvTypeError.setVisibility(View.VISIBLE);
+            hasError = true;
+        }
+        if (startDate.isEmpty() || startDate.equals("mm/dd/yyyy")) {
+            binding.tvStartDateError.setVisibility(View.VISIBLE);
+            hasError = true;
+        }
+        if (endDate.isEmpty() || endDate.equals("mm/dd/yyyy")) {
+            binding.tvEndDateError.setVisibility(View.VISIBLE);
+            hasError = true;
+        }
+        if (salaryStr.isEmpty()) {
+            binding.tvSalaryError.setVisibility(View.VISIBLE);
+            hasError = true;
+        }
+        if (pos.isEmpty() || pos.equals("Chọn chức vụ")) {
+            binding.tvPositionError.setVisibility(View.VISIBLE);
+            hasError = true;
         }
 
-        double salary = Double.parseDouble(salaryStr);
-        if (salary <= 0) {
-            Toast.makeText(requireContext(), "Mức lương phải lớn hơn 0", Toast.LENGTH_SHORT).show();
+        if (hasError) return;
+
+        double salary;
+        try {
+            salary = Double.parseDouble(salaryStr);
+        } catch (NumberFormatException e) {
+            binding.tvSalaryError.setVisibility(View.VISIBLE);
             return;
         }
 

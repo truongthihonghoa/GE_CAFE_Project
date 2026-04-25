@@ -121,9 +121,13 @@ def employee_edit_view(request, employee_id):
 
 
 from rest_framework import viewsets
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import AllowAny
 from .models import NhanVien
 from .serializers import NhanVienSerializer
 
 class NhanVienViewSet(viewsets.ModelViewSet):
     queryset = NhanVien.objects.all()
     serializer_class = NhanVienSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [AllowAny]
