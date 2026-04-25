@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.viewsets import ModelViewSet
 from .models import YeuCau
 from .serializers import YeuCauSerializer
@@ -152,7 +153,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class BaseYeuCauViewSet(viewsets.ModelViewSet):
     serializer_class = YeuCauSerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_base_queryset(self, keyword):
