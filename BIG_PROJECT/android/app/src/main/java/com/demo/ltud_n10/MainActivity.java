@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         TextView tvRole = headerView.findViewById(R.id.tvNavUserRole);
 
         tvName.setText(user.getName());
-        tvEmail.setText(user.getUsername());
+        tvEmail.setText(user.getEmail());
         if ("ADMIN".equals(user.getRole())) {
             tvRole.setText("Quản trị viên");
             tvRole.setTextColor(Color.parseColor("#0A4D1E"));
