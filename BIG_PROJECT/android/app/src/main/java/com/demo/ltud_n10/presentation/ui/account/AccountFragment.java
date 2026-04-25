@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +17,8 @@ import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.databinding.FragmentAccountListBinding;
 import com.demo.ltud_n10.domain.model.User;
 import com.demo.ltud_n10.domain.repository.UserRepository;
+
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
@@ -84,8 +87,25 @@ public class AccountFragment extends Fragment {
 
     private void loadData() {
         userRepository.getUsers().observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.data != null) {
-                adapter.setItems(resource.data);
+            if (resource == null) return;
+
+            switch (resource.status) {
+                case LOADING:
+                    // Bạn có thể hiện ProgressBar ở đây (nếu trong XML có)
+                    // binding.progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case SUCCESS:
+                    // binding.progressBar.setVisibility(View.GONE);
+                    if (resource.data != null) {
+                        adapter.setItems(resource.data);
+                    }
+                    break;
+                case ERROR:
+                    // binding.progressBar.setVisibility(View.GONE);
+                    Toast.makeText(requireContext(), "Lỗi tải tài khoản: " + resource.message, Toast.LENGTH_LONG).show();
+                    // Xóa danh sách cũ nếu có lỗi để tránh nhầm lẫn
+                    adapter.setItems(new ArrayList<>());
+                    break;
             }
         });
     }

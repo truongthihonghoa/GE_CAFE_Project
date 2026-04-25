@@ -1,69 +1,75 @@
 package com.demo.ltud_n10.data.repository;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.remote.ApiService;
+import com.demo.ltud_n10.data.remote.dto.BranchDto;
 import com.demo.ltud_n10.domain.model.Branch;
 import com.demo.ltud_n10.domain.repository.BranchRepository;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @Singleton
 public class BranchRepositoryImpl implements BranchRepository {
 
-    private final List<Branch> branches = new ArrayList<>();
+    private final ApiService apiService;
 
     @Inject
-    public BranchRepositoryImpl() {
-        // Mock data ban đầu
-        branches.add(new Branch("CN001", "Chi nhánh Hải Châu", "186 Đường 2/9, Hải Châu", "0328811989", "Nguyễn Văn Nam", "Đang hoạt động"));
-        branches.add(new Branch("CN002", "Chi nhánh NHS", "39 Ngũ Hành Sơn", "0906256241", "Trần Thị Bé", "Đang hoạt động"));
+    public BranchRepositoryImpl(ApiService apiService) {
+        this.apiService = apiService;
     }
 
     @Override
     public LiveData<Resource<List<Branch>>> getBranches() {
         MutableLiveData<Resource<List<Branch>>> data = new MutableLiveData<>();
-        data.setValue(Resource.success(new ArrayList<>(branches)));
-        return data;
-    }
+        data.setValue(Resource.loading(null));
 
-    @Override
-    public LiveData<Resource<Branch>> addBranch(Branch branch) {
-        MutableLiveData<Resource<Branch>> data = new MutableLiveData<>();
-        // Tự động sinh mã chi nhánh (UC 9.1 - Step 6)
-        branch.setId("CN00" + (branches.size() + 1));
-        branches.add(branch);
-        data.setValue(Resource.success(branch));
-        return data;
-    }
-
-    @Override
-    public LiveData<Resource<Branch>> updateBranch(Branch branch) {
-        MutableLiveData<Resource<Branch>> data = new MutableLiveData<>();
-        for (int i = 0; i < branches.size(); i++) {
-            if (branches.get(i).getId().equals(branch.getId())) {
-                branches.set(i, branch);
-                data.setValue(Resource.success(branch));
-                return data;
+        // CHUYỂN SANG GET ĐỂ KHỚP VỚI POSTMAN CỦA BẠN
+        apiService.getBranches().enqueue(new Callback<List<BranchDto>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<BranchDto>> call, @NonNull Response<List<BranchDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Branch> branches = new ArrayList<>();
+                    for (BranchDto dto : response.body()) {
+                        branches.add(new Branch(
+                                dto.getId(),
+                                dto.getName(),
+                                dto.getAddress(),
+                                dto.getPhoneNumber(),
+                                dto.getManagerName(),
+                                dto.getStatus()
+                        ));
+                    }
+                    data.setValue(Resource.success(branches));
+                } else {
+                    data.setValue(Resource.error("Lỗi server: " + response.code(), null));
+                }
             }
-        }
-        data.setValue(Resource.error("Không tìm thấy chi nhánh", null));
+
+            @Override
+            public void onFailure(@NonNull Call<List<BranchDto>> call, @NonNull Throwable t) {
+                data.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            }
+        });
+
         return data;
     }
 
     @Override
-    public LiveData<Resource<Boolean>> deleteBranch(String branchId) {
-        MutableLiveData<Resource<Boolean>> data = new MutableLiveData<>();
-        // Giả lập Business Rules (UC 9.3 - Step 5a)
-        // Nếu là chi nhánh NHS (CN002) thì giả lập còn ràng buộc dữ liệu
-        if ("CN002".equals(branchId)) {
-            data.setValue(Resource.error("Không thể ngưng hoạt động chi nhánh do còn dữ liệu liên quan. Vui lòng thử lại sau.", false));
-        } else {
-            branches.removeIf(b -> b.getId().equals(branchId));
-            data.setValue(Resource.success(true));
-        }
-        return data;
-    }
+    public LiveData<Resource<Branch>> addBranch(Branch branch) { return null; }
+    @Override
+    public LiveData<Resource<Branch>> updateBranch(Branch branch) { return null; }
+    @Override
+    public LiveData<Resource<Boolean>> deleteBranch(String branchId) { return null; }
 }

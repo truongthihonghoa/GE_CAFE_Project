@@ -60,11 +60,14 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.ViewHold
 
         void bind(User user) {
             binding.tvName.setText(user.getName());
-            binding.tvUsername.setText(user.getUsername());
+            binding.tvUsername.setText(user.getEmail());
             binding.tvRole.setText(user.getRole());
-            binding.tvStatus.setText(user.getStatus());
+            
+            // Xử lý trạng thái (vì User không có phương thức getStatus() trực tiếp)
+            String status = user.isStaff() ? "Hoạt động" : "Nhân viên"; 
+            binding.tvStatus.setText(status);
 
-            if ("Ngưng hoạt động".equals(user.getStatus())) {
+            if (!user.isStaff()) {
                 binding.cvStatus.setCardBackgroundColor(Color.parseColor("#F8D7DA"));
                 binding.tvStatus.setTextColor(Color.parseColor("#721C24"));
             } else {

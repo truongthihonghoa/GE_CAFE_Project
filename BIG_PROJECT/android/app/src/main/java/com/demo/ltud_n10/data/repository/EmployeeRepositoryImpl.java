@@ -1,10 +1,11 @@
 package com.demo.ltud_n10.data.repository;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.demo.ltud_n10.core.Resource;
-import com.demo.ltud_n10.data.remote.EmployeeApiService;
+import com.demo.ltud_n10.data.remote.ApiService;
 import com.demo.ltud_n10.data.remote.model.EmployeeDto;
 import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.repository.EmployeeRepository;
@@ -22,10 +23,10 @@ import retrofit2.Response;
 @Singleton
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
-    private final EmployeeApiService apiService;
+    private final ApiService apiService;
 
     @Inject
-    public EmployeeRepositoryImpl(EmployeeApiService apiService) {
+    public EmployeeRepositoryImpl(ApiService apiService) {
         this.apiService = apiService;
     }
 
@@ -34,9 +35,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         MutableLiveData<Resource<List<Employee>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
+        // Sử dụng GET để lấy danh sách thực tế (Token tự động gắn vào Header qua Interceptor)
         apiService.getEmployees().enqueue(new Callback<List<EmployeeDto>>() {
             @Override
-            public void onResponse(Call<List<EmployeeDto>> call, Response<List<EmployeeDto>> response) {
+            public void onResponse(@NonNull Call<List<EmployeeDto>> call, @NonNull Response<List<EmployeeDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Employee> employees = new ArrayList<>();
                     for (EmployeeDto dto : response.body()) {
@@ -49,7 +51,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             }
 
             @Override
-            public void onFailure(Call<List<EmployeeDto>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<EmployeeDto>> call, @NonNull Throwable t) {
                 result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
             }
         });
@@ -61,71 +63,57 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     public LiveData<Resource<Employee>> addEmployee(Employee employee) {
         MutableLiveData<Resource<Employee>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
-
         apiService.addEmployee(mapDomainToDto(employee)).enqueue(new Callback<EmployeeDto>() {
             @Override
-            public void onResponse(Call<EmployeeDto> call, Response<EmployeeDto> response) {
+            public void onResponse(@NonNull Call<EmployeeDto> call, @NonNull Response<EmployeeDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
-                    result.setValue(Resource.error("Lỗi khi thêm nhân viên: " + response.code(), null));
+                    result.setValue(Resource.error("Lỗi khi thêm nhân viên", null));
                 }
             }
-
             @Override
-            public void onFailure(Call<EmployeeDto> call, Throwable t) {
-                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            public void onFailure(@NonNull Call<EmployeeDto> call, @NonNull Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), null));
             }
         });
-
         return result;
     }
 
     @Override
     public LiveData<Resource<Employee>> updateEmployee(Employee employee) {
         MutableLiveData<Resource<Employee>> result = new MutableLiveData<>();
-        result.setValue(Resource.loading(null));
-
         apiService.updateEmployee(employee.getId(), mapDomainToDto(employee)).enqueue(new Callback<EmployeeDto>() {
             @Override
-            public void onResponse(Call<EmployeeDto> call, Response<EmployeeDto> response) {
+            public void onResponse(@NonNull Call<EmployeeDto> call, @NonNull Response<EmployeeDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
-                    result.setValue(Resource.error("Lỗi khi cập nhật nhân viên: " + response.code(), null));
+                    result.setValue(Resource.error("Lỗi khi cập nhật", null));
                 }
             }
-
             @Override
-            public void onFailure(Call<EmployeeDto> call, Throwable t) {
-                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+            public void onFailure(@NonNull Call<EmployeeDto> call, @NonNull Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), null));
             }
         });
-
         return result;
     }
 
     @Override
     public LiveData<Resource<Boolean>> deleteEmployee(String employeeId) {
         MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        result.setValue(Resource.loading(null));
-
         apiService.deleteEmployee(employeeId).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    result.setValue(Resource.success(true));
-                } else {
-                    result.setValue(Resource.error("Lỗi khi xóa nhân viên: " + response.code(), false));
-                }
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) result.setValue(Resource.success(true));
+                else result.setValue(Resource.error("Lỗi khi xóa", false));
             }
-
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), false));
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), false));
             }
         });
-
         return result;
     }
 
@@ -140,16 +128,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         employee.setDob(dto.getNgaySinh());
         employee.setAddress(dto.getDiaChi());
         employee.setPosition(dto.getChucVu());
-        
-        String status = dto.getTrangThai();
-        if ("DANG_LAM".equals(status)) {
-            employee.setStatus("Đang làm");
-        } else if ("NGUNG_HOAT_DONG".equals(status)) {
-            employee.setStatus("Ngừng hoạt động");
-        } else {
-            employee.setStatus(status);
-        }
-        
+        employee.setStatus(dto.getTrangThai());
         return employee;
     }
 
@@ -164,16 +143,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         dto.setNgaySinh(employee.getDob());
         dto.setDiaChi(employee.getAddress());
         dto.setChucVu(employee.getPosition());
-        
-        String status = employee.getStatus();
-        if ("Đang làm".equals(status)) {
-            dto.setTrangThai("DANG_LAM");
-        } else if ("Ngừng hoạt động".equals(status)) {
-            dto.setTrangThai("NGUNG_HOAT_DONG");
-        } else {
-            dto.setTrangThai(status);
-        }
-        
+        dto.setTrangThai(employee.getStatus());
         return dto;
     }
 }
