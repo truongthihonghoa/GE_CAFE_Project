@@ -5,6 +5,7 @@ from django.db import transaction
 from django.db.utils import OperationalError, ProgrammingError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from rest_framework.authentication import SessionAuthentication
 
 # --- IMPORT MODELS ---
 from .models import LichLamViec
@@ -121,7 +122,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class ScheduleAPIViewSet(viewsets.ModelViewSet):
     serializer_class = ScheduleSerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
