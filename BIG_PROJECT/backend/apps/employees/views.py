@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from rest_framework.authentication import SessionAuthentication
 
 from .forms import EmployeeCreateForm, EmployeeUpdateForm
 from .models import NhanVien
@@ -130,7 +131,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class NhanVienViewSet(viewsets.ModelViewSet):
     serializer_class = NhanVienSerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
