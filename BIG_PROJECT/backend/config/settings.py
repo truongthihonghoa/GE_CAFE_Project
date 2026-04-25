@@ -9,10 +9,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========================
 SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-secret-key')
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'ge-cafe-project-1.onrender.com',
+    '127.0.0.1',
+    'localhost',
 ]
 
 # ========================
@@ -35,7 +37,7 @@ INSTALLED_APPS = [
     'apps.requests',
     'apps.schedules',
     'apps.attendances',
-
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
 ]
@@ -44,6 +46,7 @@ INSTALLED_APPS = [
 # MIDDLEWARE (FIX DUPLICATE)
 # ========================
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # chỉ 1 lần
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -59,17 +62,18 @@ MIDDLEWARE = [
 # ========================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication', # Dùng JWT
+        'rest_framework.authentication.SessionAuthentication',       # Giúp hiện dữ liệu trên trình duyệt
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated', # Chỉ cho phép người đã đăng nhập thấy dữ liệu
     ],
-    # production: chỉ JSON cho nhẹ
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer', # Giúp giao diện API đẹp hơn khi xem bằng web
     ]
 }
-
 # ========================
 # JWT
 # ========================
