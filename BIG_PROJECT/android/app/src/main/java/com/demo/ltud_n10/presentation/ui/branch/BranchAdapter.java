@@ -62,14 +62,17 @@ public class BranchAdapter extends RecyclerView.Adapter<BranchAdapter.ViewHolder
             binding.tvAddress.setText(branch.getAddress());
             binding.tvPhoneNumber.setText(branch.getPhoneNumber());
 
+            // ĐỔI MÀU DÒNG THÀNH MÀU ĐỎ KHI CHỌN NGƯNG HOẠT ĐỘNG
             if ("Ngưng hoạt động".equals(branch.getStatus())) {
                 binding.tvBranchName.setTextColor(Color.RED);
-                binding.tvAddress.setTextColor(Color.RED);
-                binding.tvPhoneNumber.setTextColor(Color.RED);
+                binding.tvAddress.setTextColor(Color.parseColor("#FF6B6B")); // Đỏ nhạt
+                binding.tvPhoneNumber.setTextColor(Color.parseColor("#FF6B6B"));
+                binding.getRoot().setBackgroundColor(Color.parseColor("#FFF5F5")); // Nền hồng nhạt báo lỗi
             } else {
                 binding.tvBranchName.setTextColor(Color.parseColor("#64748B"));
                 binding.tvAddress.setTextColor(Color.parseColor("#1E293B"));
                 binding.tvPhoneNumber.setTextColor(Color.parseColor("#1B431C"));
+                binding.getRoot().setBackgroundColor(Color.TRANSPARENT);
             }
 
             binding.getRoot().setOnClickListener(v -> {

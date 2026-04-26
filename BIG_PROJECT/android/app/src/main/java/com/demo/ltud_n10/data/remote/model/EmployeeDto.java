@@ -42,6 +42,9 @@ public class EmployeeDto {
     @SerializedName("ma_chi_nhanh")
     private String maChiNhanh;
 
+    @SerializedName("is_staff")
+    private Integer isStaff;
+
     // Getters and Setters
     public String getMaNv() { return maNv; }
     public void setMaNv(String maNv) { this.maNv = maNv; }
@@ -81,4 +84,7 @@ public class EmployeeDto {
 
     public String getMaChiNhanh() { return maChiNhanh; }
     public void setMaChiNhanh(String maChiNhanh) { this.maChiNhanh = maChiNhanh; }
+
+    public Integer getIsStaff() { return isStaff; }
+    public void setIsStaff(Integer isStaff) { this.isStaff = isStaff; }
 }

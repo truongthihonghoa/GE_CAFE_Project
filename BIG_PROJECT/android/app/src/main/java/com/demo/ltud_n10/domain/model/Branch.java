@@ -1,14 +1,25 @@
 package com.demo.ltud_n10.domain.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
 public class Branch implements Serializable {
+    @SerializedName("ma_chi_nhanh")
     private String id;
+
+    @SerializedName("ten_chi_nhanh")
     private String name;
+
+    @SerializedName("dia_chi")
     private String address;
+
+    @SerializedName("sdt")
     private String phoneNumber;
+
+    @SerializedName("ma_nv_ql")
     private String managerName;
-    private String status; // "Đang hoạt động", "Ngưng hoạt động"
+
+    private String status; // Luôn ưu tiên dùng trường này để đổi màu UI
 
     public Branch() {}
 
@@ -31,6 +42,8 @@ public class Branch implements Serializable {
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public String getManagerName() { return managerName; }
     public void setManagerName(String managerName) { this.managerName = managerName; }
-    public String getStatus() { return status; }
+    public String getStatus() { 
+        return (status == null || status.isEmpty()) ? "Đang hoạt động" : status; 
+    }
     public void setStatus(String status) { this.status = status; }
 }

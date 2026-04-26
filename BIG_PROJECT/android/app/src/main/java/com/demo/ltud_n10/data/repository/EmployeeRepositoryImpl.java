@@ -59,6 +59,35 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
+    public LiveData<Resource<List<Employee>>> getStaffEmployees() {
+        MutableLiveData<Resource<List<Employee>>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+
+        apiService.getEmployees().enqueue(new Callback<List<EmployeeDto>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<EmployeeDto>> call, @NonNull Response<List<EmployeeDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Employee> staffOnly = new ArrayList<>();
+                    for (EmployeeDto dto : response.body()) {
+                        if (dto.getIsStaff() != null && dto.getIsStaff() == 1) {
+                            staffOnly.add(mapDtoToDomain(dto));
+                        }
+                    }
+                    result.setValue(Resource.success(staffOnly));
+                } else {
+                    result.setValue(Resource.error("Lỗi lấy danh sách quản lý", null));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<EmployeeDto>> call, @NonNull Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), null));
+            }
+        });
+        return result;
+    }
+
+    @Override
     public LiveData<Resource<Employee>> addEmployee(Employee employee) {
         MutableLiveData<Resource<Employee>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
