@@ -1,12 +1,16 @@
 package com.demo.ltud_n10.presentation.ui.branch;
 
+import android.app.Dialog;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,9 +19,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.databinding.FragmentBranchDetailBinding;
 import com.demo.ltud_n10.domain.model.Branch;
 import com.demo.ltud_n10.domain.repository.BranchRepository;
+import com.google.android.material.button.MaterialButton;
 
 import javax.inject.Inject;
 
@@ -63,7 +69,6 @@ public class BranchDetailFragment extends Fragment {
         binding.ivBack.setOnClickListener(v -> handleCancel());
         binding.btnCancel.setOnClickListener(v -> handleCancel());
         
-        // SỬA LỖI: Cho phép nhấn vào Dropdown để chọn trạng thái
         binding.cvStatus.setOnClickListener(v -> {
             if (isEditMode) showStatusDialog();
         });
@@ -86,7 +91,7 @@ public class BranchDetailFragment extends Fragment {
                     String selectedStatus = statuses[which];
                     updateStatusUI(selectedStatus);
                     if (branch != null) {
-                        branch.setStatus(selectedStatus); // Cập nhật vào đối tượng
+                        branch.setStatus(selectedStatus);
                     }
                 })
                 .show();
@@ -166,7 +171,7 @@ public class BranchDetailFragment extends Fragment {
         branch.setAddress(binding.etAddress.getText().toString());
         branch.setPhoneNumber(binding.etPhoneNumber.getText().toString());
         branch.setManagerName(binding.etManagerName.getText().toString());
-        branch.setStatus(binding.tvStatus.getText().toString()); // LẤY TỪ Dropdown
+        branch.setStatus(binding.tvStatus.getText().toString());
 
         binding.btnSubmit.setEnabled(false);
         branchRepository.updateBranch(branch).observe(getViewLifecycleOwner(), resource -> {
@@ -180,8 +185,36 @@ public class BranchDetailFragment extends Fragment {
         });
     }
 
+    private void handleCancel() {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_confirm_cancel);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        MaterialButton btnNo = dialog.findViewById(R.id.btnDialogCancel);
+        MaterialButton btnYes = dialog.findViewById(R.id.btnDialogConfirm);
+
+        btnNo.setOnClickListener(v -> dialog.dismiss());
+        
+        btnYes.setOnClickListener(v -> {
+            dialog.dismiss();
+            Navigation.findNavController(requireView()).navigateUp();
+        });
+
+        dialog.show();
+    }
+
     private boolean validate() {
-        return !binding.etBranchName.getText().toString().isEmpty();
+        if (binding.etBranchName.getText().toString().isEmpty()) {
+            binding.tvErrorName.setVisibility(View.VISIBLE);
+            return false;
+        }
+        return true;
     }
 
     private abstract static class SimpleTextWatcher implements TextWatcher {

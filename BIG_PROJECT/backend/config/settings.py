@@ -9,10 +9,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========================
 SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-secret-key')
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'ge-cafe-project-1.onrender.com',
+    '127.0.0.1',
+    'localhost',
 ]
 
 # ========================
@@ -67,6 +69,7 @@ REST_FRAMEWORK = {
     # production: chỉ JSON cho nhẹ
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ]
 }
 
@@ -139,6 +142,8 @@ USE_TZ = True
 # ========================
 CSRF_TRUSTED_ORIGINS = [
     'https://ge-cafe-project-1.onrender.com',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
 ]
 
 # ========================

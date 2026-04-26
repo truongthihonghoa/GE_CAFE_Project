@@ -1,9 +1,19 @@
 package com.demo.ltud_n10.presentation.ui.auth;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,7 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ForgotPasswordFragment extends Fragment {
 
     private FragmentForgotPasswordBinding binding;
-    
+
     @Inject
     AuthRepository authRepository;
 

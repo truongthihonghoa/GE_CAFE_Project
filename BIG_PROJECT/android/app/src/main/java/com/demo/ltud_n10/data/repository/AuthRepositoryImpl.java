@@ -50,7 +50,7 @@ public class AuthRepositoryImpl implements AuthRepository {
                     prefsManager.saveToken(token);
                     
                     // Logic phân quyền dựa trên logic Django của bạn:
-                    String role = "EMPLOYEE"; 
+                    String role = "EMPLOYEE";
                     if (username.equals("ThuyLai") || username.contains("admin")) {
                         role = "ADMIN"; // Tương ứng is_superuser
                     } else if (username.contains("manager")) {

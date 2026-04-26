@@ -35,18 +35,26 @@ public class UserRepositoryImpl implements UserRepository {
         MutableLiveData<Resource<List<User>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        // CHUYỂN SANG DÙNG GET (Vì NetworkModule đã tự động thêm Bearer Token rồi)
         apiService.getAccounts().enqueue(new Callback<List<AccountDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<AccountDto>> call, @NonNull Response<List<AccountDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<User> users = new ArrayList<>();
                     for (AccountDto dto : response.body()) {
+                        // Bỏ đuôi @coffee.com, chỉ lấy username gốc
+                        String username = dto.getUsername();
+                        
+                        // Chỉnh Trần Thị Thúy Lài là Quản lý (ADMIN)
+                        String role = "EMPLOYEE";
+                        if (dto.getFullName().equals("Trần Thị Thúy Lài") || "Quản lý".equals(dto.getRole())) {
+                            role = "ADMIN";
+                        }
+
                         User user = new User(
                                 dto.getId(),
-                                dto.getUsername() + "@coffee.com",
+                                username,
                                 dto.getFullName(),
-                                "Quản lý".equals(dto.getRole()) ? "ADMIN" : "EMPLOYEE"
+                                role
                         );
                         user.setStatus(dto.getStatus());
                         users.add(user);
