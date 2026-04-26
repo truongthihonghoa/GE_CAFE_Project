@@ -16,6 +16,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -25,6 +26,10 @@ public interface ApiService {
 
     @POST("accounts/api/login/")
     Call<LoginResponse> login(@Body LoginRequest request);
+
+    // Lấy thông tin tài khoản cá nhân (hoặc danh sách để lọc)
+    @GET("accounts/taikhoan")
+    Call<List<AccountDto>> getMyAccount(@Header("Authorization") String token);
 
     // Accounts
     @GET("api/accounts/")
@@ -52,7 +57,7 @@ public interface ApiService {
     @PUT("api/branches/{id}/")
     Call<BranchDto> updateBranch(@Path("id") String id, @Body BranchDto branch);
 
-    @DELETE("api/branches/{id}/") // ĐẢM BẢO CÓ DẤU / Ở CUỐI
+    @DELETE("api/branches/{id}/")
     Call<Void> deleteBranch(@Path("id") String id);
 
     // Employees

@@ -18,3 +18,6 @@ urlpatterns = [
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # ---------------------------
 ]
+
+
+Lời khuyên cho bạn: Bạn nên yêu cầu người làm Backend sửa lại API /api/login/ để trả về thêm trường ma_nv (mã nhân viên). Đây là cách tối ưu nhất, giúp App chạy nhanh hơn và tránh việc phải xử lý quá nhiều logic phức tạp dưới Android, đồng thời giảm tải cho server.
