@@ -14,5 +14,6 @@ class TaiKhoanSerializer(serializers.ModelSerializer):
             'ten_dang_nhap',
             'ho_ten',
             'vai_tro',
+            'ma_nv',
             'trang_thai',
         ]
