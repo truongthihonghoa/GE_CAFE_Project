@@ -75,13 +75,21 @@ public class RequestRepositoryImpl implements RequestRepository {
     @Override
     public LiveData<Resource<Request>> addRequest(Request request) {
         MutableLiveData<Resource<Request>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+        
+        // FIX TRIỆT ĐỂ: Gửi toàn bộ dữ liệu bao gồm cả ID (ma_yc) mà Fragment đã tạo
+        // để thỏa mãn điều kiện "Required" của Server
         apiService.addRequest(mapDomainToDto(request)).enqueue(new Callback<RequestDto>() {
             @Override
             public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
-                    result.setValue(Resource.error("Lỗi khi thêm yêu cầu", null));
+                    String error = "Lỗi gửi yêu cầu";
+                    try {
+                        if (response.errorBody() != null) error = response.errorBody().string();
+                    } catch (Exception ignored) {}
+                    result.setValue(Resource.error(error, null));
                 }
             }
             @Override
@@ -95,21 +103,15 @@ public class RequestRepositoryImpl implements RequestRepository {
     @Override
     public LiveData<Resource<Request>> updateRequest(Request request) {
         MutableLiveData<Resource<Request>> result = new MutableLiveData<>();
-        Call<RequestDto> call;
-        
-        if ("Nghỉ phép".equals(request.getType())) {
-            call = apiService.updateLeaveRequest(request.getId(), mapDomainToDto(request));
-        } else {
-            call = apiService.updateRequest(request.getId(), mapDomainToDto(request));
-        }
+        result.setValue(Resource.loading(null));
 
-        call.enqueue(new Callback<RequestDto>() {
+        apiService.updateRequest(request.getId(), mapDomainToDto(request)).enqueue(new Callback<RequestDto>() {
             @Override
             public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
-                    result.setValue(Resource.error("Lỗi khi cập nhật yêu cầu", null));
+                    result.setValue(Resource.error("Cập nhật thất bại", null));
                 }
             }
             @Override
@@ -127,9 +129,8 @@ public class RequestRepositoryImpl implements RequestRepository {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) result.setValue(Resource.success(true));
-                else result.setValue(Resource.error("Lỗi khi xóa yêu cầu", false));
+                else result.setValue(Resource.error("Xóa thất bại", false));
             }
-
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 result.setValue(Resource.error(t.getMessage(), false));
@@ -147,10 +148,7 @@ public class RequestRepositoryImpl implements RequestRepository {
         Request request = new Request();
         request.setId(dto.getId());
         request.setEmployeeId(dto.getEmployeeId());
-        
-        // CẬP NHẬT: Lấy tên nhân viên trực tiếp từ ten_nv của API
-        request.setEmployeeName(dto.getEmployeeName() != null ? dto.getEmployeeName() : dto.getEmployeeId());
-        
+        request.setEmployeeName(dto.getEmployeeName());
         request.setType(dto.getType());
         request.setStartDate(dto.getStartDate());
         request.setEndDate(dto.getEndDate());

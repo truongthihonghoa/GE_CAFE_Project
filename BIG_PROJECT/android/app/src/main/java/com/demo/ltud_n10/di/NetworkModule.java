@@ -31,7 +31,8 @@ public class NetworkModule {
     public static Gson provideGson() {
         return new GsonBuilder()
                 .setLenient()
-                .serializeNulls() // QUAN TRỌNG: Cho phép gửi các trường có giá trị null lên server
+                // ĐÃ XÓA serializeNulls(): Để không gửi các trường null (như ma_yc, ma_chi_nhanh) lên server
+                // giúp server tự sinh mã tự động và tránh lỗi "This field may not be null"
                 .create();
     }
 

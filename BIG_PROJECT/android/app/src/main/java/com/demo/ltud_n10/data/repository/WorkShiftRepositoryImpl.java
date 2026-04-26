@@ -81,10 +81,10 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
                     try {
-                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Lỗi 400";
+                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Lỗi từ Server (400)";
                         result.setValue(Resource.error(errorMsg, null));
                     } catch (Exception e) {
-                        result.setValue(Resource.error("Lỗi hệ thống", null));
+                        result.setValue(Resource.error("Lỗi hệ thống khi thêm", null));
                     }
                 }
             }
@@ -110,10 +110,10 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
                     try {
-                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Lỗi 400";
+                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Lỗi cập nhật";
                         result.setValue(Resource.error(errorMsg, null));
                     } catch (Exception e) {
-                        result.setValue(Resource.error("Lỗi cập nhật", null));
+                        result.setValue(Resource.error("Lỗi khi cập nhật yêu cầu", null));
                     }
                 }
             }
@@ -132,7 +132,7 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) result.setValue(Resource.success(true));
-                else result.setValue(Resource.error("Lỗi khi xóa", false));
+                else result.setValue(Resource.error("Không thể xóa yêu cầu này", false));
             }
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
@@ -158,14 +158,24 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
         
         String caLam = dto.getShift();
         if (caLam != null && caLam.contains("-")) {
-            shift.setStartTime(caLam.split("-")[0].trim());
-            shift.setEndTime(caLam.split("-")[1].trim());
+            String[] parts = caLam.split("-");
+            shift.setStartTime(parts[0].trim());
+            shift.setEndTime(parts.length > 1 ? parts[1].trim() : "");
         } else {
-            shift.setStartTime(caLam);
+            shift.setStartTime(caLam != null ? caLam : "");
             shift.setEndTime("");
         }
-        shift.setStatus(dto.getStatus());
+        
+        shift.setStatus(dto.getStatus() != null ? dto.getStatus() : "Chờ duyệt");
         shift.setPosition(dto.getNote());
+        
+        // QUAN TRỌNG: Tự động gán Type để không bị crash khi filter
+        if (dto.getNote() != null && (dto.getNote().contains("Nghỉ") || dto.getNote().contains("nghỉ") || dto.getWorkDate().contains(" - "))) {
+            shift.setType("Nghỉ phép");
+        } else {
+            shift.setType("Đăng ký ca làm");
+        }
+        
         return shift;
     }
 
@@ -174,23 +184,22 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
         dto.setId(shift.getId());
         dto.setEmployeeId(shift.getEmployeeId());
         dto.setWorkDate(shift.getDate());
-        dto.setShift(shift.getStartTime() + " - " + shift.getEndTime());
+        
+        String shiftStr = (shift.getStartTime() != null ? shift.getStartTime() : "") + 
+                         " - " + (shift.getEndTime() != null ? shift.getEndTime() : "");
+        dto.setShift(shiftStr);
+        
         dto.setStatus(shift.getStatus());
         dto.setBranchId(shift.getBranchId());
         
-        // CHỐNG LỖI NULL NGAY_TAO: Nếu sentTime null thì lấy ngày hiện tại ngay lập tức
         String createdAt = shift.getSentTime();
         if (createdAt == null || createdAt.isEmpty() || "null".equals(createdAt)) {
             createdAt = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         }
         dto.setCreatedAt(createdAt);
         
-        // Gán ghi chú chuẩn
-        String startTime = shift.getStartTime();
-        if ("06:00".equals(startTime)) dto.setNote("Ca sáng");
-        else if ("12:00".equals(startTime)) dto.setNote("Ca chiều");
-        else if ("17:00".equals(startTime)) dto.setNote("Ca tối");
-        else dto.setNote(shift.getPosition());
+        // Giữ nguyên ghi chú (Lý do nghỉ hoặc Tên ca)
+        dto.setNote(shift.getPosition());
 
         return dto;
     }

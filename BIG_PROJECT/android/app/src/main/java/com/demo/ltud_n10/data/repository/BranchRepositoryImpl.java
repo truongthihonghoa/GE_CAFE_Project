@@ -13,6 +13,7 @@ import com.demo.ltud_n10.domain.repository.BranchRepository;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -63,11 +64,15 @@ public class BranchRepositoryImpl implements BranchRepository {
         data.setValue(Resource.loading(null));
 
         BranchDto dto = new BranchDto();
-        dto.setId(null); // Để server tự sinh mã CNxx
+        
+        // FIX TRIỆT ĐỂ: Tự sinh mã chi nhánh tạm thời chuẩn 100% để tránh lỗi "ma_chi_nhanh may not be null"
+        String tempId = "CN" + (System.currentTimeMillis() % 1000000) + (new Random().nextInt(90) + 10);
+        dto.setId(tempId); 
+        
         dto.setName(branch.getName());
         dto.setAddress(branch.getAddress());
         dto.setPhoneNumber(branch.getPhoneNumber());
-        dto.setStatus("active"); // Gửi Key chuẩn Django
+        dto.setStatus("active"); // Mặc định hoạt động
         
         String managerId = branch.getManagerName();
         dto.setManagerName((managerId == null || managerId.trim().isEmpty()) ? null : managerId);
@@ -83,7 +88,7 @@ public class BranchRepositoryImpl implements BranchRepository {
             }
             @Override
             public void onFailure(@NonNull Call<BranchDto> call, @NonNull Throwable t) {
-                data.setValue(Resource.error(t.getMessage(), null));
+                data.setValue(Resource.error("Lỗi: " + t.getMessage(), null));
             }
         });
         return data;
@@ -100,7 +105,6 @@ public class BranchRepositoryImpl implements BranchRepository {
         dto.setAddress(branch.getAddress());
         dto.setPhoneNumber(branch.getPhoneNumber());
         
-        // CHUYỂN ĐỔI SANG KEY MÀ SERVER HIỂU
         String apiStatus = "active";
         if (branch.getStatus() != null && (branch.getStatus().contains("Ngưng") || branch.getStatus().equals("inactive"))) {
             apiStatus = "inactive";
@@ -131,7 +135,7 @@ public class BranchRepositoryImpl implements BranchRepository {
         String errorMsg = "Lỗi " + response.code();
         try {
             if (response.errorBody() != null) {
-                errorMsg += ": " + response.errorBody().string();
+                errorMsg = response.errorBody().string();
             }
         } catch (IOException e) {
             e.printStackTrace();

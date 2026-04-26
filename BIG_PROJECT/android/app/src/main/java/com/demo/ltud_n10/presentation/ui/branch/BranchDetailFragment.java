@@ -248,16 +248,21 @@ public class BranchDetailFragment extends Fragment {
         newBranch.setManagerName(selectedManagerId);
         newBranch.setStatus("Đang hoạt động");
 
-        binding.btnSubmit.setEnabled(false);
         branchRepository.addBranch(newBranch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null) {
-                if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                    showSuccessToast("Thêm chi nhánh thành công");
-                    Navigation.findNavController(requireView()).navigateUp();
-                } else {
-                    binding.btnSubmit.setEnabled(true);
-//                    showErrorToast(resource.message != null ? resource.message : "Lỗi hệ thống");
-                }
+            if (resource == null) return;
+
+            if (resource.status == com.demo.ltud_n10.core.Resource.Status.LOADING) {
+                binding.btnSubmit.setEnabled(false);
+                binding.btnSubmit.setText("ĐANG LƯU...");
+            } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                binding.btnSubmit.setEnabled(true);
+                binding.btnSubmit.setText("LƯU");
+                showSuccessToast("Thêm chi nhánh thành công");
+                Navigation.findNavController(requireView()).navigateUp();
+            } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                binding.btnSubmit.setEnabled(true);
+                binding.btnSubmit.setText("LƯU");
+                showErrorToast(resource.message != null ? resource.message : "Lỗi hệ thống");
             }
         });
     }
@@ -270,16 +275,21 @@ public class BranchDetailFragment extends Fragment {
         branch.setManagerName(selectedManagerId);
         branch.setStatus(binding.tvStatus.getText().toString());
 
-        binding.btnSubmit.setEnabled(false);
         branchRepository.updateBranch(branch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null) {
-                if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                    showSuccessToast("Cập nhật thông tin thành công");
-                    Navigation.findNavController(requireView()).navigateUp();
-                } else {
-                    binding.btnSubmit.setEnabled(true);
-//                    showErrorToast(resource.message != null ? resource.message : "Lỗi hệ thống");
-                }
+            if (resource == null) return;
+
+            if (resource.status == com.demo.ltud_n10.core.Resource.Status.LOADING) {
+                binding.btnSubmit.setEnabled(false);
+                binding.btnSubmit.setText("ĐANG LƯU...");
+            } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                binding.btnSubmit.setEnabled(true);
+                binding.btnSubmit.setText("LƯU");
+                showSuccessToast("Cập nhật thông tin thành công");
+                Navigation.findNavController(requireView()).navigateUp();
+            } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                binding.btnSubmit.setEnabled(true);
+                binding.btnSubmit.setText("LƯU");
+                showErrorToast(resource.message != null ? resource.message : "Lỗi hệ thống");
             }
         });
     }

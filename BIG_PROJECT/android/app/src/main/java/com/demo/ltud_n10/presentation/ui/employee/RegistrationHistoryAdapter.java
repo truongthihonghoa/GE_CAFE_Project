@@ -9,30 +9,26 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.ltud_n10.databinding.ItemRegistrationHistoryBinding;
-import com.demo.ltud_n10.domain.model.WorkShift;
+import com.demo.ltud_n10.domain.model.Request;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class RegistrationHistoryAdapter extends RecyclerView.Adapter<RegistrationHistoryAdapter.ViewHolder> {
 
-    private List<WorkShift> items = new ArrayList<>();
+    private List<Request> items = new ArrayList<>();
     private OnActionClickListener listener;
 
     public interface OnActionClickListener {
-        void onEdit(WorkShift shift);
-        void onDelete(WorkShift shift);
+        void onEdit(Request request);
+        void onDelete(Request request);
     }
 
     public void setOnActionClickListener(OnActionClickListener listener) {
         this.listener = listener;
     }
 
-    public void setItems(List<WorkShift> items) {
+    public void setItems(List<Request> items) {
         this.items = items;
         notifyDataSetChanged();
     }
@@ -63,68 +59,44 @@ public class RegistrationHistoryAdapter extends RecyclerView.Adapter<Registratio
             this.binding = binding;
         }
 
-        void bind(WorkShift shift) {
-            binding.tvDateTitle.setText(shift.getDate());
+        void bind(Request request) {
+            String dateDisplay = request.getStartDate();
+            if (request.getEndDate() != null && !request.getEndDate().isEmpty() && !request.getEndDate().equals(request.getStartDate())) {
+                dateDisplay += " - " + request.getEndDate();
+            }
+            binding.tvDateTitle.setText(dateDisplay);
 
-            if ("Nghỉ phép".equals(shift.getType())) {
+            if ("Nghỉ phép".equals(request.getType())) {
                 binding.tvShiftDetail.setText("Xin nghỉ phép");
                 binding.tvReason.setVisibility(View.VISIBLE);
-                binding.tvReason.setText(shift.getPosition());
+                binding.tvReason.setText(request.getReason());
             } else {
-                String detail = "Ca " + shift.getPosition();
-                if (shift.getStartTime() != null && !shift.getStartTime().equals("null") &&
-                        shift.getEndTime() != null && !shift.getEndTime().equals("null")) {
-                    detail += " • " + shift.getStartTime() + " - " + shift.getEndTime();
-                }
-                binding.tvShiftDetail.setText(detail);
+                binding.tvShiftDetail.setText("Đăng ký ca: " + request.getReason());
                 binding.tvReason.setVisibility(View.GONE);
             }
 
-            binding.tvStatus.setText(shift.getStatus());
+            binding.tvStatus.setText(request.getStatus());
+            binding.tvSentTime.setVisibility(View.GONE); // RequestDto/Model current don't have sentTime field explicitly shown in UI here
 
-            if (shift.getSentTime() != null) {
-                binding.tvSentTime.setText("Gửi lúc: " + shift.getSentTime());
-            }
-
-            // Kiểm tra xem ngày đăng ký có ở quá khứ không
-            boolean isPast = false;
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                String dateStr = shift.getDate();
-                if (dateStr.contains(" - ")) {
-                    dateStr = dateStr.split(" - ")[0]; // Lấy ngày bắt đầu nếu là nghỉ phép
-                }
-                Date date = sdf.parse(dateStr);
-                if (date != null) {
-                    Calendar today = Calendar.getInstance();
-                    today.set(Calendar.HOUR_OF_DAY, 0);
-                    today.set(Calendar.MINUTE, 0);
-                    today.set(Calendar.SECOND, 0);
-                    today.set(Calendar.MILLISECOND, 0);
-                    isPast = date.before(today.getTime());
-                }
-            } catch (Exception ignored) {}
-
-            // Chỉ cho phép chỉnh sửa/xóa nếu trạng thái là "Chờ duyệt" hoặc "Đã duyệt" và ngày không ở quá khứ
-            boolean canAction = !isPast && ("Chờ duyệt".equals(shift.getStatus()) || "Đã duyệt".equals(shift.getStatus()));
+            boolean canAction = "Chờ duyệt".equals(request.getStatus());
 
             if (canAction) {
                 binding.layoutActions.setVisibility(View.VISIBLE);
                 binding.btnEdit.setOnClickListener(v -> {
-                    if (listener != null) listener.onEdit(shift);
+                    if (listener != null) listener.onEdit(request);
                 });
                 binding.btnDelete.setOnClickListener(v -> {
-                    if (listener != null) listener.onDelete(shift);
+                    if (listener != null) listener.onDelete(request);
                 });
             } else {
                 binding.layoutActions.setVisibility(View.GONE);
             }
 
-            // Cập nhật màu sắc trạng thái
-            if ("Chờ duyệt".equals(shift.getStatus())) {
+            // Status colors
+            if ("Chờ duyệt".equals(request.getStatus())) {
                 binding.cvStatus.setCardBackgroundColor(Color.parseColor("#FFF3CD"));
                 binding.tvStatus.setTextColor(Color.parseColor("#856404"));
-            } else if ("Đã duyệt".equals(shift.getStatus())) {
+            } else if ("Đã duyệt".equals(request.getStatus())) {
                 binding.cvStatus.setCardBackgroundColor(Color.parseColor("#E8F8EF"));
                 binding.tvStatus.setTextColor(Color.parseColor("#2ECC71"));
             } else {
