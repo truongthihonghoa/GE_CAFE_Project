@@ -16,4 +16,5 @@ class TaiKhoanSerializer(serializers.ModelSerializer):
             'vai_tro',
             'ma_nv',
             'trang_thai',
+            'is_staff'
         ]
