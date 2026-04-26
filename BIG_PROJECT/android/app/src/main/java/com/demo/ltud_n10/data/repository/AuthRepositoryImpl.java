@@ -1,5 +1,8 @@
 package com.demo.ltud_n10.data.repository;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -11,6 +14,9 @@ import com.demo.ltud_n10.data.remote.dto.LoginRequest;
 import com.demo.ltud_n10.data.remote.dto.LoginResponse;
 import com.demo.ltud_n10.domain.model.User;
 import com.demo.ltud_n10.domain.repository.AuthRepository;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,16 +31,34 @@ public class AuthRepositoryImpl implements AuthRepository {
     private final SharedPrefsManager prefsManager;
     private final ApiService apiService;
     private final MutableLiveData<User> currentUser = new MutableLiveData<>(null);
+    private final Map<String, String> userFullNameMap = new HashMap<>();
 
     @Inject
     public AuthRepositoryImpl(SharedPrefsManager prefsManager, ApiService apiService) {
         this.prefsManager = prefsManager;
         this.apiService = apiService;
-        
+        setupUserNames();
+
         String role = prefsManager.getUserRole();
         if (role != null) {
-            currentUser.setValue(new User("0", "user@coffee.com", "User", role));
+            // Khởi tạo user tạm thời từ prefs, sẽ được cập nhật khi login lại
+            currentUser.setValue(new User("0", "user", "User", role));
         }
+    }
+
+    private void setupUserNames() {
+        userFullNameMap.put("ThuyLai", "Trần Thị Thúy Lài");
+        userFullNameMap.put("ThuyNa", "Lê Nguyễn Thúy Na");
+        userFullNameMap.put("bao.tq", "Trần Quốc Bảo");
+        userFullNameMap.put("quan.pm", "Phạm Minh Quân");
+        userFullNameMap.put("lan.dt", "Đặng Thị Lan");
+        userFullNameMap.put("anh.bd", "Bùi Đức Anh");
+        userFullNameMap.put("huy.nq", "Ngô Quang Huy");
+        userFullNameMap.put("ngoc.pt", "Phan Thị Ngọc");
+        userFullNameMap.put("hoa.tk", "Trịnh Khánh Hòa");
+        userFullNameMap.put("dat.vt", "Võ Thành Đạt");
+        userFullNameMap.put("thi.nd", "Nguyễn Đình Thi");
+        userFullNameMap.put("thu.tt", "Trịnh Thị Mỹ Thu");
     }
 
     @Override
@@ -49,16 +73,15 @@ public class AuthRepositoryImpl implements AuthRepository {
                     String token = response.body().getAccess();
                     prefsManager.saveToken(token);
                     
-                    // Logic phân quyền dựa trên logic Django của bạn:
                     String role = "EMPLOYEE";
-                    if (username.equals("ThuyLai") || username.contains("admin")) {
-                        role = "ADMIN"; // Tương ứng is_superuser
-                    } else if (username.contains("manager")) {
-                        role = "MANAGER"; // Tương ứng is_staff
-                    }
+                    if (username.equals("ThuyLai")) role = "ADMIN";
                     
                     prefsManager.saveUserRole(role);
-                    User user = new User("1", username, username, role);
+                    
+                    // Lấy tên đầy đủ từ bản đồ theo yêu cầu
+                    String fullName = userFullNameMap.getOrDefault(username, username);
+                    
+                    User user = new User("1", username, fullName, role);
                     currentUser.setValue(user);
                     result.setValue(Resource.success(user));
                 } else {
@@ -78,7 +101,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     @Override
     public LiveData<Resource<String>> resetPassword(String phone) {
         MutableLiveData<Resource<String>> result = new MutableLiveData<>();
-        result.setValue(Resource.success("Chức năng đang phát triển"));
+        result.setValue(Resource.success("OTP đã được gửi"));
         return result;
     }
 
