@@ -32,6 +32,15 @@ public class EmployeeDto {
 
     @SerializedName("trang_thai")
     private String trangThai;
+    
+    @SerializedName("sdt")
+    private String sdt;
+
+    @SerializedName("tk_ngan_hang")
+    private String tkNganHang;
+
+    @SerializedName("ma_chi_nhanh")
+    private String maChiNhanh;
 
     // Getters and Setters
     public String getMaNv() { return maNv; }
@@ -63,4 +72,13 @@ public class EmployeeDto {
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+
+    public String getSdt() { return sdt; }
+    public void setSdt(String sdt) { this.sdt = sdt; }
+
+    public String getTkNganHang() { return tkNganHang; }
+    public void setTkNganHang(String tkNganHang) { this.tkNganHang = tkNganHang; }
+
+    public String getMaChiNhanh() { return maChiNhanh; }
+    public void setMaChiNhanh(String maChiNhanh) { this.maChiNhanh = maChiNhanh; }
 }

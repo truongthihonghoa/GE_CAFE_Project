@@ -35,7 +35,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         MutableLiveData<Resource<List<Employee>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        // Sử dụng GET để lấy danh sách thực tế (Token tự động gắn vào Header qua Interceptor)
         apiService.getEmployees().enqueue(new Callback<List<EmployeeDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<EmployeeDto>> call, @NonNull Response<List<EmployeeDto>> response) {
@@ -69,7 +68,13 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
-                    result.setValue(Resource.error("Lỗi khi thêm nhân viên", null));
+                    String errorMsg = "Lỗi khi thêm: " + response.code();
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += " - " + response.errorBody().string();
+                        }
+                    } catch (Exception ignored) {}
+                    result.setValue(Resource.error(errorMsg, null));
                 }
             }
             @Override
@@ -83,13 +88,20 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
     public LiveData<Resource<Employee>> updateEmployee(Employee employee) {
         MutableLiveData<Resource<Employee>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
         apiService.updateEmployee(employee.getId(), mapDomainToDto(employee)).enqueue(new Callback<EmployeeDto>() {
             @Override
             public void onResponse(@NonNull Call<EmployeeDto> call, @NonNull Response<EmployeeDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     result.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
-                    result.setValue(Resource.error("Lỗi khi cập nhật", null));
+                    String errorMsg = "Lỗi khi cập nhật: " + response.code();
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += " - " + response.errorBody().string();
+                        }
+                    } catch (Exception ignored) {}
+                    result.setValue(Resource.error(errorMsg, null));
                 }
             }
             @Override
@@ -103,11 +115,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
     public LiveData<Resource<Boolean>> deleteEmployee(String employeeId) {
         MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
         apiService.deleteEmployee(employeeId).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                if (response.isSuccessful()) result.setValue(Resource.success(true));
-                else result.setValue(Resource.error("Lỗi khi xóa", false));
+                if (response.isSuccessful()) {
+                    result.setValue(Resource.success(true));
+                } else {
+                    result.setValue(Resource.error("Lỗi khi xóa: " + response.code(), false));
+                }
             }
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
@@ -129,6 +145,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         employee.setAddress(dto.getDiaChi());
         employee.setPosition(dto.getChucVu());
         employee.setStatus(dto.getTrangThai());
+        employee.setBankAccount(dto.getTkNganHang());
+        employee.setBranchId(dto.getMaChiNhanh());
         return employee;
     }
 
@@ -138,12 +156,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         dto.setHoTen(employee.getName());
         dto.setEmail(employee.getEmail());
         dto.setSoDienThoai(employee.getPhone());
+        dto.setSdt(employee.getPhone()); // Mapping both as API requires 'sdt'
         dto.setCccd(employee.getCccd());
         dto.setGioiTinh(employee.getGender());
         dto.setNgaySinh(employee.getDob());
         dto.setDiaChi(employee.getAddress());
         dto.setChucVu(employee.getPosition());
         dto.setTrangThai(employee.getStatus());
+        dto.setTkNganHang(employee.getBankAccount());
+        dto.setMaChiNhanh(employee.getBranchId());
         return dto;
     }
 }

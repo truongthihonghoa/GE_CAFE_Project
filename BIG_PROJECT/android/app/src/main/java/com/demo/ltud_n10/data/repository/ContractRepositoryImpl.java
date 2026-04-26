@@ -35,7 +35,6 @@ public class ContractRepositoryImpl implements ContractRepository {
         MutableLiveData<Resource<List<Contract>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        // Đã chuyển sang dùng GET (Token tự động được đính kèm bởi NetworkModule)
         apiService.getContracts().enqueue(new Callback<List<ContractDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<ContractDto>> call, @NonNull Response<List<ContractDto>> response) {
@@ -59,11 +58,74 @@ public class ContractRepositoryImpl implements ContractRepository {
         return result;
     }
 
+    @Override
+    public LiveData<Resource<Contract>> addContract(Contract contract) {
+        MutableLiveData<Resource<Contract>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+        apiService.addContract(mapDomainToDto(contract)).enqueue(new Callback<ContractDto>() {
+            @Override
+            public void onResponse(@NonNull Call<ContractDto> call, @NonNull Response<ContractDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    result.setValue(Resource.success(mapDtoToDomain(response.body())));
+                } else {
+                    result.setValue(Resource.error("Lỗi khi tạo hợp đồng", null));
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<ContractDto> call, @NonNull Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), null));
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public LiveData<Resource<Contract>> updateContract(Contract contract) {
+        MutableLiveData<Resource<Contract>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+        apiService.updateContract(contract.getId(), mapDomainToDto(contract)).enqueue(new Callback<ContractDto>() {
+            @Override
+            public void onResponse(@NonNull Call<ContractDto> call, @NonNull Response<ContractDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    result.setValue(Resource.success(mapDtoToDomain(response.body())));
+                } else {
+                    result.setValue(Resource.error("Lỗi khi cập nhật", null));
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<ContractDto> call, @NonNull Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), null));
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public LiveData<Resource<Boolean>> deleteContract(String contractId) {
+        MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+        apiService.deleteContract(contractId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    result.setValue(Resource.success(true));
+                } else {
+                    result.setValue(Resource.error("Lỗi khi xóa", false));
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), false));
+            }
+        });
+        return result;
+    }
+
     private Contract mapDtoToDomain(ContractDto dto) {
         Contract contract = new Contract();
         contract.setId(dto.getMaHd());
         contract.setEmployeeId(dto.getMaNv());
-        contract.setEmployeeName(dto.getMaNv());
+        contract.setEmployeeName(dto.getMaNv()); // Tạm thời dùng mã NV làm tên nếu API ko trả tên
         contract.setType(dto.getLoaiHd());
         contract.setStartDate(dto.getNgayBatDau());
         contract.setEndDate(dto.getNgayKetThuc());
@@ -71,22 +133,20 @@ public class ContractRepositoryImpl implements ContractRepository {
             contract.setSalary(dto.getChiTiet().getLuongCoBan());
         }
         contract.setPosition(dto.getChucVu());
-        contract.setStatus("CON_HAN".equals(dto.getTrangThai()) ? "Còn hiệu lực" : "Hết hạn");
+        contract.setStatus(dto.getTrangThai());
         return contract;
     }
 
-    @Override
-    public LiveData<Resource<Contract>> addContract(Contract contract) {
-        return new MutableLiveData<>(Resource.success(contract));
-    }
-
-    @Override
-    public LiveData<Resource<Contract>> updateContract(Contract contract) {
-        return new MutableLiveData<>(Resource.success(contract));
-    }
-
-    @Override
-    public LiveData<Resource<Boolean>> deleteContract(String contractId) {
-        return new MutableLiveData<>(Resource.success(true));
+    private ContractDto mapDomainToDto(Contract contract) {
+        ContractDto dto = new ContractDto();
+        dto.setMaHd(contract.getId());
+        dto.setMaNv(contract.getEmployeeId());
+        dto.setLoaiHd(contract.getType());
+        dto.setChucVu(contract.getPosition());
+        dto.setNgayBatDau(contract.getStartDate());
+        dto.setNgayKetThuc(contract.getEndDate());
+        dto.setTrangThai(contract.getStatus());
+        // Handle ContractDetailDto if needed
+        return dto;
     }
 }

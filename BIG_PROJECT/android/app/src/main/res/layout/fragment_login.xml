@@ -98,7 +98,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
                 android:hint="owner@coffee.com"
-                android:text="owner@coffee.com"
+                android:text="ThuyLai"
                 android:inputType="textEmailAddress"
                 android:paddingHorizontal="16dp"
                 android:textSize="15sp" />
@@ -119,7 +119,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_field"
                 android:hint="password123"
-                android:text="password123"
+                android:text="123456"
                 android:inputType="textPassword"
                 android:paddingHorizontal="16dp"
                 android:textSize="15sp" />

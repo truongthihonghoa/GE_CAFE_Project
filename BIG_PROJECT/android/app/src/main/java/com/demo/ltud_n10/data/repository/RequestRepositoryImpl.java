@@ -107,6 +107,7 @@ public class RequestRepositoryImpl implements RequestRepository {
                 if (response.isSuccessful()) result.setValue(Resource.success(true));
                 else result.setValue(Resource.error("Lỗi khi xóa yêu cầu", false));
             }
+
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 result.setValue(Resource.error(t.getMessage(), false));
@@ -118,10 +119,10 @@ public class RequestRepositoryImpl implements RequestRepository {
     @Override
     public LiveData<Resource<Request>> updateRequestStatus(String requestId, String status) {
         MutableLiveData<Resource<Request>> result = new MutableLiveData<>();
-        
+
         RequestDto updateDto = new RequestDto();
         updateDto.setStatus(status);
-        
+
         apiService.updateRequest(requestId, updateDto).enqueue(new Callback<RequestDto>() {
             @Override
             public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
