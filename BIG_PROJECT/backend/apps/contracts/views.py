@@ -117,162 +117,91 @@ def _check_employee_contract(ma_nv, exclude_contract_id=None):
 
 
 def contract_list_view(request):
-    # Mock data - luôn trả về 5 dòng cố định
-    contracts = _sample_contracts()
+    # Lấy dữ liệu thật từ Database
+    contracts = HopDongLaoDong.objects.all().order_by('-ma_hd')
     
-    # Add context for form
     context = {
         'contracts': contracts,
         'form': ContractForm()
     }
-    
     return render(request, 'contracts/contract_list.html', context)
 
-
-def contract_add_view(request):
+def contract_edit_view(request, contract_id):
+    # Lấy hợp đồng thật từ DB
+    hop_dong = get_object_or_404(HopDongLaoDong, ma_hd=contract_id)
+    
     if request.method == 'POST':
         form = ContractForm(request.POST)
-        
         if form.is_valid():
-            # Chỉ hiển thị popup success, không lưu DB
-            messages.success(request, 'Tạo hợp đồng thành công')
-            return render(request, 'contracts/contract_add.html', {
-                'form': ContractForm(),
-                'employees': _get_employees(),
-                'contract_types': ['Full-time', 'Part-time', 'Thời vụ', 'Thử việc'],
-                'positions': ['Pha chế', 'Phục vụ', 'Giữ xe']
-            })
-        else:
-            # Hiển thị lỗi validation
-            return render(request, 'contracts/contract_add.html', {
-                'form': form,
-                'employees': _get_employees(),
-                'contract_types': ['Full-time', 'Part-time', 'Thời vụ', 'Thử việc'],
-                'positions': ['Pha chế', 'Phục vụ', 'Giữ xe']
-            })
+            try:
+                with transaction.atomic():
+                    cd = form.cleaned_data
+                    # Cập nhật hợp đồng chính
+                    hop_dong.loai_hd = cd['loai_hd']
+                    hop_dong.ngay_bat_dau = cd['ngay_bd']
+                    hop_dong.ngay_ket_thuc = cd['ngay_kt']
+                    hop_dong.chuc_vu = cd['chuc_vu']
+                    hop_dong.save()
+                    
+                    # Cập nhật chi tiết lương
+                    HopDongLD_CT.objects.update_or_create(
+                        ma_hd=hop_dong,
+                        defaults={
+                            'luong_co_ban': cd.get('luong_co_ban', 0),
+                            'luong_theo_gio': cd.get('luong_theo_gio', 0),
+                            'so_gio_lam': cd.get('so_gio_lam', 0),
+                            'che_do_thuong': cd.get('thuong', 0),
+                        }
+                    )
+                messages.success(request, 'Cập nhật hợp đồng thành công')
+                return redirect('contract_list')
+            except Exception as e:
+                messages.error(request, f'Lỗi khi cập nhật: {str(e)}')
     
-    # GET request - hiển thị form trống
-    return render(request, 'contracts/contract_add.html', {
-        'form': ContractForm(),
-        'employees': _get_employees(),
+    # Load dữ liệu cũ vào form
+    try:
+        ct = hop_dong.chi_tiet
+        initial_data = {
+            'ma_nv': hop_dong.ma_nv_id,
+            'loai_hd': hop_dong.loai_hd,
+            'ngay_bd': hop_dong.ngay_bat_dau,
+            'ngay_kt': hop_dong.ngay_ket_thuc,
+            'chuc_vu': hop_dong.chuc_vu,
+            'luong_co_ban': ct.luong_co_ban,
+            'luong_theo_gio': ct.luong_theo_gio,
+            'so_gio_lam': ct.so_gio_lam,
+            'thuong': ct.che_do_thuong
+        }
+    except:
+        initial_data = {'ma_nv': hop_dong.ma_nv_id}
+
+    return render(request, 'contracts/contract_edit.html', {
+        'contract': hop_dong,
+        'form': ContractForm(initial=initial_data),
+        'employees': NhanVien.objects.all(),
         'contract_types': ['Full-time', 'Part-time', 'Thời vụ', 'Thử việc'],
         'positions': ['Pha chế', 'Phục vụ', 'Giữ xe']
     })
 
-
-def _get_employees():
-    """Mock data cho dropdown nhân viên"""
-    return [
-        {'ma_nv': 'NV00001', 'ho_ten': 'Nguyễn Văn An'},
-        {'ma_nv': 'NV00002', 'ho_ten': 'Lê Hoài Bảo An'},
-        {'ma_nv': 'NV00003', 'ho_ten': 'Trần Thị Mai Loan'},
-        {'ma_nv': 'NV00004', 'ho_ten': 'Phạm Quang Bảo'},
-        {'ma_nv': 'NV00005', 'ho_ten': 'Nguyễn Viết Bảo'}
-    ]
-
-
-def contract_edit_view(request, contract_id):
-    # Mock data - tìm trong sample contracts
-    contracts = _sample_contracts()
-    contract = next((c for c in contracts if c['ma_hd'] == contract_id), None)
-    
-    if not contract:
-        return redirect('contract_list')
-    
-    if request.method == 'POST':
-        form = ContractForm(request.POST)
-        
-        if form.is_valid():
-            # Chỉ hiển thị popup success, không lưu DB
-            messages.success(request, 'Cập nhật hợp đồng thành công')
-            return render(request, 'contracts/contract_edit.html', {
-                'contract': contract,
-                'form': ContractForm()
-            })
-        else:
-            # Hiển thị lỗi validation
-            return render(request, 'contracts/contract_edit.html', {
-                'contract': contract,
-                'form': form
-            })
-    
-    # GET request - hiển thị form với dữ liệu mock
-    form_data = {
-        'ma_nv': contract['ma_nv'],
-        'loai_hd': contract['loai_hd'],
-        'ngay_bd': contract['ngay_bd_iso'],
-        'ngay_kt': contract['ngay_kt_iso'],
-        'chuc_vu': contract['chuc_vu']
-    }
-    
-    return render(request, 'contracts/contract_edit.html', {
-        'contract': contract,
-        'form': ContractForm(form_data)
-    })
-
-
-def _render_edit_form(request, contract):
-    context = _form_context()
-    context['contract'] = contract
-    
-    try:
-        ct = contract.hopdongld_ct
-        context.update({
-            'luong_co_ban': ct.luong_co_ban,
-            'luong_theo_gio': ct.luong_theo_gio,
-            'so_gio_lam': ct.so_gio_lam,
-            'thuong': ct.thuong,
-            'phat': ct.phat
-        })
-    except HopDongLD_CT.DoesNotExist:
-        context.update({
-            'luong_co_ban': 0,
-            'luong_theo_gio': 0,
-            'so_gio_lam': 0,
-            'thuong': 0,
-            'phat': 0
-        })
-    
-    return render(request, 'contracts/contract_edit.html', context)
-
-
-@require_http_methods(["DELETE"])
-def contract_delete_view(request, contract_id):
-    # Mock data - chỉ hiển thị popup success
-    return JsonResponse({
-        'success': True,
-        'message': 'Đã xóa hợp đồng thành công'
-    })
-
-
-
 @require_http_methods(["GET"])
 def contract_detail_view(request, contract_id):
-    # Mock data - lấy từ sample contracts
-    contracts = _sample_contracts()
-    contract = next((c for c in contracts if c['ma_hd'] == contract_id), None)
+    hop_dong = get_object_or_404(HopDongLaoDong, ma_hd=contract_id)
+    ct = getattr(hop_dong, 'chi_tiet', None)
     
-    if not contract:
-        return JsonResponse({'error': 'Không tìm thấy hợp đồng'}, status=404)
-    
-    # Mock salary data
     data = {
-        'ma_hd': contract['ma_hd'],
-        'ma_nv': contract['ma_nv'],
-        'ten_nv': contract['ten_nv'],
-        'loai_hd': contract['loai_hd'],
-        'ngay_bd': contract['ngay_bd'],
-        'ngay_kt': contract['ngay_kt'],
-        'chuc_vu': contract['chuc_vu'],
-        'trang_thai': 'Đang hiệu lực',
-        'luong_co_ban': '0' if contract['loai_hd'] == 'Part-time' else '5.000.000',
-        'luong_theo_gio': '2.000.000' if contract['loai_hd'] == 'Part-time' else '0',
-        'so_gio_lam': '0',
-        'thuong': '500.000',
-        'phat': '0',
-        'tong_luong': contract['muc_luong']
+        'ma_hd': hop_dong.ma_hd,
+        'ma_nv': hop_dong.ma_nv_id,
+        'ten_nv': hop_dong.ma_nv.ho_ten,
+        'loai_hd': hop_dong.get_loai_hd_display(),
+        'ngay_bd': hop_dong.ngay_bat_dau.strftime('%d/%m/%Y'),
+        'ngay_kt': hop_dong.ngay_ket_thuc.strftime('%d/%m/%Y') if hop_dong.ngay_ket_thuc else '',
+        'chuc_vu': hop_dong.get_chuc_vu_display(),
+        'trang_thai': hop_dong.get_trang_thai_display(),
+        'luong_co_ban': ct.luong_co_ban if ct else 0,
+        'luong_theo_gio': ct.luong_theo_gio if ct else 0,
+        'so_gio_lam': ct.so_gio_lam if ct else 0,
+        'thuong': ct.che_do_thuong if ct else 0,
     }
-    
     return JsonResponse(data)
 
 
@@ -280,7 +209,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import HopDongLaoDong
+from .models import HopDongLaoDong, HopDongLD_CT
 from .serializers import HopDongLaoDongSerializer
 
 

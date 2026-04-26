@@ -10,6 +10,8 @@ public class Contract implements Serializable {
     private String startDate; // YYYY-MM-DD
     private String endDate; // YYYY-MM-DD
     private double salary;
+    private double hourlyRate;
+    private double requiredHours;
     private String position;
     private String status; // Hiệu lực, Chờ hiệu lực, Hết hạn
     private String branchId;
@@ -43,6 +45,10 @@ public class Contract implements Serializable {
     public void setEndDate(String endDate) { this.endDate = endDate; }
     public double getSalary() { return salary; }
     public void setSalary(double salary) { this.salary = salary; }
+    public double getHourlyRate() { return hourlyRate; }
+    public void setHourlyRate(double hourlyRate) { this.hourlyRate = hourlyRate; }
+    public double getRequiredHours() { return requiredHours; }
+    public void setRequiredHours(double requiredHours) { this.requiredHours = requiredHours; }
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
     public String getStatus() { return status; }

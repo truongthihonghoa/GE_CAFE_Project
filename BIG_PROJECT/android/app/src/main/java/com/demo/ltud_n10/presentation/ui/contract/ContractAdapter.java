@@ -61,7 +61,13 @@ public class ContractAdapter extends RecyclerView.Adapter<ContractAdapter.ViewHo
             binding.tvContractId.setText("Mã HĐ: " + contract.getId());
             binding.tvPosition.setText("Chức vụ: " + contract.getPosition());
             binding.tvDateRange.setText(contract.getStartDate() + " - " + contract.getEndDate());
-            binding.tvSalary.setText(String.format("%,.0f VNĐ", contract.getSalary()));
+            if (contract.getSalary() > 0) {
+                binding.tvSalary.setText(String.format("%,.0f VNĐ", contract.getSalary()));
+            } else if (contract.getHourlyRate() > 0) {
+                binding.tvSalary.setText(String.format("%,.0f VNĐ", contract.getHourlyRate()));
+            } else {
+                binding.tvSalary.setText("0 VNĐ");
+            }
             binding.tvStatus.setText(contract.getStatus());
 
             binding.btnEdit.setOnClickListener(v -> listener.onEdit(contract));

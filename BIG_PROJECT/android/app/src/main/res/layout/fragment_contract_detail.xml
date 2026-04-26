@@ -286,6 +286,50 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:text="Lương theo giờ:"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etHourlyRate"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Nhập lương theo giờ"
+                android:inputType="numberDecimal"
+                android:paddingHorizontal="20dp"
+                android:textSize="16sp"
+                android:textColor="#222"
+                android:textColorHint="#9E9E9E" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Số giờ làm quy định:"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etRequiredHours"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Nhập số giờ quy định"
+                android:inputType="numberDecimal"
+                android:paddingHorizontal="20dp"
+                android:textSize="16sp"
+                android:textColor="#222"
+                android:textColorHint="#9E9E9E" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Chức vụ:"
                 android:textColor="#000000"
                 android:textSize="16sp"

@@ -6,8 +6,8 @@ public class ContractDto {
     @SerializedName("ma_hd")
     private String maHd;
 
-    @SerializedName("chi_tiet")
-    private ContractDetailDto chiTiet;
+    @SerializedName("du_lieu_luong")
+    private ContractDetailDto duLieuLuong;
 
     @SerializedName("loai_hd")
     private String loaiHd;
@@ -34,8 +34,10 @@ public class ContractDto {
     public String getMaHd() { return maHd; }
     public void setMaHd(String maHd) { this.maHd = maHd; }
 
-    public ContractDetailDto getChiTiet() { return chiTiet; }
-    public void setChiTiet(ContractDetailDto chiTiet) { this.chiTiet = chiTiet; }
+    public ContractDetailDto getChiTiet() { return duLieuLuong; }
+    public void setChiTiet(ContractDetailDto chiTiet) { 
+        this.duLieuLuong = chiTiet;
+    }
 
     public String getLoaiHd() { return loaiHd; }
     public void setLoaiHd(String loaiHd) { this.loaiHd = loaiHd; }
