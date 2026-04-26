@@ -12,9 +12,22 @@ class HopDongLDCTSerializer(serializers.ModelSerializer):
 class HopDongLaoDongSerializer(serializers.ModelSerializer):
     chi_tiet = HopDongLDCTSerializer(required=False)
 
+    ten_nv = serializers.CharField(source='ma_nv.ho_ten', read_only=True)
+
     class Meta:
         model = HopDongLaoDong
-        fields = '__all__'
+        fields = [
+            'ma_hd',
+            'ma_nv',
+            'ten_nv',          
+            'ma_chi_nhanh',
+            'loai_hd',
+            'chuc_vu',
+            'ngay_bat_dau',
+            'ngay_ket_thuc',
+            'trang_thai',
+            'chi_tiet'
+        ]
 
     def create(self, validated_data):
         chi_tiet_data = validated_data.pop('chi_tiet', None)
