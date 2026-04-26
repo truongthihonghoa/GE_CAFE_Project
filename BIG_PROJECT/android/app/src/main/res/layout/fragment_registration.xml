@@ -204,7 +204,9 @@
                             <CalendarView
                                 android:id="@+id/calendarShift"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/white"
+                                android:theme="@style/CustomCalendar" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView
@@ -396,6 +398,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
+                            app:cardBackgroundColor="@android:color/white"
                             app:cardCornerRadius="12dp"
                             app:cardElevation="0dp"
                             app:strokeColor="#E2E8F0"
@@ -403,7 +406,9 @@
                             <CalendarView
                                 android:id="@+id/calendarStart"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/white"
+                                android:theme="@style/CustomCalendar" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView
@@ -419,6 +424,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
+                            app:cardBackgroundColor="@android:color/white"
                             app:cardCornerRadius="12dp"
                             app:cardElevation="0dp"
                             app:strokeColor="#E2E8F0"
@@ -426,7 +432,9 @@
                             <CalendarView
                                 android:id="@+id/calendarEnd"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/white"
+                                android:theme="@style/CustomCalendar" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView

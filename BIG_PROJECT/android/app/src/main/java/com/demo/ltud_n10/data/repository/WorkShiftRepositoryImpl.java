@@ -79,7 +79,7 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
                     public void onResponse(@NonNull Call<List<RequestDto>> call, @NonNull Response<List<RequestDto>> responseRequests) {
                         if (responseRequests.isSuccessful() && responseRequests.body() != null) {
                             for (RequestDto dto : responseRequests.body()) {
-                                combinedList.add(mapRequestDtoToDomain(dto, "Đăng ký ca"));
+                                combinedList.add(mapRequestDtoToDomain(dto, "Đăng ký ca làm"));
                             }
                         }
                         
@@ -120,44 +120,91 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
         MutableLiveData<Resource<WorkShift>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
+        if (shift.getType().equals("Nghỉ phép")) {
+            apiService.getLeaveRequests().enqueue(new Callback<List<RequestDto>>() {
+                @Override
+                public void onResponse(@NonNull Call<List<RequestDto>> call, @NonNull Response<List<RequestDto>> response) {
+                    int count = 0;
+                    String startDate = shift.getDate().contains(" - ") ? shift.getDate().split(" - ")[0] : shift.getDate();
+                    if (response.isSuccessful() && response.body() != null) {
+                        for (RequestDto r : response.body()) {
+                            if (r.getEmployeeId().equals(shift.getEmployeeId()) && r.getStartDate().equals(startDate)) {
+                                count++;
+                            }
+                        }
+                    }
+                    performAddRequest(shift, count + 1, result);
+                }
+                @Override
+                public void onFailure(@NonNull Call<List<RequestDto>> call, @NonNull Throwable t) {
+                    performAddRequest(shift, 1, result);
+                }
+            });
+        } else {
+            apiService.getRequests().enqueue(new Callback<List<RequestDto>>() {
+                @Override
+                public void onResponse(@NonNull Call<List<RequestDto>> call, @NonNull Response<List<RequestDto>> response) {
+                    int count = 0;
+                    if (response.isSuccessful() && response.body() != null) {
+                        for (RequestDto r : response.body()) {
+                            if (r.getEmployeeId().equals(shift.getEmployeeId()) && r.getStartDate().equals(shift.getDate())) {
+                                count++;
+                            }
+                        }
+                    }
+                    performAddRequest(shift, count + 1, result);
+                }
+                @Override
+                public void onFailure(@NonNull Call<List<RequestDto>> call, @NonNull Throwable t) {
+                    performAddRequest(shift, 1, result);
+                }
+            });
+        }
+
+        return result;
+    }
+
+    private void performAddRequest(WorkShift shift, int sequence, MutableLiveData<Resource<WorkShift>> result) {
         RequestDto dto = new RequestDto();
         dto.setEmployeeId(shift.getEmployeeId());
         dto.setReason(shift.getPosition());
         dto.setStatus("Chờ duyệt");
 
-        String dateStr = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+        String seqStr = (sequence > 1) ? String.format(Locale.getDefault(), "%02d", sequence) : "";
         
         if (shift.getType().equals("Nghỉ phép")) {
             dto.setType("Nghỉ phép");
-            dto.setId("NP_" + shift.getEmployeeId() + "_" + dateStr);
-            
             String[] dates = (shift.getDate() != null) ? shift.getDate().split(" - ") : new String[0];
-            if (dates.length == 2) {
-                dto.setStartDate(dates[0]);
-                dto.setEndDate(dates[1]);
-            } else {
-                dto.setStartDate(shift.getDate());
-                dto.setEndDate(shift.getDate());
-            }
+            String startDate = (dates.length > 0) ? dates[0] : shift.getDate();
+            String endDate = (dates.length > 1) ? dates[1] : startDate;
+            
+            dto.setStartDate(startDate);
+            dto.setEndDate(endDate);
+            
+            String cleanDate = startDate.replace("-", "");
+            dto.setId("NP_" + shift.getEmployeeId() + cleanDate + seqStr);
             
             apiService.addLeaveRequest(dto).enqueue(new Callback<RequestDto>() {
                 @Override
                 public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                     if (response.isSuccessful()) {
-                        result.setValue(Resource.success(mapRequestDtoToDomain(response.body(), "Nghỉ phép")));
+                        WorkShift resultShift = mapRequestDtoToDomain(response.body(), "Nghỉ phép");
+                        // Hiển thị đúng giờ gửi thực tế từ App
+                        resultShift.setSentTime(shift.getSentTime());
+                        result.setValue(Resource.success(resultShift));
                     } else {
-                        result.setValue(Resource.error("Lỗi Server: Không thể gửi đơn nghỉ phép", null));
+                        result.setValue(Resource.error("Lỗi Server (Mã: " + response.code() + ")", null));
                     }
                 }
                 @Override
                 public void onFailure(@NonNull Call<RequestDto> call, @NonNull Throwable t) {
-                    result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+                    result.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
                 }
             });
         } else {
             dto.setType("Đăng ký ca làm");
-            dto.setId("DK_" + shift.getEmployeeId() + "_" + dateStr);
-
+            String cleanDate = shift.getDate().replace("-", "");
+            dto.setId("DK_" + shift.getEmployeeId() + cleanDate + seqStr);
             dto.setStartDate(shift.getDate());
             dto.setEndDate(shift.getDate());
             
@@ -165,19 +212,19 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
                 @Override
                 public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                     if (response.isSuccessful()) {
-                        result.setValue(Resource.success(mapRequestDtoToDomain(response.body(), "Đăng ký ca")));
+                        WorkShift resultShift = mapRequestDtoToDomain(response.body(), "Đăng ký ca làm");
+                        resultShift.setSentTime(shift.getSentTime());
+                        result.setValue(Resource.success(resultShift));
                     } else {
-                        result.setValue(Resource.error("Lỗi Server: Không thể gửi đăng ký ca", null));
+                        result.setValue(Resource.error("Lỗi Server (Mã: " + response.code() + ").", null));
                     }
                 }
                 @Override
                 public void onFailure(@NonNull Call<RequestDto> call, @NonNull Throwable t) {
-                    result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+                    result.setValue(Resource.error("Lỗi mạng: " + t.getMessage(), null));
                 }
             });
         }
-
-        return result;
     }
 
     @Override
@@ -193,13 +240,23 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
         dto.setStatus("Chờ duyệt");
         
         if (shift.getType().equals("Nghỉ phép")) {
+            String[] dates = (shift.getDate() != null) ? shift.getDate().split(" - ") : new String[0];
+            if (dates.length == 2) {
+                dto.setStartDate(dates[0]);
+                dto.setEndDate(dates[1]);
+            } else {
+                dto.setStartDate(shift.getDate());
+                dto.setEndDate(shift.getDate());
+            }
             apiService.updateLeaveRequest(shift.getId(), dto).enqueue(new Callback<RequestDto>() {
                 @Override
                 public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                     if (response.isSuccessful()) {
-                        result.setValue(Resource.success(mapRequestDtoToDomain(response.body(), "Nghỉ phép")));
+                        WorkShift res = mapRequestDtoToDomain(response.body(), "Nghỉ phép");
+                        res.setSentTime(shift.getSentTime());
+                        result.setValue(Resource.success(res));
                     } else {
-                        result.setValue(Resource.error("Lỗi khi cập nhật nghỉ phép", null));
+                        result.setValue(Resource.error("Lỗi cập nhật (" + response.code() + ")", null));
                     }
                 }
                 @Override
@@ -208,13 +265,17 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
                 }
             });
         } else {
+            dto.setStartDate(shift.getDate());
+            dto.setEndDate(shift.getDate());
             apiService.updateRequest(shift.getId(), dto).enqueue(new Callback<RequestDto>() {
                 @Override
                 public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                     if (response.isSuccessful()) {
-                        result.setValue(Resource.success(mapRequestDtoToDomain(response.body(), "Đăng ký ca")));
+                        WorkShift res = mapRequestDtoToDomain(response.body(), "Đăng ký ca làm");
+                        res.setSentTime(shift.getSentTime());
+                        result.setValue(Resource.success(res));
                     } else {
-                        result.setValue(Resource.error("Lỗi khi cập nhật đăng ký", null));
+                        result.setValue(Resource.error("Lỗi cập nhật (" + response.code() + ")", null));
                     }
                 }
                 @Override
@@ -305,21 +366,27 @@ public class WorkShiftRepositoryImpl implements WorkShiftRepository {
             shift.setType("Nghỉ phép");
             shift.setDate(dto.getStartDate() + " - " + dto.getEndDate());
         } else {
-            shift.setType("Đăng ký ca");
+            shift.setType("Đăng ký ca làm");
             shift.setDate(dto.getStartDate());
         }
         
         shift.setPosition(dto.getReason());
         shift.setStatus(dto.getStatus());
         shift.setSent(true);
+        
+        // Tránh giá trị 10/2/2026 bị hiển thị sai
+        String dateStr = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+        String timeStr = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+        shift.setSentTime(timeStr + " " + dateStr);
+
         return shift;
     }
 
     private String[] parseShiftTime(String shiftType) {
         if (shiftType == null) return new String[]{"00:00", "00:00"};
         switch (shiftType) {
-            case "Ca Sáng": return new String[]{"06:00", "12:00"};
-            case "Ca Chiều": return new String[]{"12:00", "18:00"};
+            case "Ca Sáng": return new String[]{"08:00", "12:00"};
+            case "Ca Chiều": return new String[]{"13:00", "17:00"};
             case "Ca Tối": return new String[]{"18:00", "22:00"};
             default: return new String[]{"08:00", "16:00"};
         }

@@ -18,19 +18,24 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="Chủ Nhật, 15 tháng"
+            android:maxLines="1"
+            android:text="2026-04-27 - 2026-05-01"
             android:textColor="#1A1A1A"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold"
+            app:autoSizeMaxTextSize="13sp"
+            app:autoSizeMinTextSize="8sp"
+            app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toBottomOf="@id/cvStatus"
             app:layout_constraintEnd_toStartOf="@id/cvStatus"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/cvStatus" />
 
         <TextView
             android:id="@+id/tvShiftDetail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:text="Ca Sáng • 08:00 - 12:00"
             android:textColor="#757575"
             android:textSize="12sp"
@@ -52,8 +57,8 @@
             android:id="@+id/cvStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="#E8F8EF"
-            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="#FFF3CD"
+            app:cardCornerRadius="6dp"
             app:cardElevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -62,10 +67,10 @@
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="10dp"
+                android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
-                android:text="Đã duyệt"
-                android:textColor="#2ECC71"
+                android:text="Chờ duyệt"
+                android:textColor="#856404"
                 android:textSize="10sp"
                 android:textStyle="bold" />
         </com.google.android.material.card.MaterialCardView>

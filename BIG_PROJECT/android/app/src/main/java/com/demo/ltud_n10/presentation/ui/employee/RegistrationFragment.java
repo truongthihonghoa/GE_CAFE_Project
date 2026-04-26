@@ -1,6 +1,8 @@
 package com.demo.ltud_n10.presentation.ui.employee;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -56,6 +58,16 @@ public class RegistrationFragment extends Fragment {
 
     @Inject
     AuthRepository authRepository;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        Locale locale = new Locale("en");
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.setLocale(locale);
+        context.getResources().updateConfiguration(config, context.getResources().getDisplayMetrics());
+        super.onAttach(context);
+    }
 
     @Nullable
     @Override
@@ -206,16 +218,37 @@ public class RegistrationFragment extends Fragment {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-        if ("Đăng ký ca".equals(shift.getType())) {
+        final long[] editDates = new long[3];
+        editDates[0] = Calendar.getInstance().getTimeInMillis();
+        editDates[1] = Calendar.getInstance().getTimeInMillis();
+        editDates[2] = Calendar.getInstance().getTimeInMillis();
+
+        dialogBinding.calendarEditShift.setOnDateChangeListener((v, y, m, d) -> {
+            Calendar c = Calendar.getInstance(); c.set(y, m, d);
+            editDates[0] = c.getTimeInMillis();
+        });
+        dialogBinding.calendarEditStart.setOnDateChangeListener((v, y, m, d) -> {
+            Calendar c = Calendar.getInstance(); c.set(y, m, d);
+            editDates[1] = c.getTimeInMillis();
+        });
+        dialogBinding.calendarEditEnd.setOnDateChangeListener((v, y, m, d) -> {
+            Calendar c = Calendar.getInstance(); c.set(y, m, d);
+            editDates[2] = c.getTimeInMillis();
+        });
+
+        if ("Đăng ký ca làm".equals(shift.getType())) {
             dialogBinding.layoutEditShift.setVisibility(View.VISIBLE);
             dialogBinding.layoutEditLeave.setVisibility(View.GONE);
             dialogBinding.tvDialogTitle.setText("Chỉnh sửa đăng ký ca");
             try {
                 Date date = sdf.parse(shift.getDate());
-                if (date != null) dialogBinding.calendarEditShift.setDate(date.getTime());
+                if (date != null) {
+                    dialogBinding.calendarEditShift.setDate(date.getTime());
+                    editDates[0] = date.getTime();
+                }
             } catch (Exception ignored) {}
-            if (shift.getPosition().contains("Sáng")) dialogBinding.rbEditMorning.setChecked(true);
-            else if (shift.getPosition().contains("Chiều")) dialogBinding.rbEditAfternoon.setChecked(true);
+            if (shift.getPosition().contains("08:00")) dialogBinding.rbEditMorning.setChecked(true);
+            else if (shift.getPosition().contains("13:00")) dialogBinding.rbEditAfternoon.setChecked(true);
             else dialogBinding.rbEditEvening.setChecked(true);
         } else {
             dialogBinding.layoutEditShift.setVisibility(View.GONE);
@@ -227,16 +260,22 @@ public class RegistrationFragment extends Fragment {
                 try {
                     Date start = sdf.parse(dates[0]);
                     Date end = sdf.parse(dates[1]);
-                    if (start != null) dialogBinding.calendarEditStart.setDate(start.getTime());
-                    if (end != null) dialogBinding.calendarEditEnd.setDate(end.getTime());
+                    if (start != null) {
+                        dialogBinding.calendarEditStart.setDate(start.getTime());
+                        editDates[1] = start.getTime();
+                    }
+                    if (end != null) {
+                        dialogBinding.calendarEditEnd.setDate(end.getTime());
+                        editDates[2] = end.getTime();
+                    }
                 } catch (Exception ignored) {}
             }
         }
 
         dialogBinding.btnCancelEdit.setOnClickListener(v -> dialog.dismiss());
         dialogBinding.btnSaveEdit.setOnClickListener(v -> {
-            if ("Đăng ký ca".equals(shift.getType())) {
-                shift.setDate(sdf.format(new Date(dialogBinding.calendarEditShift.getDate())));
+            if ("Đăng ký ca làm".equals(shift.getType())) {
+                shift.setDate(sdf.format(new Date(editDates[0])));
                 if (dialogBinding.rbEditMorning.isChecked()) {
                     shift.setPosition("08:00 - 12:00"); shift.setStartTime("08:00"); shift.setEndTime("12:00");
                 } else if (dialogBinding.rbEditAfternoon.isChecked()) {
@@ -245,7 +284,7 @@ public class RegistrationFragment extends Fragment {
                     shift.setPosition("18:00 - 22:00"); shift.setStartTime("18:00"); shift.setEndTime("22:00");
                 }
             } else {
-                shift.setDate(sdf.format(new Date(dialogBinding.calendarEditStart.getDate())) + " - " + sdf.format(new Date(dialogBinding.calendarEditEnd.getDate())));
+                shift.setDate(sdf.format(new Date(editDates[1])) + " - " + sdf.format(new Date(editDates[2])));
                 shift.setPosition(dialogBinding.etEditLeaveReason.getText().toString());
             }
             workShiftRepository.updateWorkShift(shift).observe(getViewLifecycleOwner(), resource -> {
@@ -292,6 +331,24 @@ public class RegistrationFragment extends Fragment {
     private void handleShiftSubmit() {
         User user = authRepository.getCurrentUser().getValue();
         if (user == null) return;
+
+        Calendar selectedCal = Calendar.getInstance();
+        selectedCal.setTimeInMillis(selectedShiftDate);
+        selectedCal.set(Calendar.HOUR_OF_DAY, 0);
+        selectedCal.set(Calendar.MINUTE, 0);
+        selectedCal.set(Calendar.SECOND, 0);
+        selectedCal.set(Calendar.MILLISECOND, 0);
+
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+
+        if (selectedCal.before(today)) {
+            Toast.makeText(getContext(), "Không thể đăng ký ca làm cho ngày trong quá khứ", Toast.LENGTH_SHORT).show();
+            return;
+        }
         
         binding.btnSubmitShift.setEnabled(false);
         binding.btnSubmitShift.setText("Đang gửi...");
@@ -308,7 +365,11 @@ public class RegistrationFragment extends Fragment {
         shift.setEmployeeId(user.getId());
         shift.setEmployeeName(user.getName());
         shift.setStatus("Chờ duyệt");
-        shift.setType("Đăng ký ca");
+        shift.setType("Đăng ký ca làm");
+        
+        // Lấy thời gian gửi hiện tại (Giờ:Phút:Giây Ngày/Tháng/Năm)
+        String currentTime = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.getDefault()).format(new Date());
+        shift.setSentTime(currentTime);
 
         workShiftRepository.addWorkShift(shift).observe(getViewLifecycleOwner(), resource -> {
             if (resource != null) {
@@ -329,6 +390,30 @@ public class RegistrationFragment extends Fragment {
     private void handleLeaveSubmit() {
         User user = authRepository.getCurrentUser().getValue();
         if (user == null) return;
+
+        Calendar startCal = Calendar.getInstance();
+        startCal.setTimeInMillis(selectedStartDate);
+        startCal.set(Calendar.HOUR_OF_DAY, 0);
+        startCal.set(Calendar.MINUTE, 0);
+        startCal.set(Calendar.SECOND, 0);
+        startCal.set(Calendar.MILLISECOND, 0);
+
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+
+        if (startCal.before(today)) {
+            Toast.makeText(getContext(), "Ngày bắt đầu nghỉ phép không thể ở quá khứ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (selectedEndDate < selectedStartDate) {
+            Toast.makeText(getContext(), "Ngày kết thúc không thể trước ngày bắt đầu", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String reason = binding.etLeaveReason.getText().toString();
         if (reason.isEmpty()) {
             Toast.makeText(getContext(), "Vui lòng nhập lý do nghỉ phép", Toast.LENGTH_SHORT).show();
@@ -346,6 +431,10 @@ public class RegistrationFragment extends Fragment {
         leave.setEmployeeName(user.getName());
         leave.setStatus("Chờ duyệt");
         leave.setType("Nghỉ phép");
+
+        // Lấy thời gian gửi hiện tại
+        String currentTime = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.getDefault()).format(new Date());
+        leave.setSentTime(currentTime);
 
         workShiftRepository.addWorkShift(leave).observe(getViewLifecycleOwner(), resource -> {
             if (resource != null) {
@@ -410,7 +499,7 @@ public class RegistrationFragment extends Fragment {
         if (user == null) return;
         workShiftRepository.getWorkShifts().observe(getViewLifecycleOwner(), resource -> {
             if (resource != null && resource.data != null) {
-                String targetType = "SHIFT".equals(currentMode) ? "Đăng ký ca" : "Nghỉ phép";
+                String targetType = "SHIFT".equals(currentMode) ? "Đăng ký ca làm" : "Nghỉ phép";
                 List<WorkShift> filtered = resource.data.stream()
                         .filter(s -> s.getEmployeeId().equals(user.getId()) && s.getType().equals(targetType))
                         .collect(Collectors.toList());
