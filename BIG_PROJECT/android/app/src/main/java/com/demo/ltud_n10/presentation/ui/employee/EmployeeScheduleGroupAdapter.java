@@ -42,16 +42,31 @@ public class EmployeeScheduleGroupAdapter extends RecyclerView.Adapter<EmployeeS
 
         // Group shifts by date
         if (shifts != null) {
-            SimpleDateFormat shiftDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            // Định dạng ngày từ API là yyyy-MM-dd
+            SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             for (WorkShift shift : shifts) {
                 try {
+                    if (shift.getDate() == null) continue;
+
                     Calendar sCal = Calendar.getInstance();
-                    sCal.setTime(shiftDateFormat.parse(shift.getDate()));
+                    sCal.setTime(apiDateFormat.parse(shift.getDate()));
                     String key = keyFormat.format(sCal.getTime());
+
                     if (groupedShifts.containsKey(key)) {
                         groupedShifts.get(key).add(shift);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) {
+                    // Thử định dạng khác nếu dd/MM/yyyy
+                    try {
+                        SimpleDateFormat altDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                        Calendar sCal = Calendar.getInstance();
+                        sCal.setTime(altDateFormat.parse(shift.getDate()));
+                        String key = keyFormat.format(sCal.getTime());
+                        if (groupedShifts.containsKey(key)) {
+                            groupedShifts.get(key).add(shift);
+                        }
+                    } catch (Exception ignored) {}
+                }
             }
         }
         notifyDataSetChanged();
@@ -89,11 +104,10 @@ public class EmployeeScheduleGroupAdapter extends RecyclerView.Adapter<EmployeeS
 
             binding.tvDayOfMonth.setText(dayOfMonthFormat.format(cal.getTime()));
             binding.tvFullDate.setText(fullDateFormat.format(cal.getTime()));
-            
+
             String dayOfWeekStr = cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, new Locale("vi", "VN"));
             binding.tvDayOfWeek.setText(dayOfWeekStr);
-            
-            // Prefix like T2, T3
+
             int dow = cal.get(Calendar.DAY_OF_WEEK);
             String prefix = dow == Calendar.SUNDAY ? "CN" : "T" + dow;
             binding.tvDayPrefix.setText(prefix);
@@ -104,7 +118,7 @@ public class EmployeeScheduleGroupAdapter extends RecyclerView.Adapter<EmployeeS
             } else {
                 binding.tvNoShift.setVisibility(View.GONE);
                 binding.rvShiftsInDay.setVisibility(View.VISIBLE);
-                
+
                 EmployeeShiftSimpleAdapter adapter = new EmployeeShiftSimpleAdapter();
                 binding.rvShiftsInDay.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
                 binding.rvShiftsInDay.setAdapter(adapter);

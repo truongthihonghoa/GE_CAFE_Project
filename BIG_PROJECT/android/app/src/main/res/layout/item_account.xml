@@ -82,13 +82,27 @@
                     android:textStyle="bold" />
             </com.google.android.material.card.MaterialCardView>
 
-            <ImageView
-                android:id="@+id/ivEdit"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:src="@android:drawable/ic_menu_edit"
-                app:tint="#1B431C" />
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ivDelete"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="12dp"
+                    android:src="@android:drawable/ic_menu_delete"
+                    app:tint="#E74C3C" />
+
+                <ImageView
+                    android:id="@+id/ivEdit"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#1B431C" />
+            </LinearLayout>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

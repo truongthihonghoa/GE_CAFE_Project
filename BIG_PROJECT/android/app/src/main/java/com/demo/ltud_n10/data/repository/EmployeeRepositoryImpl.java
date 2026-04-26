@@ -168,16 +168,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         employee.setId(dto.getMaNv());
         employee.setName(dto.getHoTen());
         employee.setEmail(dto.getEmail());
-        
-        // SỬA LỖI: Gán đúng trường sdt từ API Backend
         employee.setPhone(dto.getSdt()); 
-
         employee.setCccd(dto.getCccd());
         employee.setGender(dto.getGioiTinh());
         employee.setDob(dto.getNgaySinh());
         employee.setAddress(dto.getDiaChi());
         employee.setPosition(dto.getChucVu());
         employee.setStatus(dto.getTrangThai());
+        employee.setBankAccount(dto.getTkNganHang());
+        employee.setBranchId(dto.getMaChiNhanh());
         return employee;
     }
 
@@ -193,6 +192,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         dto.setDiaChi(employee.getAddress());
         dto.setChucVu(employee.getPosition());
         dto.setTrangThai(employee.getStatus());
+        dto.setTkNganHang(employee.getBankAccount());
+        dto.setMaChiNhanh(employee.getBranchId());
         return dto;
     }
 }

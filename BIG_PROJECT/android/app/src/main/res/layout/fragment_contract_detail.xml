@@ -28,10 +28,83 @@
                 android:textSize="32sp"
                 android:textStyle="bold" />
 
+            <LinearLayout
+                android:id="@+id/llReadOnlyFields"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mã hợp đồng:"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvContractIdReadOnly"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:backgroundTint="#DCDCDC"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Mã nhân viên:"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEmployeeIdReadOnly"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:backgroundTint="#DCDCDC"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Tên nhân viên:"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEmployeeNameReadOnly"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:backgroundTint="#DCDCDC"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
             <TextView
+                android:id="@+id/tvEmployeeLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nhân viên:"
+                android:layout_marginTop="16dp"
+                android:text="Chọn nhân viên:"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -52,8 +125,7 @@
                 android:text="*Vui lòng chọn tên nhân viên"
                 android:textColor="#D32F2F"
                 android:textSize="13sp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -80,8 +152,7 @@
                 android:text="*Vui lòng chọn Loại hợp đồng"
                 android:textColor="#D32F2F"
                 android:textSize="13sp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -104,7 +175,7 @@
                     android:id="@+id/tvStartDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="mm/dd/yyyy"
+                    android:hint="YYYY-MM-DD"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -126,11 +197,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="*Ngày bắt đầu không hợp lệ. Vui lòng nhập lại"
+                android:text="*Ngày bắt đầu không hợp lệ."
                 android:textColor="#D32F2F"
                 android:textSize="13sp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -153,7 +223,7 @@
                     android:id="@+id/tvEndDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="mm/dd/yyyy"
+                    android:hint="YYYY-MM-DD"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -175,11 +245,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="*Thông tin ngày kết thúc không hợp lệ. Vui lòng nhập lại"
+                android:text="*Ngày kết thúc không hợp lệ."
                 android:textColor="#D32F2F"
                 android:textSize="13sp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -208,11 +277,54 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="*Mức lương không hợp lệ. Vui lòng nhập lại"
+                android:text="*Mức lương không hợp lệ."
                 android:textColor="#D32F2F"
                 android:textSize="13sp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Lương theo giờ:"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etHourlyRate"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Nhập lương theo giờ"
+                android:inputType="numberDecimal"
+                android:paddingHorizontal="20dp"
+                android:textSize="16sp"
+                android:textColor="#222"
+                android:textColorHint="#9E9E9E" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Số giờ làm quy định:"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etRequiredHours"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Nhập số giờ quy định"
+                android:inputType="numberDecimal"
+                android:paddingHorizontal="20dp"
+                android:textSize="16sp"
+                android:textColor="#222"
+                android:textColorHint="#9E9E9E" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -236,11 +348,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="*Chức vụ không hợp lệ. Vui lòng nhập lại"
+                android:text="*Chức vụ không hợp lệ."
                 android:textColor="#D32F2F"
                 android:textSize="13sp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"

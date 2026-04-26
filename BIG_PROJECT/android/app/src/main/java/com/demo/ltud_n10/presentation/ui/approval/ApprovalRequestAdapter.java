@@ -1,6 +1,6 @@
 package com.demo.ltud_n10.presentation.ui.approval;
 
-import android.app.TimePickerDialog;
+import android.app.DatePickerDialog;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.ltud_n10.databinding.ItemApprovalRequestBinding;
-import com.demo.ltud_n10.domain.model.WorkShift;
+import com.demo.ltud_n10.domain.model.Request;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,20 +18,20 @@ import java.util.Calendar;
 
 public class ApprovalRequestAdapter extends RecyclerView.Adapter<ApprovalRequestAdapter.ViewHolder> {
 
-    private List<WorkShift> items = new ArrayList<>();
-    private OnActionListener listener;
+    private List<Request> items = new ArrayList<>();
+    private final OnActionListener listener;
 
     public interface OnActionListener {
-        void onApprove(WorkShift shift);
-        void onReject(WorkShift shift);
-        void onTimeChanged(WorkShift shift);
+        void onApprove(Request request);
+        void onReject(Request request);
+        void onTimeChanged(Request request);
     }
 
-    public void setOnActionListener(OnActionListener listener) {
+    public ApprovalRequestAdapter(OnActionListener listener) {
         this.listener = listener;
     }
 
-    public void setItems(List<WorkShift> items) {
+    public void setData(List<Request> items) {
         this.items = items;
         notifyDataSetChanged();
     }
@@ -62,94 +62,69 @@ public class ApprovalRequestAdapter extends RecyclerView.Adapter<ApprovalRequest
             this.binding = binding;
         }
 
-        void bind(WorkShift shift) {
-            binding.tvEmployeeName.setText(shift.getEmployeeName());
+        void bind(Request request) {
+            binding.tvEmployeeName.setText(request.getEmployeeName() != null ? request.getEmployeeName() : request.getEmployeeId());
+            binding.tvTime.setText(request.getStartDate() + " -> " + request.getEndDate());
+            binding.tvStatus.setText(request.getStatus());
             
-            if ("Nghỉ phép".equals(shift.getType())) {
-                binding.tvTime.setText("Xin nghỉ phép");
-                binding.ivEditTime.setVisibility(View.GONE);
+            String reason = request.getReason();
+            if (reason != null && !reason.isEmpty()) {
+                binding.tvReason.setText("Lý do: " + reason);
+                binding.tvReason.setVisibility(View.VISIBLE);
             } else {
-                binding.tvTime.setText(shift.getStartTime() + " - " + shift.getEndTime());
+                binding.tvReason.setVisibility(View.GONE);
             }
-            
-            binding.tvStatus.setText(shift.getStatus());
 
-            // Default
             binding.layoutActions.setVisibility(View.GONE);
             binding.ivEditTime.setVisibility(View.GONE);
 
-            if ("Chờ duyệt".equals(shift.getStatus())) {
-                binding.cvContainer.setCardBackgroundColor(Color.parseColor("#FFF3CD")); // Yellow
+            if ("Chờ duyệt".equals(request.getStatus())) {
+                binding.cvContainer.setCardBackgroundColor(Color.parseColor("#FFF3CD"));
                 binding.cvContainer.setStrokeColor(Color.parseColor("#FFE69C"));
                 binding.tvStatus.setTextColor(Color.parseColor("#856404"));
                 binding.layoutActions.setVisibility(View.VISIBLE);
-                if (!"Nghỉ phép".equals(shift.getType())) {
-                    binding.ivEditTime.setVisibility(View.VISIBLE);
-                }
-            } else if ("Đã duyệt".equals(shift.getStatus())) {
-                binding.cvContainer.setCardBackgroundColor(Color.parseColor("#E8F8EF")); // Green
+                binding.ivEditTime.setVisibility(View.VISIBLE);
+            } else if ("Đã duyệt".equals(request.getStatus())) {
+                binding.cvContainer.setCardBackgroundColor(Color.parseColor("#E8F8EF"));
                 binding.cvContainer.setStrokeColor(Color.parseColor("#B7EBCA"));
                 binding.tvStatus.setTextColor(Color.parseColor("#2ECC71"));
-            } else if ("Bị từ chối".equals(shift.getStatus())) {
-                binding.cvContainer.setCardBackgroundColor(Color.parseColor("#F8D7DA")); // Red
+            } else if ("Bị từ chối".equals(request.getStatus())) {
+                binding.cvContainer.setCardBackgroundColor(Color.parseColor("#F8D7DA"));
                 binding.cvContainer.setStrokeColor(Color.parseColor("#F5C6CB"));
                 binding.tvStatus.setTextColor(Color.parseColor("#721C24"));
             }
 
             binding.btnApprove.setOnClickListener(v -> {
-                if (listener != null) listener.onApprove(shift);
+                if (listener != null) listener.onApprove(request);
             });
 
             binding.btnReject.setOnClickListener(v -> {
-                if (listener != null) listener.onReject(shift);
+                if (listener != null) listener.onReject(request);
             });
 
             binding.layoutTimeEdit.setOnClickListener(v -> {
-                if ("Chờ duyệt".equals(shift.getStatus()) && !"Nghỉ phép".equals(shift.getType())) {
-                    showTimeRangePicker(shift);
+                if ("Chờ duyệt".equals(request.getStatus())) {
+                    showDateRangePicker(request);
                 }
             });
         }
 
-        private void showTimeRangePicker(WorkShift shift) {
-            try {
-                String[] startParts = shift.getStartTime().split(":");
-                int startH = Integer.parseInt(startParts[0]);
-                int startM = Integer.parseInt(startParts[1]);
-
-                TimePickerDialog startTimePicker = new TimePickerDialog(itemView.getContext(), (view, h, m) -> {
-                    String startTime = String.format("%02d:%02d", h, m);
-                    
-                    String[] endParts = shift.getEndTime().split(":");
-                    int endH = Integer.parseInt(endParts[0]);
-                    int endM = Integer.parseInt(endParts[1]);
-
-                    TimePickerDialog endTimePicker = new TimePickerDialog(itemView.getContext(), (view2, h2, m2) -> {
-                        String endTime = String.format("%02d:%02d", h2, m2);
-                        shift.setStartTime(startTime);
-                        shift.setEndTime(endTime);
-                        binding.tvTime.setText(startTime + " - " + endTime);
-                        if (listener != null) listener.onTimeChanged(shift);
-                    }, endH, endM, true);
-                    
-                    endTimePicker.setTitle("Chọn giờ kết thúc");
-                    endTimePicker.show();
-                    
-                }, startH, startM, true);
-                
-                startTimePicker.setTitle("Chọn giờ bắt đầu");
-                startTimePicker.show();
-            } catch (Exception e) {
-                // Fallback to current time if format is wrong
-                Calendar c = Calendar.getInstance();
-                TimePickerDialog fallback = new TimePickerDialog(itemView.getContext(), (view, h, m) -> {
-                    String startTime = String.format("%02d:%02d", h, m);
-                    shift.setStartTime(startTime);
-                    shift.setEndTime(startTime); // dummy
-                    if (listener != null) listener.onTimeChanged(shift);
-                }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true);
-                fallback.show();
-            }
+        private void showDateRangePicker(Request request) {
+            final Calendar c = Calendar.getInstance();
+            DatePickerDialog startDatePicker = new DatePickerDialog(itemView.getContext(), (view, y, m, d) -> {
+                String startDate = String.format("%04d-%02d-%02d", y, m + 1, d);
+                DatePickerDialog endDatePicker = new DatePickerDialog(itemView.getContext(), (view2, y2, m2, d2) -> {
+                    String endDate = String.format("%04d-%02d-%02d", y2, m2 + 1, d2);
+                    request.setStartDate(startDate);
+                    request.setEndDate(endDate);
+                    binding.tvTime.setText(startDate + " -> " + endDate);
+                    if (listener != null) listener.onTimeChanged(request);
+                }, y, m, d);
+                endDatePicker.setTitle("Chọn ngày kết thúc");
+                endDatePicker.show();
+            }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+            startDatePicker.setTitle("Chọn ngày bắt đầu");
+            startDatePicker.show();
         }
     }
 }

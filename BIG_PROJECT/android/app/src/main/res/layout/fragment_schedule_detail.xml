@@ -83,6 +83,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:text="Mã chi nhánh"
+                android:textColor="#1A1A1A"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etBranchId"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:enabled="false"
+                android:focusable="false"
+                android:hint="Mã chi nhánh"
+                android:paddingHorizontal="16dp"
+                android:textColor="#757575"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Ngày làm việc"
                 android:textColor="#1A1A1A"
                 android:textSize="14sp"
@@ -100,7 +122,7 @@
                     android:id="@+id/tvDob"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="mm/ dd/ yyyy"
+                    android:hint="yyyy-MM-dd"
                     android:textColor="#1A1A1A"
                     android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -116,6 +138,23 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:tint="#1A1A1A" />
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Chọn ca làm nhanh"
+                android:textColor="#1A1A1A"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/spinnerShift"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="12dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -145,7 +184,7 @@
                         android:background="@drawable/bg_input_field"
                         android:drawableEnd="@android:drawable/ic_menu_recent_history"
                         android:focusable="false"
-                        android:hint="-- : -- --"
+                        android:hint="-- : --"
                         android:paddingHorizontal="16dp"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -176,7 +215,7 @@
                         android:background="@drawable/bg_input_field"
                         android:drawableEnd="@android:drawable/ic_menu_recent_history"
                         android:focusable="false"
-                        android:hint="-- : -- --"
+                        android:hint="-- : --"
                         android:paddingHorizontal="16dp"
                         android:textSize="14sp" />
                 </LinearLayout>

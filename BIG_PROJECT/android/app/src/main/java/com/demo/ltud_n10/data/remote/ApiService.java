@@ -60,14 +60,29 @@ public interface ApiService {
     @GET("api/schedules/data/api/")
     Call<List<ScheduleDto>> getSchedules(@Query("ma_nv") String maNv);
 
+    @POST("api/schedules/data/api/")
+    Call<ScheduleDto> addSchedule(@Body ScheduleDto schedule);
+
+    @PUT("api/schedules/data/api/{id}/")
+    Call<ScheduleDto> updateSchedule(@Path("id") String id, @Body ScheduleDto schedule);
+
+    @DELETE("api/schedules/data/api/{id}/")
+    Call<Void> deleteSchedule(@Path("id") String id);
+
     @GET("api/requests/dangkylich/")
     Call<List<RequestDto>> getRequests(@Query("ma_nv") String maNv);
+
+    @GET("api/requests/nghiphep/")
+    Call<List<RequestDto>> getLeaveRequests(@Query("ma_nv") String maNv);
 
     @POST("api/requests/dangkylich/")
     Call<RequestDto> addRequest(@Body RequestDto request);
 
     @PUT("api/requests/dangkylich/{id}/")
     Call<RequestDto> updateRequest(@Path("id") String id, @Body RequestDto request);
+
+    @PUT("api/requests/nghiphep/{id}/")
+    Call<RequestDto> updateLeaveRequest(@Path("id") String id, @Body RequestDto request);
 
     @DELETE("api/requests/dangkylich/{id}/")
     Call<Void> deleteRequest(@Path("id") String id);

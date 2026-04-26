@@ -29,6 +29,10 @@
             android:id="@+id/registrationFragment"
             android:icon="@drawable/ic_leave"
             android:title="Đăng ký ca và nghỉ phép" />
+        <item
+            android:id="@+id/accountFragment"
+            android:icon="@drawable/ic_account"
+            android:title="Tài khoản" />
     </group>
 
     <item android:title="">

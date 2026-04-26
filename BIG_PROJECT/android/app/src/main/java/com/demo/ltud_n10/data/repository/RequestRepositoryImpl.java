@@ -13,6 +13,7 @@ import com.demo.ltud_n10.domain.repository.RequestRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -41,25 +42,32 @@ public class RequestRepositoryImpl implements RequestRepository {
         String maNv = prefsManager.getMaNv();
         String filterMaNv = prefsManager.isStaff() ? null : maNv;
 
-        apiService.getRequests(filterMaNv).enqueue(new Callback<List<RequestDto>>() {
+        List<Request> allRequests = new ArrayList<>();
+        AtomicInteger remainingRequests = new AtomicInteger(2);
+
+        Callback<List<RequestDto>> callback = new Callback<List<RequestDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<RequestDto>> call, @NonNull Response<List<RequestDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<Request> requests = new ArrayList<>();
                     for (RequestDto dto : response.body()) {
-                        requests.add(mapDtoToDomain(dto));
+                        allRequests.add(mapDtoToDomain(dto));
                     }
-                    result.setValue(Resource.success(requests));
-                } else {
-                    result.setValue(Resource.error("Lỗi khi tải đăng ký: " + response.code(), null));
+                }
+                if (remainingRequests.decrementAndGet() == 0) {
+                    result.setValue(Resource.success(allRequests));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<RequestDto>> call, @NonNull Throwable t) {
-                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
+                if (remainingRequests.decrementAndGet() == 0) {
+                    result.setValue(Resource.success(allRequests));
+                }
             }
-        });
+        };
+
+        apiService.getRequests(filterMaNv).enqueue(callback);
+        apiService.getLeaveRequests(filterMaNv).enqueue(callback);
 
         return result;
     }
@@ -87,7 +95,15 @@ public class RequestRepositoryImpl implements RequestRepository {
     @Override
     public LiveData<Resource<Request>> updateRequest(Request request) {
         MutableLiveData<Resource<Request>> result = new MutableLiveData<>();
-        apiService.updateRequest(request.getId(), mapDomainToDto(request)).enqueue(new Callback<RequestDto>() {
+        Call<RequestDto> call;
+        
+        if ("Nghỉ phép".equals(request.getType())) {
+            call = apiService.updateLeaveRequest(request.getId(), mapDomainToDto(request));
+        } else {
+            call = apiService.updateRequest(request.getId(), mapDomainToDto(request));
+        }
+
+        call.enqueue(new Callback<RequestDto>() {
             @Override
             public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -113,6 +129,7 @@ public class RequestRepositoryImpl implements RequestRepository {
                 if (response.isSuccessful()) result.setValue(Resource.success(true));
                 else result.setValue(Resource.error("Lỗi khi xóa yêu cầu", false));
             }
+
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 result.setValue(Resource.error(t.getMessage(), false));
@@ -123,34 +140,17 @@ public class RequestRepositoryImpl implements RequestRepository {
 
     @Override
     public LiveData<Resource<Request>> updateRequestStatus(String requestId, String status) {
-        MutableLiveData<Resource<Request>> result = new MutableLiveData<>();
-        
-        RequestDto updateDto = new RequestDto();
-        updateDto.setStatus(status);
-        
-        apiService.updateRequest(requestId, updateDto).enqueue(new Callback<RequestDto>() {
-            @Override
-            public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(Resource.success(mapDtoToDomain(response.body())));
-                } else {
-                    result.setValue(Resource.error("Lỗi khi cập nhật trạng thái", null));
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<RequestDto> call, @NonNull Throwable t) {
-                result.setValue(Resource.error(t.getMessage(), null));
-            }
-        });
-
-        return result;
+        return null; 
     }
 
     private Request mapDtoToDomain(RequestDto dto) {
         Request request = new Request();
         request.setId(dto.getId());
         request.setEmployeeId(dto.getEmployeeId());
+        
+        // CẬP NHẬT: Lấy tên nhân viên trực tiếp từ ten_nv của API
+        request.setEmployeeName(dto.getEmployeeName() != null ? dto.getEmployeeName() : dto.getEmployeeId());
+        
         request.setType(dto.getType());
         request.setStartDate(dto.getStartDate());
         request.setEndDate(dto.getEndDate());
@@ -163,6 +163,7 @@ public class RequestRepositoryImpl implements RequestRepository {
         RequestDto dto = new RequestDto();
         dto.setId(request.getId());
         dto.setEmployeeId(request.getEmployeeId());
+        dto.setEmployeeName(request.getEmployeeName());
         dto.setType(request.getType());
         dto.setStartDate(request.getStartDate());
         dto.setEndDate(request.getEndDate());

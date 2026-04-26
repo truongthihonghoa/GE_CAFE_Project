@@ -16,14 +16,20 @@ public class ScheduleDto implements Serializable {
     @SerializedName("trang_thai")
     private String status;
 
-    @SerializedName("ho_ten") // Lấy tên nhân viên từ join bảng nếu có
-    private String employeeName;
-
     @SerializedName("ma_nv")
     private String employeeId;
 
-    @SerializedName("chuc_vu")
-    private String position;
+    @SerializedName("ten_nv")
+    private String employeeName;
+
+    @SerializedName("ma_chi_nhanh")
+    private String branchId;
+
+    @SerializedName("ghi_chu")
+    private String note;
+
+    @SerializedName("ngay_tao")
+    private String createdAt;
 
     // Getters and Setters
     public String getId() { return id; }
@@ -34,21 +40,14 @@ public class ScheduleDto implements Serializable {
     public void setShift(String shift) { this.shift = shift; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-    public String getEmployeeName() { return employeeName; }
-    public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
     public String getEmployeeId() { return employeeId; }
     public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
-    public String getPosition() { return position; }
-    public void setPosition(String position) { this.position = position; }
-
-    // Các hàm bổ trợ để Repository gọi không bị lỗi
-    public String getDate() { return workDate; }
-    public String getStartTime() {
-        if (shift != null && shift.contains("-")) return shift.split("-")[0].trim();
-        return shift;
-    }
-    public String getEndTime() {
-        if (shift != null && shift.contains("-")) return shift.split("-")[1].trim();
-        return "";
-    }
+    public String getEmployeeName() { return employeeName; }
+    public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
+    public String getBranchId() { return branchId; }
+    public void setBranchId(String branchId) { this.branchId = branchId; }
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

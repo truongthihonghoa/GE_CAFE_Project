@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.domain.model.Employee;
 
+import java.util.Objects;
+
 public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewHolder> {
 
     private final OnEmployeeClickListener listener;
@@ -26,14 +28,14 @@ public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewH
         super(new DiffUtil.ItemCallback<Employee>() {
             @Override
             public boolean areItemsTheSame(@NonNull Employee oldItem, @NonNull Employee newItem) {
-                return oldItem.getId().equals(newItem.getId());
+                return Objects.equals(oldItem.getId(), newItem.getId());
             }
 
             @Override
             public boolean areContentsTheSame(@NonNull Employee oldItem, @NonNull Employee newItem) {
-                return oldItem.getName().equals(newItem.getName()) && 
-                       oldItem.getStatus().equals(newItem.getStatus()) &&
-                       oldItem.getPosition().equals(newItem.getPosition());
+                return Objects.equals(oldItem.getName(), newItem.getName()) &&
+                        Objects.equals(oldItem.getStatus(), newItem.getStatus()) &&
+                        Objects.equals(oldItem.getPosition(), newItem.getPosition());
             }
         });
         this.listener = listener;
@@ -49,12 +51,23 @@ public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewH
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Employee employee = getItem(position);
-        holder.tvName.setText(employee.getName());
-        holder.tvEmail.setText(employee.getEmail());
-        holder.tvCccd.setText(employee.getCccd());
-        holder.tvPhone.setText(employee.getPhone());
-        holder.tvPosition.setText(employee.getPosition());
-        holder.tvStatus.setText(employee.getStatus());
+        holder.tvName.setText(employee.getName() != null ? employee.getName() : "N/A");
+        holder.tvEmail.setText(employee.getEmail() != null ? employee.getEmail() : "");
+        holder.tvCccd.setText("CCCD: " + (employee.getCccd() != null ? employee.getCccd() : ""));
+        holder.tvPhone.setText("SĐT: " + (employee.getPhone() != null ? employee.getPhone() : ""));
+        holder.tvPosition.setText(employee.getPosition() != null ? employee.getPosition() : "");
+
+        String status = employee.getStatus() != null ? employee.getStatus() : "Đang làm";
+        holder.tvStatus.setText(status);
+
+        // Cập nhật giao diện trạng thái dựa trên nội dung
+        if ("Đang làm".equals(status) || "Còn hiệu lực".equals(status)) {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_green_light);
+            holder.tvStatus.setTextColor(0xFF2E7D32); // Màu xanh lá
+        } else {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_red_light);
+            holder.tvStatus.setTextColor(0xFFD32F2F); // Màu đỏ
+        }
 
         holder.btnEdit.setOnClickListener(v -> listener.onEditClick(employee));
         holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(employee));

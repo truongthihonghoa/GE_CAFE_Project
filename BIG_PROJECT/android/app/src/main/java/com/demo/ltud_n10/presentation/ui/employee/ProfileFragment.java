@@ -1,6 +1,7 @@
 package com.demo.ltud_n10.presentation.ui.employee;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +13,24 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.demo.ltud_n10.MainActivity;
+import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.local.SharedPrefsManager;
+import com.demo.ltud_n10.data.remote.ApiService;
+import com.demo.ltud_n10.data.remote.dto.AccountDto;
 import com.demo.ltud_n10.databinding.FragmentProfileBinding;
 import com.demo.ltud_n10.domain.model.Employee;
+import com.demo.ltud_n10.domain.model.User;
+import com.demo.ltud_n10.domain.repository.AuthRepository;
 import com.demo.ltud_n10.domain.repository.EmployeeRepository;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @AndroidEntryPoint
 public class ProfileFragment extends Fragment {
@@ -26,7 +38,16 @@ public class ProfileFragment extends Fragment {
     private FragmentProfileBinding binding;
 
     @Inject
+    AuthRepository authRepository;
+
+    @Inject
     EmployeeRepository employeeRepository;
+
+    @Inject
+    ApiService apiService;
+
+    @Inject
+    SharedPrefsManager prefsManager;
 
     @Nullable
     @Override
@@ -54,14 +75,37 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadData() {
-        // Hệ thống đã tự động lấy ma_nv của người đang đăng nhập và gửi lên Backend
+        String token = prefsManager.getToken();
+        if (token == null) return;
+
+        // Gọi API accounts/taikhoan để lấy mã nhân viên thực tế
+        apiService.getMyAccount("Bearer " + token).enqueue(new Callback<List<AccountDto>>() {
+            @Override
+            public void onResponse(Call<List<AccountDto>> call, Response<List<AccountDto>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    AccountDto myAccount = response.body().get(0);
+                    String maNv = myAccount.getMaNvId(); // Đã sửa từ getMaNv() thành getMaNvId()
+                    if (maNv != null) {
+                        fetchEmployeeDetail(maNv);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<AccountDto>> call, Throwable t) {
+                Log.e("ProfileFragment", "Error fetching account info: " + t.getMessage());
+            }
+        });
+    }
+
+    private void fetchEmployeeDetail(String maNv) {
         employeeRepository.getEmployees().observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null) {
-                if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS && resource.data != null && !resource.data.isEmpty()) {
-                    // Hiển thị thông tin của nhân viên đầu tiên (Backend đã lọc đúng ma_nv của bạn)
-                    updateUI(resource.data.get(0));
-                } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
-                    Toast.makeText(requireContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
+            if (resource != null && resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                for (Employee e : resource.data) {
+                    if (maNv.equals(e.getId())) {
+                        updateUI(e);
+                        break;
+                    }
                 }
             }
         });

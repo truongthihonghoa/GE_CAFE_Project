@@ -12,8 +12,8 @@ public class EmployeeDto {
     @SerializedName("email")
     private String email;
 
-    @SerializedName("sdt") // SỬA LỖI: Backend trả về "sdt", không phải "so_dien_thoai"
-    private String sdt;
+    @SerializedName("so_dien_thoai")
+    private String soDienThoai;
 
     @SerializedName("cccd")
     private String cccd;
@@ -33,8 +33,17 @@ public class EmployeeDto {
     @SerializedName("trang_thai")
     private String trangThai;
 
+    @SerializedName("sdt")
+    private String sdt;
+
+    @SerializedName("tk_ngan_hang")
+    private String tkNganHang;
+
+    @SerializedName("ma_chi_nhanh")
+    private String maChiNhanh;
+
     @SerializedName("is_staff")
-    private Boolean isStaff; // Sửa thành Boolean để khớp với auth_user của Django
+    private Boolean isStaff; // SỬA: Đổi từ Integer sang Boolean
 
     // Getters and Setters
     public String getMaNv() { return maNv; }
@@ -46,8 +55,8 @@ public class EmployeeDto {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getSdt() { return sdt; }
-    public void setSdt(String sdt) { this.sdt = sdt; }
+    public String getSoDienThoai() { return soDienThoai; }
+    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
 
     public String getCccd() { return cccd; }
     public void setCccd(String cccd) { this.cccd = cccd; }
@@ -66,6 +75,15 @@ public class EmployeeDto {
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+
+    public String getSdt() { return sdt; }
+    public void setSdt(String sdt) { this.sdt = sdt; }
+
+    public String getTkNganHang() { return tkNganHang; }
+    public void setTkNganHang(String tkNganHang) { this.tkNganHang = tkNganHang; }
+
+    public String getMaChiNhanh() { return maChiNhanh; }
+    public void setMaChiNhanh(String maChiNhanh) { this.maChiNhanh = maChiNhanh; }
 
     public Boolean getIsStaff() { return isStaff; }
     public void setIsStaff(Boolean isStaff) { this.isStaff = isStaff; }

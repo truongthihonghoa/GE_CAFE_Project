@@ -10,6 +10,7 @@ import com.demo.ltud_n10.data.remote.dto.BranchDto;
 import com.demo.ltud_n10.domain.model.Branch;
 import com.demo.ltud_n10.domain.repository.BranchRepository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,42 +62,28 @@ public class BranchRepositoryImpl implements BranchRepository {
         MutableLiveData<Resource<Branch>> data = new MutableLiveData<>();
         data.setValue(Resource.loading(null));
 
-        apiService.getBranches().enqueue(new Callback<List<BranchDto>>() {
+        BranchDto dto = new BranchDto();
+        dto.setId(null); // Để server tự sinh mã CNxx
+        dto.setName(branch.getName());
+        dto.setAddress(branch.getAddress());
+        dto.setPhoneNumber(branch.getPhoneNumber());
+        dto.setStatus("active"); // Gửi Key chuẩn Django
+        
+        String managerId = branch.getManagerName();
+        dto.setManagerName((managerId == null || managerId.trim().isEmpty()) ? null : managerId);
+
+        apiService.addBranch(dto).enqueue(new Callback<BranchDto>() {
             @Override
-            public void onResponse(@NonNull Call<List<BranchDto>> call, @NonNull Response<List<BranchDto>> response) {
-                String nextId = "CN001";
+            public void onResponse(@NonNull Call<BranchDto> call, @NonNull Response<BranchDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    nextId = String.format("CN%03d", response.body().size() + 1);
+                    data.setValue(Resource.success(mapDtoToDomain(response.body())));
+                } else {
+                    handleError(response, data);
                 }
-
-                BranchDto dto = new BranchDto();
-                dto.setId(nextId);
-                dto.setName(branch.getName());
-                dto.setAddress(branch.getAddress());
-                dto.setPhoneNumber(branch.getPhoneNumber());
-                dto.setStatus("Đang hoạt động");
-                
-                String managerId = branch.getManagerName();
-                dto.setManagerName((managerId == null || managerId.trim().isEmpty()) ? null : managerId);
-
-                apiService.addBranch(dto).enqueue(new Callback<BranchDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<BranchDto> call, @NonNull Response<BranchDto> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            data.setValue(Resource.success(mapDtoToDomain(response.body())));
-                        } else {
-                            data.setValue(Resource.error("Không thể lưu chi nhánh", null));
-                        }
-                    }
-                    @Override
-                    public void onFailure(@NonNull Call<BranchDto> call, @NonNull Throwable t) {
-                        data.setValue(Resource.error(t.getMessage(), null));
-                    }
-                });
             }
             @Override
-            public void onFailure(@NonNull Call<List<BranchDto>> call, @NonNull Throwable t) {
-                data.setValue(Resource.error("Lỗi kết nối", null));
+            public void onFailure(@NonNull Call<BranchDto> call, @NonNull Throwable t) {
+                data.setValue(Resource.error(t.getMessage(), null));
             }
         });
         return data;
@@ -112,7 +99,13 @@ public class BranchRepositoryImpl implements BranchRepository {
         dto.setName(branch.getName());
         dto.setAddress(branch.getAddress());
         dto.setPhoneNumber(branch.getPhoneNumber());
-        dto.setStatus(branch.getStatus());
+        
+        // CHUYỂN ĐỔI SANG KEY MÀ SERVER HIỂU
+        String apiStatus = "active";
+        if (branch.getStatus() != null && (branch.getStatus().contains("Ngưng") || branch.getStatus().equals("inactive"))) {
+            apiStatus = "inactive";
+        }
+        dto.setStatus(apiStatus);
         
         String managerId = branch.getManagerName();
         dto.setManagerName((managerId == null || managerId.trim().isEmpty()) ? null : managerId);
@@ -123,7 +116,7 @@ public class BranchRepositoryImpl implements BranchRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     data.setValue(Resource.success(mapDtoToDomain(response.body())));
                 } else {
-                    data.setValue(Resource.error("Cập nhật thất bại: " + response.code(), null));
+                    handleError(response, data);
                 }
             }
             @Override
@@ -134,19 +127,28 @@ public class BranchRepositoryImpl implements BranchRepository {
         return data;
     }
 
+    private void handleError(Response<?> response, MutableLiveData<Resource<Branch>> data) {
+        String errorMsg = "Lỗi " + response.code();
+        try {
+            if (response.errorBody() != null) {
+                errorMsg += ": " + response.errorBody().string();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        data.setValue(Resource.error(errorMsg, null));
+    }
+
     @Override
     public LiveData<Resource<Boolean>> deleteBranch(String branchId) {
         return new MutableLiveData<>(Resource.success(true));
     }
 
     private Branch mapDtoToDomain(BranchDto dto) {
-        return new Branch(
-                dto.getId(),
-                dto.getName(),
-                dto.getAddress(),
-                dto.getPhoneNumber(),
-                dto.getManagerName(),
-                dto.getStatus()
-        );
+        String uiStatus = "Đang hoạt động";
+        if ("inactive".equals(dto.getStatus())) {
+            uiStatus = "Ngưng hoạt động";
+        }
+        return new Branch(dto.getId(), dto.getName(), dto.getAddress(), dto.getPhoneNumber(), dto.getManagerName(), uiStatus);
     }
 }
