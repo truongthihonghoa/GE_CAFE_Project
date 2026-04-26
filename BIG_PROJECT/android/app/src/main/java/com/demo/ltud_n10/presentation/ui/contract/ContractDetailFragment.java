@@ -15,16 +15,19 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.core.Resource;
 import com.demo.ltud_n10.databinding.DialogCustomConfirmBinding;
 import com.demo.ltud_n10.databinding.FragmentContractDetailBinding;
 import com.demo.ltud_n10.domain.model.Contract;
+import com.demo.ltud_n10.domain.model.Employee;
+import com.demo.ltud_n10.presentation.ui.employee.EmployeeViewModel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.UUID;
+import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -33,8 +36,10 @@ public class ContractDetailFragment extends Fragment {
 
     private FragmentContractDetailBinding binding;
     private ContractViewModel viewModel;
+    private EmployeeViewModel employeeViewModel;
     private Contract currentContract;
     private String title;
+    private List<Employee> employeeList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -47,6 +52,7 @@ public class ContractDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(ContractViewModel.class);
+        employeeViewModel = new ViewModelProvider(requireActivity()).get(EmployeeViewModel.class);
 
         if (getArguments() != null) {
             currentContract = (Contract) getArguments().getSerializable("contract");
@@ -54,7 +60,9 @@ public class ContractDetailFragment extends Fragment {
         }
 
         setupUI();
-        if (currentContract != null) {
+        if (currentContract == null) {
+            loadEmployees();
+        } else {
             populateData();
         }
     }
@@ -64,18 +72,27 @@ public class ContractDetailFragment extends Fragment {
             binding.tvTitle.setText(title);
         }
 
-        // Mock Data for Spinners
-        String[] employees = {"Lê Văn C", "Phạm Thị D", "Hoàng Văn E"};
-        ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, employees);
-        empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerEmployee.setAdapter(empAdapter);
+        // Chế độ chỉnh sửa: Hiển thị trường Read-Only, ẩn Spinner chọn nhân viên
+        if (currentContract != null) {
+            binding.llReadOnlyFields.setVisibility(View.VISIBLE);
+            binding.tvEmployeeLabel.setVisibility(View.GONE);
+            binding.spinnerEmployee.setVisibility(View.GONE);
+            binding.btnSave.setText("Chỉnh sửa");
+        } else {
+            binding.llReadOnlyFields.setVisibility(View.GONE);
+            binding.tvEmployeeLabel.setVisibility(View.VISIBLE);
+            binding.spinnerEmployee.setVisibility(View.VISIBLE);
+            binding.btnSave.setText("Lưu hợp đồng");
+        }
 
+        // Loại hợp đồng thực tế
         String[] types = {"Part time", "Full time"};
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, types);
         typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerType.setAdapter(typeAdapter);
 
-        String[] positions = {"Nhân viên pha chế", "Nhân viên phục vụ", "Giữ xe"};
+        // Chức vụ thực tế
+        String[] positions = {"Quản lý", "Pha chế", "Phục vụ"};
         ArrayAdapter<String> posAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, positions);
         posAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerPosition.setAdapter(posAdapter);
@@ -86,11 +103,6 @@ public class ContractDetailFragment extends Fragment {
         binding.btnSave.setOnClickListener(v -> saveContract());
         binding.btnCancel.setOnClickListener(v -> handleCancel());
 
-        if (currentContract != null) {
-            binding.btnSave.setText("Chỉnh sửa");
-        }
-
-        // Hide errors by default
         binding.tvEmployeeError.setVisibility(View.GONE);
         binding.tvTypeError.setVisibility(View.GONE);
         binding.tvStartDateError.setVisibility(View.GONE);
@@ -99,33 +111,58 @@ public class ContractDetailFragment extends Fragment {
         binding.tvPositionError.setVisibility(View.GONE);
     }
 
+    private void loadEmployees() {
+        employeeViewModel.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                employeeList = resource.data;
+                List<String> names = new ArrayList<>();
+                names.add("Chọn nhân viên");
+                for (Employee e : employeeList) {
+                    names.add(e.getName());
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, names);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                binding.spinnerEmployee.setAdapter(adapter);
+            }
+        });
+    }
+
     private void populateData() {
+        // Điền dữ liệu vào các trường Read-Only
+        binding.tvContractIdReadOnly.setText(currentContract.getId());
+        binding.tvEmployeeIdReadOnly.setText(currentContract.getEmployeeId());
+        binding.tvEmployeeNameReadOnly.setText(currentContract.getEmployeeName());
+
+        // Điền dữ liệu vào các trường cho phép sửa
         binding.tvStartDate.setText(currentContract.getStartDate());
         binding.tvEndDate.setText(currentContract.getEndDate());
         binding.etSalary.setText(String.valueOf((long)currentContract.getSalary()));
 
-        setSpinnerSelection(binding.spinnerEmployee, currentContract.getEmployeeName());
         setSpinnerSelection(binding.spinnerType, currentContract.getType());
         setSpinnerSelection(binding.spinnerPosition, currentContract.getPosition());
     }
 
     private void setSpinnerSelection(android.widget.Spinner spinner, String value) {
+        if (value == null) return;
         ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinner.getAdapter();
-        int pos = adapter.getPosition(value);
-        if (pos >= 0) spinner.setSelection(pos);
+        for (int i = 0; i < adapter.getCount(); i++) {
+            if (adapter.getItem(i).toString().equalsIgnoreCase(value)) {
+                spinner.setSelection(i);
+                break;
+            }
+        }
     }
 
     private void showDatePicker(boolean isStart) {
         final Calendar c = Calendar.getInstance();
         new DatePickerDialog(requireContext(), (view, year, month, day) -> {
-            String date = String.format("%02d/%02d/%04d", day, month + 1, year);
+            String date = String.format("%04d-%02d-%02d", year, month + 1, day);
             if (isStart) binding.tvStartDate.setText(date);
             else binding.tvEndDate.setText(date);
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     private void saveContract() {
-        // Reset errors
         binding.tvEmployeeError.setVisibility(View.GONE);
         binding.tvTypeError.setVisibility(View.GONE);
         binding.tvStartDateError.setVisibility(View.GONE);
@@ -133,86 +170,65 @@ public class ContractDetailFragment extends Fragment {
         binding.tvSalaryError.setVisibility(View.GONE);
         binding.tvPositionError.setVisibility(View.GONE);
 
-        boolean hasError = false;
-
-        String empName = binding.spinnerEmployee.getSelectedItem() != null ? binding.spinnerEmployee.getSelectedItem().toString() : "";
         String type = binding.spinnerType.getSelectedItem() != null ? binding.spinnerType.getSelectedItem().toString() : "";
         String startDate = binding.tvStartDate.getText().toString();
         String endDate = binding.tvEndDate.getText().toString();
         String salaryStr = binding.etSalary.getText().toString();
         String pos = binding.spinnerPosition.getSelectedItem() != null ? binding.spinnerPosition.getSelectedItem().toString() : "";
 
-        if (empName.isEmpty() || empName.equals("Chọn nhân viên")) {
-            binding.tvEmployeeError.setVisibility(View.VISIBLE);
-            hasError = true;
+        boolean hasError = false;
+        
+        // Nếu là thêm mới thì mới kiểm tra Spinner nhân viên
+        if (currentContract == null) {
+            int empPos = binding.spinnerEmployee.getSelectedItemPosition();
+            if (empPos <= 0) { binding.tvEmployeeError.setVisibility(View.VISIBLE); hasError = true; }
         }
-        if (type.isEmpty() || type.equals("Chọn loại hợp đồng")) {
-            binding.tvTypeError.setVisibility(View.VISIBLE);
-            hasError = true;
-        }
-        if (startDate.isEmpty() || startDate.equals("mm/dd/yyyy")) {
-            binding.tvStartDateError.setVisibility(View.VISIBLE);
-            hasError = true;
-        }
-        if (endDate.isEmpty() || endDate.equals("mm/dd/yyyy")) {
-            binding.tvEndDateError.setVisibility(View.VISIBLE);
-            hasError = true;
-        }
-        if (salaryStr.isEmpty()) {
-            binding.tvSalaryError.setVisibility(View.VISIBLE);
-            hasError = true;
-        }
-        if (pos.isEmpty() || pos.equals("Chọn chức vụ")) {
-            binding.tvPositionError.setVisibility(View.VISIBLE);
-            hasError = true;
-        }
+
+        if (type.isEmpty()) { binding.tvTypeError.setVisibility(View.VISIBLE); hasError = true; }
+        if (startDate.equals("YYYY-MM-DD") || startDate.isEmpty()) { binding.tvStartDateError.setVisibility(View.VISIBLE); hasError = true; }
+        if (endDate.equals("YYYY-MM-DD") || endDate.isEmpty()) { binding.tvEndDateError.setVisibility(View.VISIBLE); hasError = true; }
+        if (salaryStr.isEmpty()) { binding.tvSalaryError.setVisibility(View.VISIBLE); hasError = true; }
+        if (pos.isEmpty()) { binding.tvPositionError.setVisibility(View.VISIBLE); hasError = true; }
 
         if (hasError) return;
 
-        double salary;
-        try {
-            salary = Double.parseDouble(salaryStr);
-        } catch (NumberFormatException e) {
-            binding.tvSalaryError.setVisibility(View.VISIBLE);
-            return;
+        Contract contract = currentContract != null ? currentContract : new Contract();
+        
+        // Chỉ gán nhân viên nếu là thêm mới
+        if (currentContract == null) {
+            int empPos = binding.spinnerEmployee.getSelectedItemPosition();
+            Employee selectedEmp = employeeList.get(empPos - 1);
+            contract.setEmployeeId(selectedEmp.getId());
+            contract.setEmployeeName(selectedEmp.getName());
         }
 
-        Contract contract = currentContract;
-        if (contract == null) {
-            contract = new Contract();
-            contract.setId("HD" + System.currentTimeMillis() / 1000);
-        }
-
-        contract.setEmployeeName(empName);
-        contract.setEmployeeId("NV" + UUID.randomUUID().toString().substring(0, 4));
         contract.setType(type);
         contract.setStartDate(startDate);
         contract.setEndDate(endDate);
-        contract.setSalary(salary);
+        contract.setSalary(Double.parseDouble(salaryStr));
         contract.setPosition(pos);
         contract.setStatus("Còn hiệu lực");
 
         if (currentContract == null) {
-            viewModel.addContract(contract).observe(getViewLifecycleOwner(), resource -> handleResult(resource, "Tạo hợp đồng lao động thành công"));
+            viewModel.addContract(contract).observe(getViewLifecycleOwner(), r -> handleResult(r, "Tạo hợp đồng thành công"));
         } else {
-            viewModel.updateContract(contract).observe(getViewLifecycleOwner(), resource -> handleResult(resource, "Đã chỉnh sửa thông tin hợp đồng thành công"));
+            viewModel.updateContract(contract).observe(getViewLifecycleOwner(), r -> handleResult(r, "Cập nhật hợp đồng thành công"));
         }
     }
 
     private void handleResult(Resource<?> resource, String msg) {
         if (resource.status == Resource.Status.SUCCESS) {
             showSuccessToast(msg);
-            Navigation.findNavController(requireView()).popBackStack();
+            viewModel.getContracts(); // Trigger refresh if managed centrally
+            NavHostFragment.findNavController(this).popBackStack();
         } else if (resource.status == Resource.Status.ERROR) {
-            showErrorDialog("THÔNG BÁO LỖI", "Lỗi hệ thống. Vui lòng thử lại sau !");
+            showErrorDialog("LỖI", resource.message);
         }
     }
 
     private void showSuccessToast(String msg) {
         View layout = getLayoutInflater().inflate(R.layout.layout_custom_toast, null);
-        TextView tvMessage = layout.findViewById(R.id.tvMessage);
-        tvMessage.setText(msg);
-
+        ((TextView) layout.findViewById(R.id.tvMessage)).setText(msg);
         Toast toast = new Toast(requireContext());
         toast.setDuration(Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 100);
@@ -222,7 +238,7 @@ public class ContractDetailFragment extends Fragment {
 
     private void handleCancel() {
         showConfirmDialog("XÁC NHẬN HỦY", "Bạn có thông tin chưa lưu, xác nhận hủy ?", () -> {
-            Navigation.findNavController(requireView()).popBackStack();
+            NavHostFragment.findNavController(this).popBackStack();
         });
     }
 
@@ -231,20 +247,11 @@ public class ContractDetailFragment extends Fragment {
         DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
+        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         dialogBinding.tvTitle.setText(title);
         dialogBinding.tvMessage.setText(message);
-        dialogBinding.ivIcon.setImageResource(R.drawable.ic_warning_outline);
-
         dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
-        dialogBinding.btnPositive.setOnClickListener(v -> {
-            dialog.dismiss();
-            onConfirm.run();
-        });
-
+        dialogBinding.btnPositive.setOnClickListener(v -> { dialog.dismiss(); onConfirm.run(); });
         dialog.show();
     }
 
@@ -253,26 +260,17 @@ public class ContractDetailFragment extends Fragment {
         DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
+        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         dialogBinding.tvTitle.setText(title);
         dialogBinding.tvMessage.setText(message);
         dialogBinding.ivIcon.setImageResource(R.drawable.ic_error_x);
-
         dialogBinding.btnNegative.setText("Thoát");
         dialogBinding.btnPositive.setText("Quay lại");
-
         dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
         dialogBinding.btnPositive.setOnClickListener(v -> dialog.dismiss());
-
         dialog.show();
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
+    public void onDestroyView() { super.onDestroyView(); binding = null; }
 }

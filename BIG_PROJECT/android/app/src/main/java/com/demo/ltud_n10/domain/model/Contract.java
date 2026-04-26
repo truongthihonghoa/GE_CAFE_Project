@@ -7,11 +7,12 @@ public class Contract implements Serializable {
     private String employeeId;
     private String employeeName;
     private String type; // Part-time, Full-time, v.v.
-    private String startDate; // dd/MM/yyyy
-    private String endDate; // dd/MM/yyyy
+    private String startDate; // YYYY-MM-DD
+    private String endDate; // YYYY-MM-DD
     private double salary;
     private String position;
     private String status; // Hiệu lực, Chờ hiệu lực, Hết hạn
+    private String branchId;
 
     public Contract() {}
 
@@ -46,4 +47,6 @@ public class Contract implements Serializable {
     public void setPosition(String position) { this.position = position; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getBranchId() { return branchId; }
+    public void setBranchId(String branchId) { this.branchId = branchId; }
 }
