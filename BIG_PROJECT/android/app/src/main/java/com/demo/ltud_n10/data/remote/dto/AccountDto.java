@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 public class AccountDto implements Serializable {
     @SerializedName("id")
-    private String id;
+    private Integer id;
 
     @SerializedName("ten_dang_nhap")
     private String username;
@@ -19,14 +19,16 @@ public class AccountDto implements Serializable {
     @SerializedName("trang_thai")
     private String status;
     
-    // Thêm trường password phục vụ thêm/sửa
-    private String password;
-    
     @SerializedName("ma_nv")
-    private String maNvId;
+    private String maNv;
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    @SerializedName("is_staff")
+    private boolean isStaff;
+
+    private String password;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public String getFullName() { return fullName; }
@@ -35,13 +37,10 @@ public class AccountDto implements Serializable {
     public void setRole(String role) { this.role = role; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getMaNv() { return maNv; }
+    public void setMaNv(String maNv) { this.maNv = maNv; }
+    public boolean isStaff() { return isStaff; }
+    public void setStaff(boolean staff) { isStaff = staff; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public String getMaNvId() { return maNvId; }
-    public void setMaNvId(String maNvId) { this.maNvId = maNvId; }
-
-    // Các trường hỗ trợ UI nếu cần
-    public String getDisplayUsername() { return username; }
-    public Boolean getIsStaff() { return "Quản lý".equals(role); }
-    public Boolean getIsActive() { return "Đang hoạt động".equals(status); }
 }

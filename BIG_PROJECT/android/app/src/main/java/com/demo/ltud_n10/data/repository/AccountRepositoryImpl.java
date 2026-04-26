@@ -71,7 +71,7 @@ public class AccountRepositoryImpl implements AccountRepository {
         AccountDto dto = new AccountDto();
         dto.setUsername(account.getUsername());
         dto.setPassword(password);
-        dto.setMaNvId(account.getEmployeeId());
+        dto.setMaNv(account.getEmployeeId());
         dto.setRole(isStaff ? "Quản lý" : "Nhân viên");
 
         apiService.createAccount(dto).enqueue(new Callback<AccountDto>() {
@@ -103,7 +103,7 @@ public class AccountRepositoryImpl implements AccountRepository {
         if (isStaff != null) dto.setRole(isStaff ? "Quản lý" : "Nhân viên");
         if (isActive != null) dto.setStatus(isActive ? "Đang hoạt động" : "Ngừng hoạt động");
 
-        apiService.updateAccount(account.getId(), dto).enqueue(new Callback<AccountDto>() {
+        apiService.updateAccount(String.valueOf(account.getId()), dto).enqueue(new Callback<AccountDto>() {
             @Override
             public void onResponse(@NonNull Call<AccountDto> call, @NonNull Response<AccountDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -160,10 +160,10 @@ public class AccountRepositoryImpl implements AccountRepository {
 
     private Account mapDtoToDomain(AccountDto dto) {
         return new Account(
-                dto.getId(),
+                String.valueOf(dto.getId()),
                 dto.getUsername(),
                 dto.getFullName(),
-                dto.getMaNvId(),
+                dto.getMaNv(),
                 dto.getRole(),
                 dto.getStatus()
         );

@@ -56,7 +56,7 @@ public class EmployeeDashboardFragment extends Fragment {
             binding.tvEmployeeName.setText(user.getName());
             binding.tvContractUser.setText(user.getName());
         }
-        
+
         // Dữ liệu mẫu khác đã được thiết lập trong XML hoặc có thể cập nhật thêm ở đây
     }
 

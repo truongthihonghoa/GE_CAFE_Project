@@ -120,8 +120,13 @@ public class MainActivity extends AppCompatActivity {
 
         tvName.setText(user.getName());
         tvEmail.setText(user.getEmail());
+        
+        // Hiển thị vai trò thật từ API
         if ("ADMIN".equals(user.getRole())) {
             tvRole.setText("Quản trị viên");
+            tvRole.setTextColor(Color.parseColor("#0A4D1E"));
+        } else if (user.isStaff()) {
+            tvRole.setText("Quản lý");
             tvRole.setTextColor(Color.parseColor("#0A4D1E"));
         } else {
             tvRole.setText("Nhân viên");

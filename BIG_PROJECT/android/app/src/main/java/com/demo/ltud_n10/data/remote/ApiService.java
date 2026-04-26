@@ -86,7 +86,7 @@ public interface ApiService {
     @DELETE("api/contracts/{id}/")
     Call<Void> deleteContract(@Path("id") String id);
 
-    // Requests
+    // Requests - Đăng ký lịch
     @GET("api/requests/dangkylich/")
     Call<List<RequestDto>> getRequests();
 
@@ -98,6 +98,19 @@ public interface ApiService {
 
     @DELETE("api/requests/dangkylich/{id}/")
     Call<Void> deleteRequest(@Path("id") String id);
+
+    // Requests - Nghỉ phép
+    @GET("api/requests/nghiphep/")
+    Call<List<RequestDto>> getLeaveRequests();
+
+    @POST("api/requests/nghiphep/")
+    Call<RequestDto> addLeaveRequest(@Body RequestDto request);
+
+    @PUT("api/requests/nghiphep/{id}/")
+    Call<RequestDto> updateLeaveRequest(@Path("id") String id, @Body RequestDto request);
+
+    @DELETE("api/requests/nghiphep/{id}/")
+    Call<Void> deleteLeaveRequest(@Path("id") String id);
 
     // Schedules
     @GET("api/schedules/data/api/")

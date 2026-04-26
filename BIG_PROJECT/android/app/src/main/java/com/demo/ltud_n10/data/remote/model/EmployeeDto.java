@@ -12,8 +12,8 @@ public class EmployeeDto {
     @SerializedName("email")
     private String email;
 
-    @SerializedName("so_dien_thoai")
-    private String soDienThoai;
+    @SerializedName("sdt") // ĐÃ SỬA: Chuyển so_dien_thoai thành sdt để khớp với API của bạn
+    private String sdt;
 
     @SerializedName("cccd")
     private String cccd;
@@ -33,7 +33,7 @@ public class EmployeeDto {
     @SerializedName("trang_thai")
     private String trangThai;
 
-    @SerializedName("is_staff") // Thêm trường is_staff theo yêu cầu
+    @SerializedName("is_staff")
     private Integer isStaff;
 
     // Getters and Setters
@@ -46,8 +46,8 @@ public class EmployeeDto {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getSoDienThoai() { return soDienThoai; }
-    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
+    public String getSdt() { return sdt; }
+    public void setSdt(String sdt) { this.sdt = sdt; }
 
     public String getCccd() { return cccd; }
     public void setCccd(String cccd) { this.cccd = cccd; }

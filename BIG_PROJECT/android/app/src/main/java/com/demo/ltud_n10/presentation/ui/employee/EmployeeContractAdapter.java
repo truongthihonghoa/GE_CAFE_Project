@@ -1,8 +1,13 @@
 package com.demo.ltud_n10.presentation.ui.employee;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -51,21 +56,37 @@ public class EmployeeContractAdapter extends RecyclerView.Adapter<EmployeeContra
         }
 
         void bind(Contract contract) {
-            binding.tvContractId.setText("Mã hợp đồng: " + contract.getId());
-            binding.tvEmployeeName.setText("Tên nhân viên: " + contract.getEmployeeName());
-            binding.tvType.setText("Loại hợp đồng: " + contract.getType());
-            binding.tvStartDate.setText("Ngày bắt đầu: " + contract.getStartDate());
-            binding.tvEndDate.setText("Ngày kết thúc: " + contract.getEndDate());
+            // Định dạng: Chỉ in đậm phần nhãn (Label), nội dung (Value) giữ bình thường
+            setBoldLabel(binding.tvContractId, "Mã hợp đồng: ", contract.getId());
+            setBoldLabel(binding.tvEmployeeName, "Tên nhân viên: ", contract.getEmployeeName());
+            setBoldLabel(binding.tvType, "Loại hợp đồng: ", contract.getType());
+            setBoldLabel(binding.tvStartDate, "Ngày bắt đầu: ", contract.getStartDate());
+            setBoldLabel(binding.tvEndDate, "Ngày kết thúc: ", contract.getEndDate());
             
             NumberFormat formatter = NumberFormat.getInstance(new Locale("vi", "VN"));
-            binding.tvSalary.setText("Mức lương: " + formatter.format(contract.getSalary()) + " VNĐ");
+            String salaryStr = formatter.format(contract.getSalary()) + " VNĐ";
+            setBoldLabel(binding.tvSalary, "Mức lương: ", salaryStr);
             
+            // Trạng thái
             binding.tvStatus.setText(contract.getStatus());
             if ("Còn hiệu lực".equals(contract.getStatus()) || "Đang hiệu lực".equals(contract.getStatus())) {
-                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#2ECC71"));
+                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#0A4D1E")); // Xanh lá đậm thương hiệu
             } else {
-                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#E74C3C"));
+                binding.cvStatus.setCardBackgroundColor(Color.parseColor("#C62828")); // Đỏ cho hết hạn
             }
+        }
+
+        /**
+         * Hàm hỗ trợ in đậm phần nhãn (label) và giữ nguyên phần giá trị (value)
+         */
+        private void setBoldLabel(TextView textView, String label, String value) {
+            if (value == null) value = "N/A";
+            SpannableStringBuilder builder = new SpannableStringBuilder();
+            builder.append(label);
+            // Áp dụng kiểu BOLD cho phần label (từ vị trí 0 đến hết chiều dài label)
+            builder.setSpan(new StyleSpan(Typeface.BOLD), 0, label.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            builder.append(value);
+            textView.setText(builder);
         }
     }
 }

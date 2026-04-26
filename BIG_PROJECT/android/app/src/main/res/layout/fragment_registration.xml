@@ -58,7 +58,6 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
@@ -91,7 +90,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:layout_marginTop="20dp"
-                app:cardBackgroundColor="#F1F3F5"
+                app:cardBackgroundColor="#E9ECEF"
                 app:cardCornerRadius="26dp"
                 app:cardElevation="0dp">
 
@@ -175,9 +174,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
-                    <!-- Shift Registration Fields -->
+                    <!-- Shift Registration Content -->
                     <LinearLayout
                         android:id="@+id/layoutShiftContent"
                         android:layout_width="match_parent"
@@ -190,96 +189,176 @@
                             android:layout_height="wrap_content"
                             android:text="Đăng ký ca làm việc"
                             android:textColor="#1A1A1A"
-                            android:textSize="16sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
-                        <CalendarView
-                            android:id="@+id/calendarShift"
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp" />
+                            android:layout_marginTop="16dp"
+                            app:cardBackgroundColor="@android:color/white"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#E2E8F0"
+                            app:strokeWidth="1dp">
+                            <CalendarView
+                                android:id="@+id/calendarShift"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.card.MaterialCardView>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="20dp"
                             android:text="Chọn ca làm việc"
                             android:textColor="#1A1A1A"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
-                        <!-- Shift Options -->
-                        <RadioGroup
-                            android:id="@+id/rgShift"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp">
+                            android:layout_marginTop="12dp"
+                            android:orientation="vertical">
 
                             <com.google.android.material.card.MaterialCardView
                                 android:id="@+id/cvShiftMorning"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="8dp"
-                                app:cardBackgroundColor="#F8F9FA"
+                                android:layout_marginBottom="12dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="@android:color/white"
                                 app:cardCornerRadius="12dp"
-                                app:cardElevation="0dp">
-                                <RadioButton
-                                    android:id="@+id/rbMorning"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#E2E8F0"
+                                app:strokeWidth="1dp">
+                                <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:padding="16dp"
-                                    android:text="Sáng\n08:00 - 12:00"
-                                    android:button="@null"
                                     android:gravity="center"
-                                    android:textColor="#1A1A1A"
-                                    android:textSize="14sp" />
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+                                    <RadioButton
+                                        android:id="@+id/rbMorning"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Sáng"
+                                        android:textColor="#1A1A1A"
+                                        android:textStyle="bold"
+                                        android:buttonTint="#2E7D32"
+                                        android:visibility="gone" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Sáng"
+                                        android:textColor="#1A1A1A"
+                                        android:textSize="15sp"
+                                        android:textStyle="bold" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="08:00 - 12:00"
+                                        android:textColor="#757575"
+                                        android:textSize="13sp" />
+                                </LinearLayout>
                             </com.google.android.material.card.MaterialCardView>
 
                             <com.google.android.material.card.MaterialCardView
                                 android:id="@+id/cvShiftAfternoon"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="8dp"
-                                app:cardBackgroundColor="#F8F9FA"
+                                android:layout_marginBottom="12dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="@android:color/white"
                                 app:cardCornerRadius="12dp"
-                                app:cardElevation="0dp">
-                                <RadioButton
-                                    android:id="@+id/rbAfternoon"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#E2E8F0"
+                                app:strokeWidth="1dp">
+                                <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:padding="16dp"
-                                    android:text="Chiều\n13:00 - 17:00"
-                                    android:button="@null"
                                     android:gravity="center"
-                                    android:textColor="#1A1A1A"
-                                    android:textSize="14sp" />
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+                                    <RadioButton
+                                        android:id="@+id/rbAfternoon"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Chiều"
+                                        android:textColor="#1A1A1A"
+                                        android:textStyle="bold"
+                                        android:buttonTint="#2E7D32"
+                                        android:visibility="gone" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Chiều"
+                                        android:textColor="#1A1A1A"
+                                        android:textSize="15sp"
+                                        android:textStyle="bold" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="13:00 - 17:00"
+                                        android:textColor="#757575"
+                                        android:textSize="13sp" />
+                                </LinearLayout>
                             </com.google.android.material.card.MaterialCardView>
 
                             <com.google.android.material.card.MaterialCardView
                                 android:id="@+id/cvShiftEvening"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                app:cardBackgroundColor="#F8F9FA"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="@android:color/white"
                                 app:cardCornerRadius="12dp"
-                                app:cardElevation="0dp">
-                                <RadioButton
-                                    android:id="@+id/rbEvening"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#E2E8F0"
+                                app:strokeWidth="1dp">
+                                <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:padding="16dp"
-                                    android:text="Tối\n18:00 - 22:00"
-                                    android:button="@null"
                                     android:gravity="center"
-                                    android:textColor="#1A1A1A"
-                                    android:textSize="14sp" />
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+                                    <RadioButton
+                                        android:id="@+id/rbEvening"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Tối"
+                                        android:textColor="#1A1A1A"
+                                        android:textStyle="bold"
+                                        android:buttonTint="#2E7D32"
+                                        android:visibility="gone" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Tối"
+                                        android:textColor="#1A1A1A"
+                                        android:textSize="15sp"
+                                        android:textStyle="bold" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="18:00 - 22:00"
+                                        android:textColor="#757575"
+                                        android:textSize="13sp" />
+                                </LinearLayout>
                             </com.google.android.material.card.MaterialCardView>
-                        </RadioGroup>
+                        </LinearLayout>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSubmitShift"
                             android:layout_width="match_parent"
                             android:layout_height="52dp"
-                            android:layout_marginTop="24dp"
+                            android:layout_marginTop="28dp"
                             android:backgroundTint="#37683A"
                             android:text="Gửi đăng ký"
                             android:textAllCaps="false"
@@ -288,7 +367,7 @@
                             app:cornerRadius="12dp" />
                     </LinearLayout>
 
-                    <!-- Leave Registration Fields -->
+                    <!-- Leave Content -->
                     <LinearLayout
                         android:id="@+id/layoutLeaveContent"
                         android:layout_width="match_parent"
@@ -301,7 +380,7 @@
                             android:layout_height="wrap_content"
                             android:text="Đơn xin nghỉ phép"
                             android:textColor="#1A1A1A"
-                            android:textSize="16sp"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -310,12 +389,22 @@
                             android:layout_marginTop="16dp"
                             android:text="Ngày bắt đầu"
                             android:textColor="#1A1A1A"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
-                        <CalendarView
-                            android:id="@+id/calendarStart"
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#E2E8F0"
+                            app:strokeWidth="1dp">
+                            <CalendarView
+                                android:id="@+id/calendarStart"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.card.MaterialCardView>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -323,35 +412,31 @@
                             android:layout_marginTop="16dp"
                             android:text="Ngày kết thúc"
                             android:textColor="#1A1A1A"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
-                        <CalendarView
-                            android:id="@+id/calendarEnd"
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#E2E8F0"
+                            app:strokeWidth="1dp">
+                            <CalendarView
+                                android:id="@+id/calendarEnd"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.card.MaterialCardView>
 
-                        <LinearLayout
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Lý do nghỉ phép"
-                                android:textColor="#1A1A1A"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="*"
-                                android:textColor="#F44336"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
+                            android:layout_marginTop="20dp"
+                            android:text="Lý do nghỉ phép*"
+                            android:textColor="#1A1A1A"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
                         <EditText
                             android:id="@+id/etLeaveReason"
@@ -361,14 +446,15 @@
                             android:background="@drawable/bg_input_field"
                             android:gravity="top"
                             android:hint="Nhập lý do nghỉ phép..."
-                            android:padding="12dp"
+                            android:padding="16dp"
+                            android:textColor="#1A1A1A"
                             android:textSize="14sp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSubmitLeave"
                             android:layout_width="match_parent"
                             android:layout_height="52dp"
-                            android:layout_marginTop="24dp"
+                            android:layout_marginTop="28dp"
                             android:backgroundTint="#37683A"
                             android:text="Gửi đơn xin nghỉ"
                             android:textAllCaps="false"
@@ -376,27 +462,45 @@
                             android:textStyle="bold"
                             app:cornerRadius="12dp" />
                     </LinearLayout>
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- History Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="Lịch sử đăng ký"
-                android:textColor="#1A1A1A"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvHistory"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:nestedScrollingEnabled="false"
-                tools:listitem="@layout/item_registration_history" />
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="40dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#E2E8F0"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvHistoryTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lịch sử đăng ký"
+                        android:textColor="#1A1A1A"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvHistory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:nestedScrollingEnabled="false"
+                        tools:listitem="@layout/item_registration_history" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

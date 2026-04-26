@@ -150,7 +150,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         employee.setId(dto.getMaNv());
         employee.setName(dto.getHoTen());
         employee.setEmail(dto.getEmail());
-        employee.setPhone(dto.getSoDienThoai());
+        employee.setPhone(dto.getSdt()); // ĐÃ CẬP NHẬT: Sử dụng getSdt() để khớp với EmployeeDto mới
         employee.setCccd(dto.getCccd());
         employee.setGender(dto.getGioiTinh());
         employee.setDob(dto.getNgaySinh());
@@ -165,7 +165,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         dto.setMaNv(employee.getId());
         dto.setHoTen(employee.getName());
         dto.setEmail(employee.getEmail());
-        dto.setSoDienThoai(employee.getPhone());
+        dto.setSdt(employee.getPhone());
         dto.setCccd(employee.getCccd());
         dto.setGioiTinh(employee.getGender());
         dto.setNgaySinh(employee.getDob());
