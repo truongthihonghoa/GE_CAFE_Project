@@ -1,6 +1,7 @@
 package com.demo.ltud_n10.presentation.ui.branch;
 
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,9 +16,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.demo.ltud_n10.databinding.DialogConfirmCancelBinding;
 import com.demo.ltud_n10.databinding.FragmentBranchDetailBinding;
 import com.demo.ltud_n10.domain.model.Branch;
+import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.repository.BranchRepository;
+import com.demo.ltud_n10.domain.repository.EmployeeRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -30,9 +37,14 @@ public class BranchDetailFragment extends Fragment {
     private Branch branch;
     private String title;
     private boolean isEditMode = false;
+    private List<Employee> staffEmployees = new ArrayList<>();
+    private String selectedManagerId = null; // Lưu ID quản lý để gửi lên API
 
     @Inject
     BranchRepository branchRepository;
+
+    @Inject
+    EmployeeRepository employeeRepository;
 
     @Nullable
     @Override
@@ -52,6 +64,8 @@ public class BranchDetailFragment extends Fragment {
 
         binding.tvTitle.setText(title);
         
+        loadStaffEmployees();
+
         if (branch != null) {
             setupViewMode();
         } else {
@@ -63,9 +77,24 @@ public class BranchDetailFragment extends Fragment {
         binding.ivBack.setOnClickListener(v -> handleCancel());
         binding.btnCancel.setOnClickListener(v -> handleCancel());
         
-        // SỬA LỖI: Cho phép nhấn vào Dropdown để chọn trạng thái
         binding.cvStatus.setOnClickListener(v -> {
             if (isEditMode) showStatusDialog();
+        });
+
+        binding.cvManager.setOnClickListener(v -> {
+            if (isEditMode) showManagerDialog();
+        });
+    }
+
+    private void loadStaffEmployees() {
+        employeeRepository.getStaffEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                staffEmployees = resource.data;
+                // Sau khi load xong list nhân viên, nếu đang ở ViewMode thì hiển thị tên quản lý đúng theo ID
+                if (branch != null) {
+                    updateManagerUI(selectedManagerId);
+                }
+            }
         });
     }
 
@@ -74,6 +103,18 @@ public class BranchDetailFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 binding.tvErrorName.setVisibility(View.GONE);
+            }
+        });
+        binding.etAddress.addTextChangedListener(new SimpleTextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tvErrorAddress.setVisibility(View.GONE);
+            }
+        });
+        binding.etPhoneNumber.addTextChangedListener(new SimpleTextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tvErrorPhone.setVisibility(View.GONE);
             }
         });
     }
@@ -85,11 +126,57 @@ public class BranchDetailFragment extends Fragment {
                 .setItems(statuses, (dialog, which) -> {
                     String selectedStatus = statuses[which];
                     updateStatusUI(selectedStatus);
-                    if (branch != null) {
-                        branch.setStatus(selectedStatus); // Cập nhật vào đối tượng
+                })
+                .show();
+    }
+
+    private void showManagerDialog() {
+        List<String> namesList = new ArrayList<>();
+        namesList.add("--- Bỏ chọn quản lý ---");
+        if (staffEmployees != null) {
+            for (Employee emp : staffEmployees) {
+                namesList.add(emp.getName());
+            }
+        }
+
+        String[] names = namesList.toArray(new String[0]);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Chọn quản lý")
+                .setItems(names, (dialog, which) -> {
+                    if (which == 0) {
+                        selectedManagerId = null;
+                        updateManagerUI(null);
+                    } else {
+                        Employee selected = staffEmployees.get(which - 1);
+                        selectedManagerId = selected.getId();
+                        updateManagerUI(selectedManagerId);
                     }
                 })
                 .show();
+    }
+
+    private void updateManagerUI(String managerId) {
+        if (managerId == null || managerId.isEmpty()) {
+            binding.tvManagerName.setText("Chọn quản lý");
+            binding.tvManagerName.setTextColor(Color.parseColor("#64748B"));
+            return;
+        }
+
+        // Tìm tên nhân viên dựa trên ID
+        boolean found = false;
+        for (Employee emp : staffEmployees) {
+            if (emp.getId().equals(managerId)) {
+                binding.tvManagerName.setText(emp.getName());
+                binding.tvManagerName.setTextColor(Color.parseColor("#1B431C"));
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            binding.tvManagerName.setText(managerId); // Nếu chưa load kịp thì hiện tạm ID
+        }
     }
 
     private void updateStatusUI(String status) {
@@ -107,9 +194,11 @@ public class BranchDetailFragment extends Fragment {
 
     private void setupAddMode() {
         isEditMode = true;
-        binding.layoutStatus.setVisibility(View.GONE);
+        selectedManagerId = null;
+        binding.layoutStatus.setVisibility(View.GONE); // Ẩn trạng thái khi thêm mới
         binding.btnSubmit.setText("LƯU");
         binding.btnSubmit.setOnClickListener(v -> handleSave());
+        enableFields(true);
     }
 
     private void setupViewMode() {
@@ -117,10 +206,16 @@ public class BranchDetailFragment extends Fragment {
         binding.etBranchName.setText(branch.getName());
         binding.etAddress.setText(branch.getAddress());
         binding.etPhoneNumber.setText(branch.getPhoneNumber());
-        binding.etManagerName.setText(branch.getManagerName());
+        
+        selectedManagerId = branch.getManagerName(); // ManagerName trong Domain đang chứa ID
+        updateManagerUI(selectedManagerId);
+
         updateStatusUI(branch.getStatus());
         enableFields(false);
-        binding.layoutStatus.setVisibility(View.VISIBLE);
+        
+        // Theo yêu cầu: Chỉ khi nhấn chỉnh sửa mới hiển thị trạng thái
+        binding.layoutStatus.setVisibility(View.GONE); 
+        
         binding.btnSubmit.setText("CHỈNH SỬA");
         binding.btnSubmit.setOnClickListener(v -> setupEditMode());
     }
@@ -129,6 +224,10 @@ public class BranchDetailFragment extends Fragment {
         isEditMode = true;
         binding.tvTitle.setText("CHỈNH SỬA CHI NHÁNH");
         enableFields(true);
+        
+        // Hiển thị trạng thái khi vào chế độ chỉnh sửa
+        binding.layoutStatus.setVisibility(View.VISIBLE);
+        
         binding.btnSubmit.setText("LƯU");
         binding.btnSubmit.setOnClickListener(v -> handleUpdate());
     }
@@ -137,51 +236,113 @@ public class BranchDetailFragment extends Fragment {
         binding.etBranchName.setEnabled(enabled);
         binding.etAddress.setEnabled(enabled);
         binding.etPhoneNumber.setEnabled(enabled);
-        binding.etManagerName.setEnabled(enabled);
+        binding.cvManager.setClickable(enabled);
+        binding.cvManager.setFocusable(enabled);
     }
 
     private void handleSave() {
-        if (!validate()) return;
+        if (!validateAndFocus()) return;
         Branch newBranch = new Branch();
-        newBranch.setName(binding.etBranchName.getText().toString());
-        newBranch.setAddress(binding.etAddress.getText().toString());
-        newBranch.setPhoneNumber(binding.etPhoneNumber.getText().toString());
-        newBranch.setManagerName(binding.etManagerName.getText().toString());
+        newBranch.setName(binding.etBranchName.getText().toString().trim());
+        newBranch.setAddress(binding.etAddress.getText().toString().trim());
+        newBranch.setPhoneNumber(binding.etPhoneNumber.getText().toString().trim());
+        newBranch.setManagerName(selectedManagerId); // Gửi ID quản lý
         newBranch.setStatus("Đang hoạt động");
 
         binding.btnSubmit.setEnabled(false);
         branchRepository.addBranch(newBranch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                Toast.makeText(requireContext(), "Thêm thành công", Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigateUp();
-            } else {
-                binding.btnSubmit.setEnabled(true);
+            if (resource != null) {
+                if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                    Toast.makeText(requireContext(), "Thêm thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                } else {
+                    binding.btnSubmit.setEnabled(true);
+                    Toast.makeText(requireContext(), resource.message != null ? resource.message : "Lỗi thêm chi nhánh", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
     private void handleUpdate() {
-        if (!validate()) return;
-        branch.setName(binding.etBranchName.getText().toString());
-        branch.setAddress(binding.etAddress.getText().toString());
-        branch.setPhoneNumber(binding.etPhoneNumber.getText().toString());
-        branch.setManagerName(binding.etManagerName.getText().toString());
-        branch.setStatus(binding.tvStatus.getText().toString()); // LẤY TỪ Dropdown
+        if (!validateAndFocus()) return;
+        branch.setName(binding.etBranchName.getText().toString().trim());
+        branch.setAddress(binding.etAddress.getText().toString().trim());
+        branch.setPhoneNumber(binding.etPhoneNumber.getText().toString().trim());
+        branch.setManagerName(selectedManagerId); // Gửi ID quản lý
+
+        branch.setStatus(binding.tvStatus.getText().toString());
 
         binding.btnSubmit.setEnabled(false);
         branchRepository.updateBranch(branch).observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                Toast.makeText(requireContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigateUp();
-            } else {
-                binding.btnSubmit.setEnabled(true);
-                Toast.makeText(requireContext(), "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
+            if (resource != null) {
+                if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
+                    Toast.makeText(requireContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                } else {
+                    binding.btnSubmit.setEnabled(true);
+                    Toast.makeText(requireContext(), resource.message != null ? resource.message : "Lỗi cập nhật", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
-    private boolean validate() {
-        return !binding.etBranchName.getText().toString().isEmpty();
+    private void handleCancel() {
+        if (!isEditMode) {
+            Navigation.findNavController(requireView()).navigateUp();
+            return;
+        }
+
+        DialogConfirmCancelBinding dialogBinding = DialogConfirmCancelBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogBinding.getRoot())
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        dialogBinding.btnDialogConfirm.setOnClickListener(v -> {
+            dialog.dismiss();
+            Navigation.findNavController(requireView()).navigateUp();
+        });
+
+        dialogBinding.btnDialogCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private boolean validateAndFocus() {
+        // Tên chi nhánh
+        String name = binding.etBranchName.getText().toString().trim();
+        if (name.isEmpty()) {
+            binding.tvErrorName.setVisibility(View.VISIBLE);
+            binding.etBranchName.requestFocus();
+            return false;
+        } else {
+            binding.tvErrorName.setVisibility(View.GONE);
+        }
+
+        // Địa chỉ
+        String address = binding.etAddress.getText().toString().trim();
+        if (address.isEmpty()) {
+            binding.tvErrorAddress.setVisibility(View.VISIBLE);
+            binding.etAddress.requestFocus();
+            return false;
+        } else {
+            binding.tvErrorAddress.setVisibility(View.GONE);
+        }
+
+        // Số điện thoại
+        String phone = binding.etPhoneNumber.getText().toString().trim();
+        if (phone.isEmpty()) {
+            binding.tvErrorPhone.setVisibility(View.VISIBLE);
+            binding.etPhoneNumber.requestFocus();
+            return false;
+        } else {
+            binding.tvErrorPhone.setVisibility(View.GONE);
+        }
+
+        return true;
     }
 
     private abstract static class SimpleTextWatcher implements TextWatcher {
