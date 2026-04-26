@@ -1,4 +1,5 @@
 package com.demo.ltud_n10.data.repository;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -39,8 +40,11 @@ public class AccountRepositoryImpl implements AccountRepository {
         MutableLiveData<Resource<List<Account>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        // Đã chuyển sang GET khớp với Postman của bạn, Token tự động được gắn vào header
-        apiService.getAccounts().enqueue(new Callback<List<AccountDto>>() {
+        // Lấy ma_nv và role để phân quyền load dữ liệu
+        String maNv = prefsManager.getMaNv();
+        String filterMaNv = prefsManager.isStaff() ? null : maNv;
+
+        apiService.getAccounts(filterMaNv).enqueue(new Callback<List<AccountDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<AccountDto>> call, @NonNull Response<List<AccountDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {

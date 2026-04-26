@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.local.SharedPrefsManager;
 import com.demo.ltud_n10.data.remote.ApiService;
 import com.demo.ltud_n10.data.remote.dto.RequestDto;
 import com.demo.ltud_n10.domain.model.Request;
@@ -24,10 +25,12 @@ import retrofit2.Response;
 public class RequestRepositoryImpl implements RequestRepository {
 
     private final ApiService apiService;
+    private final SharedPrefsManager prefsManager;
 
     @Inject
-    public RequestRepositoryImpl(ApiService apiService) {
+    public RequestRepositoryImpl(ApiService apiService, SharedPrefsManager prefsManager) {
         this.apiService = apiService;
+        this.prefsManager = prefsManager;
     }
 
     @Override
@@ -35,7 +38,10 @@ public class RequestRepositoryImpl implements RequestRepository {
         MutableLiveData<Resource<List<Request>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        apiService.getRequests().enqueue(new Callback<List<RequestDto>>() {
+        String maNv = prefsManager.getMaNv();
+        String filterMaNv = prefsManager.isStaff() ? null : maNv;
+
+        apiService.getRequests(filterMaNv).enqueue(new Callback<List<RequestDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<RequestDto>> call, @NonNull Response<List<RequestDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {

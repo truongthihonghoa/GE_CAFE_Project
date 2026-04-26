@@ -180,6 +180,10 @@ public class BranchDetailFragment extends Fragment {
         });
     }
 
+    private void handleCancel() {
+        Navigation.findNavController(requireView()).navigateUp();
+    }
+
     private boolean validate() {
         return !binding.etBranchName.getText().toString().isEmpty();
     }

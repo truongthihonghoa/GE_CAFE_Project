@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.local.SharedPrefsManager;
 import com.demo.ltud_n10.data.remote.ApiService;
 import com.demo.ltud_n10.data.remote.dto.AccountDto;
 import com.demo.ltud_n10.domain.model.User;
@@ -24,10 +25,12 @@ import retrofit2.Response;
 public class UserRepositoryImpl implements UserRepository {
 
     private final ApiService apiService;
+    private final SharedPrefsManager prefsManager;
 
     @Inject
-    public UserRepositoryImpl(ApiService apiService) {
+    public UserRepositoryImpl(ApiService apiService, SharedPrefsManager prefsManager) {
         this.apiService = apiService;
+        this.prefsManager = prefsManager;
     }
 
     @Override
@@ -35,8 +38,14 @@ public class UserRepositoryImpl implements UserRepository {
         MutableLiveData<Resource<List<User>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        // CHUYỂN SANG DÙNG GET (Vì NetworkModule đã tự động thêm Bearer Token rồi)
-        apiService.getAccounts().enqueue(new Callback<List<AccountDto>>() {
+        // Lấy thông tin từ bộ nhớ máy để thực hiện lọc dữ liệu
+        String maNv = prefsManager.getMaNv();
+        // LOGIC PHÂN QUYỀN: Nếu là Staff (Sếp) -> Không lọc (null) để xem tất cả
+        // Nếu không phải Staff -> Lọc theo maNv để chỉ xem chính mình
+        String filterMaNv = prefsManager.isStaff() ? null : maNv;
+
+        // Cập nhật tham số truyền vào apiService.getAccounts() để khớp với ApiService.java
+        apiService.getAccounts(filterMaNv).enqueue(new Callback<List<AccountDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<AccountDto>> call, @NonNull Response<List<AccountDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -46,7 +55,7 @@ public class UserRepositoryImpl implements UserRepository {
                                 dto.getId(),
                                 dto.getUsername() + "@coffee.com",
                                 dto.getFullName(),
-                                "Quản lý".equals(dto.getRole()) ? "ADMIN" : "EMPLOYEE"
+                                dto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
                         );
                         user.setStatus(dto.getStatus());
                         users.add(user);

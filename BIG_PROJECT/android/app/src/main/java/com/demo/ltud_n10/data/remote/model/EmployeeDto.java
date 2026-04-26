@@ -12,8 +12,8 @@ public class EmployeeDto {
     @SerializedName("email")
     private String email;
 
-    @SerializedName("so_dien_thoai")
-    private String soDienThoai;
+    @SerializedName("sdt") // SỬA LỖI: Backend trả về "sdt", không phải "so_dien_thoai"
+    private String sdt;
 
     @SerializedName("cccd")
     private String cccd;
@@ -33,8 +33,8 @@ public class EmployeeDto {
     @SerializedName("trang_thai")
     private String trangThai;
 
-    @SerializedName("is_staff") // Thêm trường is_staff theo yêu cầu
-    private Integer isStaff;
+    @SerializedName("is_staff")
+    private Boolean isStaff; // Sửa thành Boolean để khớp với auth_user của Django
 
     // Getters and Setters
     public String getMaNv() { return maNv; }
@@ -46,8 +46,8 @@ public class EmployeeDto {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getSoDienThoai() { return soDienThoai; }
-    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
+    public String getSdt() { return sdt; }
+    public void setSdt(String sdt) { this.sdt = sdt; }
 
     public String getCccd() { return cccd; }
     public void setCccd(String cccd) { this.cccd = cccd; }
@@ -67,6 +67,6 @@ public class EmployeeDto {
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
-    public Integer getIsStaff() { return isStaff; }
-    public void setIsStaff(Integer isStaff) { this.isStaff = isStaff; }
+    public Boolean getIsStaff() { return isStaff; }
+    public void setIsStaff(Boolean isStaff) { this.isStaff = isStaff; }
 }

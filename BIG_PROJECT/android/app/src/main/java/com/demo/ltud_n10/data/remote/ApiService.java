@@ -16,19 +16,22 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
-import retrofit2.http.Headers;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
     @POST("accounts/api/login/")
     Call<LoginResponse> login(@Body LoginRequest request);
 
-    // Accounts
+    @GET("accounts/taikhoan")
+    Call<List<AccountDto>> getMyAccount(@Header("Authorization") String token);
+
     @GET("api/accounts/")
-    Call<List<AccountDto>> getAccounts();
+    Call<List<AccountDto>> getAccounts(@Query("ma_nv") String maNv);
 
     @POST("api/accounts/")
     Call<AccountDto> createAccount(@Body AccountDto account);
@@ -42,35 +45,8 @@ public interface ApiService {
     @POST("api/accounts/{id}/change-password/")
     Call<Void> changePassword(@Path("id") String id, @Body Map<String, String> body);
 
-    // Branches
-    @GET("api/branches/")
-    Call<List<BranchDto>> getBranches();
-
-    @POST("api/branches/")
-    Call<BranchDto> addBranch(@Body BranchDto branch);
-
-    @PUT("api/branches/{id}/")
-    Call<BranchDto> updateBranch(@Path("id") String id, @Body BranchDto branch);
-
-    @DELETE("api/branches/{id}/") // ĐẢM BẢO CÓ DẤU / Ở CUỐI
-    Call<Void> deleteBranch(@Path("id") String id);
-
-    // Employees
-    @GET("api/employees/")
-    Call<List<EmployeeDto>> getEmployees();
-
-    @POST("api/employees/")
-    Call<EmployeeDto> addEmployee(@Body EmployeeDto employee);
-
-    @PUT("api/employees/{id}/")
-    Call<EmployeeDto> updateEmployee(@Path("id") String id, @Body EmployeeDto employee);
-
-    @DELETE("api/employees/{id}/")
-    Call<Void> deleteEmployee(@Path("id") String id);
-
-    // Contracts
     @GET("api/contracts/")
-    Call<List<ContractDto>> getContracts();
+    Call<List<ContractDto>> getContracts(@Query("ma_nv") String maNv);
 
     @POST("api/contracts/")
     Call<ContractDto> addContract(@Body ContractDto contract);
@@ -81,9 +57,11 @@ public interface ApiService {
     @DELETE("api/contracts/{id}/")
     Call<Void> deleteContract(@Path("id") String id);
 
-    // Requests
+    @GET("api/schedules/data/api/")
+    Call<List<ScheduleDto>> getSchedules(@Query("ma_nv") String maNv);
+
     @GET("api/requests/dangkylich/")
-    Call<List<RequestDto>> getRequests();
+    Call<List<RequestDto>> getRequests(@Query("ma_nv") String maNv);
 
     @POST("api/requests/dangkylich/")
     Call<RequestDto> addRequest(@Body RequestDto request);
@@ -94,7 +72,27 @@ public interface ApiService {
     @DELETE("api/requests/dangkylich/{id}/")
     Call<Void> deleteRequest(@Path("id") String id);
 
-    // Schedules
-    @GET("api/schedules/data/api/")
-    Call<List<ScheduleDto>> getSchedules();
+    @GET("api/branches/")
+    Call<List<BranchDto>> getBranches();
+
+    @POST("api/branches/")
+    Call<BranchDto> addBranch(@Body BranchDto branch);
+
+    @PUT("api/branches/{id}/")
+    Call<BranchDto> updateBranch(@Path("id") String id, @Body BranchDto branch);
+
+    @DELETE("api/branches/{id}/")
+    Call<Void> deleteBranch(@Path("id") String id);
+
+    @GET("api/employees/")
+    Call<List<EmployeeDto>> getEmployees(@Query("ma_nv") String maNv);
+
+    @POST("api/employees/")
+    Call<EmployeeDto> addEmployee(@Body EmployeeDto employee);
+
+    @PUT("api/employees/{id}/")
+    Call<EmployeeDto> updateEmployee(@Path("id") String id, @Body EmployeeDto employee);
+
+    @DELETE("api/employees/{id}/")
+    Call<Void> deleteEmployee(@Path("id") String id);
 }

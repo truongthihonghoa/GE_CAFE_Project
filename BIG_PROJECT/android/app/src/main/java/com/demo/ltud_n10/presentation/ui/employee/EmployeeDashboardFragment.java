@@ -13,6 +13,8 @@ import com.demo.ltud_n10.MainActivity;
 import com.demo.ltud_n10.databinding.FragmentEmployeeDashboardBinding;
 import com.demo.ltud_n10.domain.model.User;
 import com.demo.ltud_n10.domain.repository.AuthRepository;
+import com.demo.ltud_n10.domain.repository.ContractRepository;
+import com.demo.ltud_n10.domain.repository.WorkShiftRepository;
 
 import javax.inject.Inject;
 
@@ -26,6 +28,12 @@ public class EmployeeDashboardFragment extends Fragment {
     @Inject
     AuthRepository authRepository;
 
+    @Inject
+    WorkShiftRepository workShiftRepository;
+
+    @Inject
+    ContractRepository contractRepository;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -38,7 +46,7 @@ public class EmployeeDashboardFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         
         setupToolbar();
-        updateUI();
+        loadRealData();
     }
 
     private void setupToolbar() {
@@ -49,15 +57,37 @@ public class EmployeeDashboardFragment extends Fragment {
         });
     }
 
-    private void updateUI() {
+    private void loadRealData() {
         User user = authRepository.getCurrentUser().getValue();
         if (user != null) {
             binding.tvGreeting.setText("Xin chào, " + user.getName());
-            binding.tvEmployeeName.setText(user.getName());
-            binding.tvContractUser.setText(user.getName());
+            
+            // 1. Load Lịch làm việc hôm nay của đúng nhân viên này
+            workShiftRepository.getWorkShifts().observe(getViewLifecycleOwner(), resource -> {
+                if (resource != null && resource.data != null && !resource.data.isEmpty()) {
+                    // Hiển thị tên và giờ làm của chính mình
+                    binding.tvEmployeeName.setText(user.getName());
+                    binding.tvShiftTime.setText(resource.data.get(0).getStartTime() + " - " + resource.data.get(0).getEndTime());
+                    binding.tvShiftCount.setText(String.valueOf(resource.data.size()));
+                } else {
+                    binding.tvEmployeeName.setText(user.getName());
+                    binding.tvShiftTime.setText("Không có ca làm");
+                    binding.tvShiftCount.setText("0");
+                }
+            });
+
+            // 2. Load Hợp đồng của đúng nhân viên này
+            contractRepository.getContracts().observe(getViewLifecycleOwner(), resource -> {
+                if (resource != null && resource.data != null && !resource.data.isEmpty()) {
+                    binding.tvContractUser.setText(user.getName());
+                    binding.tvContractId.setText(resource.data.get(0).getId());
+                    binding.tvContractDate.setText(resource.data.get(0).getEndDate());
+                } else {
+                    binding.tvContractUser.setText(user.getName());
+                    binding.tvContractId.setText("Chưa có hợp đồng");
+                }
+            });
         }
-        
-        // Dữ liệu mẫu khác đã được thiết lập trong XML hoặc có thể cập nhật thêm ở đây
     }
 
     @Override

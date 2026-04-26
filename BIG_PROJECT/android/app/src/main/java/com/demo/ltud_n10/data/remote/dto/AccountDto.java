@@ -19,11 +19,14 @@ public class AccountDto implements Serializable {
     @SerializedName("trang_thai")
     private String status;
     
-    // Thêm trường password phục vụ thêm/sửa
+    @SerializedName("password")
     private String password;
     
     @SerializedName("ma_nv")
     private String maNvId;
+
+    @SerializedName("is_staff")
+    private Object isStaff;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -39,9 +42,13 @@ public class AccountDto implements Serializable {
     public void setPassword(String password) { this.password = password; }
     public String getMaNvId() { return maNvId; }
     public void setMaNvId(String maNvId) { this.maNvId = maNvId; }
+    
+    public Object getIsStaff() { return isStaff; }
+    public void setIsStaff(Object isStaff) { this.isStaff = isStaff; }
 
-    // Các trường hỗ trợ UI nếu cần
-    public String getDisplayUsername() { return username; }
-    public Boolean getIsStaff() { return "Quản lý".equals(role); }
-    public Boolean getIsActive() { return "Đang hoạt động".equals(status); }
+    public boolean checkIsStaff() { 
+        if (isStaff == null) return "Quản lý".equals(role);
+        String val = String.valueOf(isStaff);
+        return val.equals("1") || val.equals("1.0") || val.equalsIgnoreCase("true") || "Quản lý".equals(role);
+    }
 }

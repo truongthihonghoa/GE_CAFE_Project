@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,8 +14,6 @@ import androidx.navigation.Navigation;
 import com.demo.ltud_n10.MainActivity;
 import com.demo.ltud_n10.databinding.FragmentProfileBinding;
 import com.demo.ltud_n10.domain.model.Employee;
-import com.demo.ltud_n10.domain.model.User;
-import com.demo.ltud_n10.domain.repository.AuthRepository;
 import com.demo.ltud_n10.domain.repository.EmployeeRepository;
 
 import javax.inject.Inject;
@@ -25,9 +24,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ProfileFragment extends Fragment {
 
     private FragmentProfileBinding binding;
-
-    @Inject
-    AuthRepository authRepository;
 
     @Inject
     EmployeeRepository employeeRepository;
@@ -58,18 +54,14 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadData() {
-        User currentUser = authRepository.getCurrentUser().getValue();
-        if (currentUser == null) return;
-
-        // In a real app, we'd fetch by employee ID. 
-        // For this demo, we'll filter from the mock list by name.
+        // Hệ thống đã tự động lấy ma_nv của người đang đăng nhập và gửi lên Backend
         employeeRepository.getEmployees().observe(getViewLifecycleOwner(), resource -> {
-            if (resource != null && resource.data != null) {
-                for (Employee e : resource.data) {
-                    if (e.getName().equals(currentUser.getName())) {
-                        updateUI(e);
-                        break;
-                    }
+            if (resource != null) {
+                if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS && resource.data != null && !resource.data.isEmpty()) {
+                    // Hiển thị thông tin của nhân viên đầu tiên (Backend đã lọc đúng ma_nv của bạn)
+                    updateUI(resource.data.get(0));
+                } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                    Toast.makeText(requireContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
                 }
             }
         });
