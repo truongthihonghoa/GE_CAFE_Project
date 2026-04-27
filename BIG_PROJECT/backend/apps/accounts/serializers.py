@@ -18,8 +18,8 @@ class TaiKhoanSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    # Chỉ hiển thị mã nhân viên (ví dụ: NV001)
-    ma_nhan_vien = serializers.CharField(
+    # Hiển thị mã nhân viên (ví dụ: NV001)
+    ma_nv = serializers.CharField(
         source='ma_nv.ma_nv',
         read_only=True
     )
@@ -48,7 +48,7 @@ class TaiKhoanSerializer(serializers.ModelSerializer):
     )
 
     # chỉ nhập ID nhân viên để tạo tài khoản
-    ma_nv = serializers.IntegerField(
+    ma_nv_id = serializers.IntegerField(
         write_only=True,
         required=True
     )
@@ -73,14 +73,14 @@ class TaiKhoanSerializer(serializers.ModelSerializer):
             # hiển thị
             'ten_dang_nhap',
             'ho_ten',
-            'ma_nhan_vien',
+            'ma_nv',
             'vai_tro',
             'trang_thai',
 
             # nhập dữ liệu
             'username',
             'password',
-            'ma_nv',
+            'ma_nv_id',
             'is_active',
             'is_staff',
         ]
@@ -88,7 +88,7 @@ class TaiKhoanSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         username = validated_data.pop('username')
         password = validated_data.pop('password')
-        ma_nv_id = validated_data.pop('ma_nv')
+        ma_nv_id = validated_data.pop('ma_nv_id')
 
         user_data = validated_data.pop('user', {})
 
@@ -137,10 +137,10 @@ class TaiKhoanSerializer(serializers.ModelSerializer):
         instance.user.save()
 
         # cập nhật nhân viên nếu cần
-        if 'ma_nv' in validated_data:
+        if 'ma_nv_id' in validated_data:
             from apps.employees.models import NhanVien
 
-            ma_nv_id = validated_data.pop('ma_nv')
+            ma_nv_id = validated_data.pop('ma_nv_id')
             instance.ma_nv = NhanVien.objects.get(
                 pk=ma_nv_id
             )
