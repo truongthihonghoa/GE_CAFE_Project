@@ -15,6 +15,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
+import com.demo.ltud_n10.databinding.DialogQrCodeBinding;
 import com.demo.ltud_n10.databinding.FragmentBranchDetailBinding;
 import com.demo.ltud_n10.domain.model.Branch;
 import com.demo.ltud_n10.domain.repository.BranchRepository;
@@ -121,6 +123,8 @@ public class BranchDetailFragment extends Fragment {
         updateStatusUI(branch.getStatus());
         enableFields(false);
         binding.layoutStatus.setVisibility(View.VISIBLE);
+        binding.btnGenerateQR.setVisibility(View.VISIBLE);
+        binding.btnGenerateQR.setOnClickListener(v -> showQrDialog());
         binding.btnSubmit.setText("CHỈNH SỬA");
         binding.btnSubmit.setOnClickListener(v -> setupEditMode());
     }
@@ -129,6 +133,7 @@ public class BranchDetailFragment extends Fragment {
         isEditMode = true;
         binding.tvTitle.setText("CHỈNH SỬA CHI NHÁNH");
         enableFields(true);
+        binding.btnGenerateQR.setVisibility(View.GONE);
         binding.btnSubmit.setText("LƯU");
         binding.btnSubmit.setOnClickListener(v -> handleUpdate());
     }
@@ -178,6 +183,35 @@ public class BranchDetailFragment extends Fragment {
                 Toast.makeText(requireContext(), "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void handleCancel() {
+        Navigation.findNavController(requireView()).navigateUp();
+    }
+
+    private void showQrDialog() {
+        if (branch == null) return;
+
+        DialogQrCodeBinding dialogBinding = DialogQrCodeBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogBinding.getRoot())
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        dialogBinding.tvBranchName.setText("Chi nhánh: " + branch.getName());
+        
+        // Sử dụng API bên thứ 3 để tạo QR (vô cùng nhẹ và nhanh)
+        String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" + branch.getId();
+        
+        Glide.with(this)
+                .load(qrUrl)
+                .into(dialogBinding.ivQrCode);
+
+        dialogBinding.btnClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     private boolean validate() {

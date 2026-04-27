@@ -17,14 +17,13 @@ class ChamCongViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-
-        # 1. Nếu là Chủ (Admin hoặc Superuser): Thấy toàn bộ lịch sử chấm công
-        if user.is_superuser or user.is_staff:
-            return ChamCong.objects.all().order_by('-ngay_lam')
-
-        # 2. Nếu là Nhân viên: Chỉ thấy lịch sử của riêng mình
-        # Logic này lọc dựa trên liên kết từ User -> TaiKhoan -> NhanVien
-        return ChamCong.objects.filter(ma_nv__taikhoan__user=user).order_by('-ngay_lam')
+        
+        # Luôn luôn chỉ trả về lịch sử của người đang đăng nhập
+        # (Không phân biệt Admin hay Nhân viên để tránh lộ dữ liệu trên màn hình cá nhân)
+        try:
+            return ChamCong.objects.filter(ma_nv__taikhoan__user=user).order_by('-ngay_lam', '-gio_vao')
+        except Exception:
+            return ChamCong.objects.none()
 
     def create(self, request):
         user = request.user

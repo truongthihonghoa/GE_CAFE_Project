@@ -97,4 +97,11 @@ public interface ApiService {
     // Schedules
     @GET("api/schedules/data/api/")
     Call<List<ScheduleDto>> getSchedules();
+
+    // Attendances
+    @GET("api/attendances/")
+    Call<List<Map<String, Object>>> getAttendances();
+
+    @POST("api/attendances/")
+    Call<Map<String, Object>> checkIn(@Body Map<String, String> body);
 }

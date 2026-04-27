@@ -224,6 +224,22 @@
                     </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGenerateQR"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="24dp"
+                app:backgroundTint="#F89E1B"
+                android:text="XEM MÃ QR CHẤM CÔNG"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:cornerRadius="10dp"
+                app:icon="@android:drawable/ic_menu_camera"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"/>
 
             <!-- Buttons -->
             <LinearLayout

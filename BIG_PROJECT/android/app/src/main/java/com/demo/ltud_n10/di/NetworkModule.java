@@ -67,7 +67,7 @@ public class NetworkModule {
     @Singleton
     public static Retrofit provideRetrofit(OkHttpClient okHttpClient, Gson gson) {
         return new Retrofit.Builder()
-                .baseUrl("https://ge-cafe-project-1.onrender.com/")
+                .baseUrl("https://ge-cafe-project.onrender.com/")
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
