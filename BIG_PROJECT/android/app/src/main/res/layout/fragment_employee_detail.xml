@@ -241,6 +241,68 @@
                 android:textSize="13sp"
                 android:layout_marginTop="4dp" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Số tài khoản ngân hàng:"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etBankAccount"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Số tài khoản"
+                android:paddingHorizontal="20dp"
+                android:textSize="16sp"
+                android:textColor="#222"
+                android:textColorHint="#9E9E9E"
+                android:inputType="number" />
+
+            <TextView
+                android:id="@+id/tvBankAccountError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*Số tài khoản không được để trống."
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Mã chi nhánh:"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etBranchId"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Mã chi nhánh (ví dụ: CN01)"
+                android:paddingHorizontal="20dp"
+                android:textSize="16sp"
+                android:textColor="#222"
+                android:textColorHint="#9E9E9E"
+                android:inputType="text" />
+
+            <TextView
+                android:id="@+id/tvBranchIdError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*Mã chi nhánh không được để trống."
+                android:textColor="#D32F2F"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 android:layout_width="match_parent"

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.local.SharedPrefsManager;
 import com.demo.ltud_n10.data.remote.ApiService;
 import com.demo.ltud_n10.data.remote.dto.AccountDto;
 import com.demo.ltud_n10.domain.model.User;
@@ -24,10 +25,12 @@ import retrofit2.Response;
 public class UserRepositoryImpl implements UserRepository {
 
     private final ApiService apiService;
+    private final SharedPrefsManager prefsManager;
 
     @Inject
-    public UserRepositoryImpl(ApiService apiService) {
+    public UserRepositoryImpl(ApiService apiService, SharedPrefsManager prefsManager) {
         this.apiService = apiService;
+        this.prefsManager = prefsManager;
     }
 
     @Override
@@ -35,123 +38,182 @@ public class UserRepositoryImpl implements UserRepository {
         MutableLiveData<Resource<List<User>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        apiService.getAccounts().enqueue(new Callback<List<AccountDto>>() {
+        // Lấy thông tin từ bộ nhớ máy để thực hiện lọc dữ liệu
+        String maNv = prefsManager.getMaNv();
+        // LOGIC PHÂN QUYỀN: Nếu là Staff (Sếp) -> Không lọc (null) để xem tất cả
+        // Nếu không phải Staff -> Lọc theo maNv để chỉ xem chính mình
+        String filterMaNv = prefsManager.isStaff() ? null : maNv;
+
+        // Cập nhật tham số truyền vào apiService.getAccounts() để khớp với ApiService.java
+        apiService.getAccounts(filterMaNv).enqueue(new Callback<List<AccountDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<AccountDto>> call, @NonNull Response<List<AccountDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<User> users = new ArrayList<>();
                     for (AccountDto dto : response.body()) {
-                        users.add(mapDtoToDomain(dto));
+                        User user = new User(
+                                dto.getId(),
+                                dto.getUsername(),
+                                dto.getFullName(),
+                                dto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
+                        );
+                        user.setStatus(dto.getStatus());
+                        users.add(user);
                     }
                     result.setValue(Resource.success(users));
                 } else {
-                    result.setValue(Resource.error("Lỗi tải danh sách", null));
+                    result.setValue(Resource.error("Lỗi: " + response.code(), null));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<AccountDto>> call, @NonNull Throwable t) {
-                result.setValue(Resource.error("Mất kết nối", null));
+                result.setValue(Resource.error(t.getMessage(), null));
             }
         });
 
         return result;
     }
 
+    // ================= THAY 3 HÀM NULL CUỐI FILE 2 BẰNG ĐOẠN NÀY =================
+
     @Override
     public LiveData<Resource<User>> addUser(User user) {
         MutableLiveData<Resource<User>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
+
         AccountDto dto = new AccountDto();
+        dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setFullName(user.getName());
-        dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
-        dto.setStatus(user.getStatus());
         dto.setPassword(user.getPassword());
+        dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
+        dto.setStatus(user.getStatus() != null ? user.getStatus() : "Đang hoạt động");
 
         apiService.createAccount(dto).enqueue(new Callback<AccountDto>() {
             @Override
-            public void onResponse(@NonNull Call<AccountDto> call, @NonNull Response<AccountDto> response) {
+            public void onResponse(@NonNull Call<AccountDto> call,
+                                   @NonNull Response<AccountDto> response) {
+
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(Resource.success(mapDtoToDomain(response.body())));
+                    AccountDto responseDto = response.body();
+
+                    User newUser = new User(
+                            responseDto.getId(),
+                            responseDto.getUsername(),
+                            responseDto.getFullName(),
+                            responseDto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
+                    );
+
+                    newUser.setStatus(responseDto.getStatus());
+
+                    result.setValue(Resource.success(newUser));
+                } else {
+                    result.setValue(Resource.error(
+                            "Không thể thêm tài khoản. Mã lỗi: " + response.code(),
+                            null
+                    ));
                 }
             }
+
             @Override
-            public void onFailure(@NonNull Call<AccountDto> call, @NonNull Throwable t) {
-                result.setValue(Resource.error("Lỗi kết nối", null));
+            public void onFailure(@NonNull Call<AccountDto> call,
+                                  @NonNull Throwable t) {
+                result.setValue(Resource.error(
+                        "Lỗi kết nối: " + t.getMessage(),
+                        null
+                ));
             }
         });
+
         return result;
     }
 
     @Override
     public LiveData<Resource<User>> updateUser(User user) {
         MutableLiveData<Resource<User>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+
         AccountDto dto = new AccountDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setFullName(user.getName());
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
-        dto.setStatus(user.getStatus());
+        dto.setStatus(user.getStatus() != null ? user.getStatus() : "Đang hoạt động");
+
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            dto.setPassword(user.getPassword());
+        }
 
         apiService.updateAccount(user.getId(), dto).enqueue(new Callback<AccountDto>() {
             @Override
-            public void onResponse(@NonNull Call<AccountDto> call, @NonNull Response<AccountDto> response) {
+            public void onResponse(@NonNull Call<AccountDto> call,
+                                   @NonNull Response<AccountDto> response) {
+
                 if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(Resource.success(mapDtoToDomain(response.body())));
+                    AccountDto updatedDto = response.body();
+
+                    User updatedUser = new User(
+                            updatedDto.getId(),
+                            updatedDto.getUsername(),
+                            updatedDto.getFullName(),
+                            updatedDto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
+                    );
+
+                    updatedUser.setStatus(updatedDto.getStatus());
+
+                    result.setValue(Resource.success(updatedUser));
+                } else {
+                    result.setValue(Resource.error(
+                            "Không thể cập nhật tài khoản. Mã lỗi: " + response.code(),
+                            null
+                    ));
                 }
             }
+
             @Override
-            public void onFailure(@NonNull Call<AccountDto> call, @NonNull Throwable t) {
-                result.setValue(Resource.error("Lỗi cập nhật", null));
+            public void onFailure(@NonNull Call<AccountDto> call,
+                                  @NonNull Throwable t) {
+                result.setValue(Resource.error(
+                        "Lỗi cập nhật: " + t.getMessage(),
+                        null
+                ));
             }
         });
+
         return result;
     }
 
     @Override
     public LiveData<Resource<Boolean>> toggleUserStatus(String userId) {
         MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(false));
+
         apiService.deleteAccount(userId).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                if (response.isSuccessful()) result.setValue(Resource.success(true));
+            public void onResponse(@NonNull Call<Void> call,
+                                   @NonNull Response<Void> response) {
+
+                if (response.isSuccessful()) {
+                    result.setValue(Resource.success(true));
+                } else {
+                    result.setValue(Resource.error(
+                            "Không thể vô hiệu hóa tài khoản. Mã lỗi: " + response.code(),
+                            false
+                    ));
+                }
             }
+
             @Override
-            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                result.setValue(Resource.error("Lỗi kết nối", false));
+            public void onFailure(@NonNull Call<Void> call,
+                                  @NonNull Throwable t) {
+                result.setValue(Resource.error(
+                        "Lỗi kết nối: " + t.getMessage(),
+                        false
+                ));
             }
         });
+
         return result;
-    }
-
-    private User mapDtoToDomain(AccountDto dto) {
-        User user = new User();
-        user.setId(dto.getId());
-        user.setUsername(dto.getUsername()); // Tên đăng nhập viết tắt
-        
-        // ÉP KIỂU TÊN NGƯỜI DÙNG SANG TIẾNG VIỆT CHUẨN
-        String username = dto.getUsername() != null ? dto.getUsername() : "";
-        String fullName = "";
-
-        if (username.equals("bao.tq")) fullName = "Trần Quốc Bảo";
-        else if (username.equals("ThuyNa")) fullName = "Lê Nguyễn Thúy Na";
-        else if (username.equals("ThuyLai")) fullName = "Trần Thị Thúy Lài";
-        else if (username.equals("quan.pm")) fullName = "Phạm Minh Quân";
-        else if (username.equals("lan.dt")) fullName = "Đặng Thị Lan";
-        else if (username.equals("anh.bd")) fullName = "Bùi Đức Anh";
-        else if (username.equals("huy.nq")) fullName = "Ngô Quang Huy";
-        else if (username.equals("ngoc.pt")) fullName = "Phan Thị Ngọc";
-        else if (username.equals("hoa.tk")) fullName = "Trịnh Khánh Hòa";
-        else if (username.equals("dat.vt")) fullName = "Võ Thành Đạt";
-        else if (username.equals("thi.nd")) fullName = "Nguyễn Đình Thi";
-        else if (username.equals("thu.tt")) fullName = "Trịnh Thị Mỹ Thu";
-        else fullName = dto.getFullName() != null ? dto.getFullName() : username;
-
-        user.setName(fullName); // Hiển thị Họ và tên đầy đủ
-
-        user.setRole("Quản lý".equals(dto.getRole()) ? "ADMIN" : "EMPLOYEE");
-        user.setStatus(dto.getStatus() != null ? dto.getStatus() : "Đang hoạt động");
-        return user;
     }
 }

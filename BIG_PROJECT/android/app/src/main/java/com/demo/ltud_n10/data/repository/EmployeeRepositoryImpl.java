@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.data.local.SharedPrefsManager;
 import com.demo.ltud_n10.data.remote.ApiService;
 import com.demo.ltud_n10.data.remote.model.EmployeeDto;
 import com.demo.ltud_n10.domain.model.Employee;
@@ -24,10 +25,12 @@ import retrofit2.Response;
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     private final ApiService apiService;
+    private final SharedPrefsManager prefsManager;
 
     @Inject
-    public EmployeeRepositoryImpl(ApiService apiService) {
+    public EmployeeRepositoryImpl(ApiService apiService, SharedPrefsManager prefsManager) {
         this.apiService = apiService;
+        this.prefsManager = prefsManager;
     }
 
     @Override
@@ -35,7 +38,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         MutableLiveData<Resource<List<Employee>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        apiService.getEmployees().enqueue(new Callback<List<EmployeeDto>>() {
+        String maNv = prefsManager.getMaNv();
+        String filterMaNv = prefsManager.isStaff() ? null : maNv;
+
+        apiService.getEmployees(filterMaNv).enqueue(new Callback<List<EmployeeDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<EmployeeDto>> call, @NonNull Response<List<EmployeeDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -43,7 +49,19 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                     for (EmployeeDto dto : response.body()) {
                         employees.add(mapDtoToDomain(dto));
                     }
-                    result.setValue(Resource.success(employees));
+                    
+                    if (!prefsManager.isStaff() && maNv != null) {
+                        List<Employee> filtered = new ArrayList<>();
+                        for (Employee e : employees) {
+                            if (maNv.equals(e.getId())) {
+                                filtered.add(e);
+                                break;
+                            }
+                        }
+                        result.setValue(Resource.success(filtered));
+                    } else {
+                        result.setValue(Resource.success(employees));
+                    }
                 } else {
                     result.setValue(Resource.error("Lỗi khi tải dữ liệu: " + response.code(), null));
                 }
@@ -63,13 +81,13 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         MutableLiveData<Resource<List<Employee>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        apiService.getEmployees().enqueue(new Callback<List<EmployeeDto>>() {
+        apiService.getEmployees(null).enqueue(new Callback<List<EmployeeDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<EmployeeDto>> call, @NonNull Response<List<EmployeeDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Employee> staffOnly = new ArrayList<>();
                     for (EmployeeDto dto : response.body()) {
-                        if (dto.getIsStaff() != null && dto.getIsStaff() == 1) {
+                        if (dto.getIsStaff() != null && dto.getIsStaff()) {
                             staffOnly.add(mapDtoToDomain(dto));
                         }
                     }
@@ -150,13 +168,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         employee.setId(dto.getMaNv());
         employee.setName(dto.getHoTen());
         employee.setEmail(dto.getEmail());
-        employee.setPhone(dto.getSoDienThoai());
+        employee.setPhone(dto.getSdt()); 
         employee.setCccd(dto.getCccd());
         employee.setGender(dto.getGioiTinh());
         employee.setDob(dto.getNgaySinh());
         employee.setAddress(dto.getDiaChi());
         employee.setPosition(dto.getChucVu());
         employee.setStatus(dto.getTrangThai());
+        employee.setBankAccount(dto.getTkNganHang());
+        employee.setBranchId(dto.getMaChiNhanh());
         return employee;
     }
 
@@ -165,13 +185,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         dto.setMaNv(employee.getId());
         dto.setHoTen(employee.getName());
         dto.setEmail(employee.getEmail());
-        dto.setSoDienThoai(employee.getPhone());
+        dto.setSdt(employee.getPhone());
         dto.setCccd(employee.getCccd());
         dto.setGioiTinh(employee.getGender());
         dto.setNgaySinh(employee.getDob());
         dto.setDiaChi(employee.getAddress());
         dto.setChucVu(employee.getPosition());
         dto.setTrangThai(employee.getStatus());
+        dto.setTkNganHang(employee.getBankAccount());
+        dto.setMaChiNhanh(employee.getBranchId());
         return dto;
     }
 }

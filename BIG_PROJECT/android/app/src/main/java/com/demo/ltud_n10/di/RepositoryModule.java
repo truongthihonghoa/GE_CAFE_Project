@@ -5,6 +5,7 @@ import com.demo.ltud_n10.data.repository.BranchRepositoryImpl;
 import com.demo.ltud_n10.data.repository.ContractRepositoryImpl;
 import com.demo.ltud_n10.data.repository.EmployeeRepositoryImpl;
 import com.demo.ltud_n10.data.repository.PayrollRepositoryImpl;
+import com.demo.ltud_n10.data.repository.RequestRepositoryImpl;
 import com.demo.ltud_n10.data.repository.UserRepositoryImpl;
 import com.demo.ltud_n10.data.repository.WorkShiftRepositoryImpl;
 import com.demo.ltud_n10.domain.repository.AuthRepository;
@@ -12,6 +13,7 @@ import com.demo.ltud_n10.domain.repository.BranchRepository;
 import com.demo.ltud_n10.domain.repository.ContractRepository;
 import com.demo.ltud_n10.domain.repository.EmployeeRepository;
 import com.demo.ltud_n10.domain.repository.PayrollRepository;
+import com.demo.ltud_n10.domain.repository.RequestRepository;
 import com.demo.ltud_n10.domain.repository.UserRepository;
 import com.demo.ltud_n10.domain.repository.WorkShiftRepository;
 
@@ -53,4 +55,8 @@ public abstract class RepositoryModule {
     @Binds
     @Singleton
     public abstract UserRepository bindUserRepository(UserRepositoryImpl userRepositoryImpl);
+
+    @Binds
+    @Singleton
+    public abstract RequestRepository bindRequestRepository(RequestRepositoryImpl requestRepositoryImpl);
 }

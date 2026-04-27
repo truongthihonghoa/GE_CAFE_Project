@@ -11,3 +11,4 @@ public interface ContractRepository {
     LiveData<Resource<Contract>> updateContract(Contract contract);
     LiveData<Resource<Boolean>> deleteContract(String contractId);
 }
+

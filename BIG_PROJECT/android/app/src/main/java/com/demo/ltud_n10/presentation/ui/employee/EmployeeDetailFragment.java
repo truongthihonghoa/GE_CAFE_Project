@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.databinding.DialogCustomConfirmBinding;
@@ -62,34 +62,36 @@ public class EmployeeDetailFragment extends Fragment {
             binding.tvTitle.setText(title);
         }
 
-        // Setup Gender Spinner
         String[] genders = {"Nam", "Nữ"};
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, genders);
         genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerGender.setAdapter(genderAdapter);
 
-        // Setup Position Spinner
         String[] positions = {"Quản lý", "Pha chế", "Phục vụ"};
         ArrayAdapter<String> posAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, positions);
         posAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerPosition.setAdapter(posAdapter);
 
         binding.btnDatePicker.setOnClickListener(v -> showDatePicker());
-
         binding.btnSave.setOnClickListener(v -> saveEmployee());
         binding.btnCancel.setOnClickListener(v -> handleBackAction());
-        
+
         if (currentEmployee != null) {
             binding.btnSave.setText("Chỉnh sửa");
         }
 
-        // Hide errors by default
+        resetErrors();
+    }
+
+    private void resetErrors() {
         binding.tvNameError.setVisibility(View.GONE);
         binding.tvDobError.setVisibility(View.GONE);
         binding.tvCccdError.setVisibility(View.GONE);
         binding.tvPhoneError.setVisibility(View.GONE);
         binding.tvAddressError.setVisibility(View.GONE);
         binding.tvPositionError.setVisibility(View.GONE);
+        binding.tvBankAccountError.setVisibility(View.GONE);
+        binding.tvBranchIdError.setVisibility(View.GONE);
     }
 
     private void populateData() {
@@ -98,10 +100,11 @@ public class EmployeeDetailFragment extends Fragment {
         binding.etCccd.setText(currentEmployee.getCccd());
         binding.etPhone.setText(currentEmployee.getPhone());
         binding.etAddress.setText(currentEmployee.getAddress());
-        
-        // Set spinner selections
+        binding.etBankAccount.setText(currentEmployee.getBankAccount());
+        binding.etBranchId.setText(currentEmployee.getBranchId());
+
         if ("Nữ".equals(currentEmployee.getGender())) binding.spinnerGender.setSelection(1);
-        
+
         for (int i = 0; i < binding.spinnerPosition.getAdapter().getCount(); i++) {
             if (binding.spinnerPosition.getAdapter().getItem(i).toString().equals(currentEmployee.getPosition())) {
                 binding.spinnerPosition.setSelection(i);
@@ -111,157 +114,161 @@ public class EmployeeDetailFragment extends Fragment {
     }
 
     private void showDatePicker() {
+        if (!isAdded()) return;
         final Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        int day = c.get(Calendar.DAY_OF_MONTH);
-
         DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
-                (view, year1, monthOfYear, dayOfMonth) -> {
-                    String date = String.format("%02d/%02d/%04d", dayOfMonth, monthOfYear + 1, year1);
+                (view, year, month, dayOfMonth) -> {
+                    String date = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
                     binding.tvDob.setText(date);
-                }, year, month, day);
+                }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
     }
 
     private void saveEmployee() {
-        // Reset errors
-        binding.tvNameError.setVisibility(View.GONE);
-        binding.tvDobError.setVisibility(View.GONE);
-        binding.tvCccdError.setVisibility(View.GONE);
-        binding.tvPhoneError.setVisibility(View.GONE);
-        binding.tvAddressError.setVisibility(View.GONE);
-        binding.tvPositionError.setVisibility(View.GONE);
+        resetErrors();
 
-        String name = binding.etName.getText().toString();
-        String cccd = binding.etCccd.getText().toString();
-        String phone = binding.etPhone.getText().toString();
-        String address = binding.etAddress.getText().toString();
-        String dob = binding.tvDob.getText().toString();
-        String gender = binding.spinnerGender.getSelectedItem().toString();
-        String position = binding.spinnerPosition.getSelectedItem().toString();
+        String name = binding.etName.getText().toString().trim();
+        String cccd = binding.etCccd.getText().toString().trim();
+        String phone = binding.etPhone.getText().toString().trim();
+        String address = binding.etAddress.getText().toString().trim();
+        String dob = binding.tvDob.getText().toString().trim();
+        String bankAccount = binding.etBankAccount.getText().toString().trim();
+        String branchId = binding.etBranchId.getText().toString().trim();
 
         boolean hasError = false;
 
+        // Kiểm tra tất cả các trường đồng loạt
         if (name.isEmpty()) {
             binding.tvNameError.setVisibility(View.VISIBLE);
             hasError = true;
         }
-        if (dob.isEmpty() || dob.equals("06/02/2026")) {
+
+        if (dob.isEmpty() || dob.equals("06/02/2026") || dob.equals("YYYY-MM-DD")) {
             binding.tvDobError.setVisibility(View.VISIBLE);
             hasError = true;
         }
+
         if (cccd.isEmpty() || cccd.length() != 12) {
             binding.tvCccdError.setVisibility(View.VISIBLE);
             hasError = true;
         }
+
         if (phone.isEmpty() || phone.length() != 10) {
             binding.tvPhoneError.setVisibility(View.VISIBLE);
             hasError = true;
         }
+
         if (address.isEmpty()) {
             binding.tvAddressError.setVisibility(View.VISIBLE);
             hasError = true;
         }
 
+        if (bankAccount.isEmpty()) {
+            binding.tvBankAccountError.setVisibility(View.VISIBLE);
+            hasError = true;
+        }
+
+        if (branchId.isEmpty()) {
+            binding.tvBranchIdError.setVisibility(View.VISIBLE);
+            hasError = true;
+        }
+
+        // Nếu có bất kỳ lỗi nào thì dừng lại, nhưng tất cả lỗi đã được hiển thị
         if (hasError) return;
 
         Employee employee = (currentEmployee != null) ? currentEmployee : new Employee();
+        if (employee.getId() == null) {
+            employee.setId("NV" + (System.currentTimeMillis() % 1000000));
+        }
         employee.setName(name);
+        employee.setEmail(currentEmployee != null ? currentEmployee.getEmail() : "");
         employee.setCccd(cccd);
         employee.setPhone(phone);
         employee.setAddress(address);
         employee.setDob(dob);
-        employee.setGender(gender);
-        employee.setPosition(position);
+        employee.setGender(binding.spinnerGender.getSelectedItem().toString());
+        employee.setPosition(binding.spinnerPosition.getSelectedItem().toString());
+        employee.setBankAccount(bankAccount);
+        employee.setBranchId(branchId);
         employee.setStatus("Đang làm");
 
         if (currentEmployee == null) {
             viewModel.addEmployee(employee).observe(getViewLifecycleOwner(), resource -> {
+                if (resource == null) return;
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                    showSuccessDialog("Thêm nhân viên thành công");
+                    showSuccessToast("Thêm nhân viên thành công");
+                    viewModel.loadEmployees();
+                    NavHostFragment.findNavController(this).popBackStack();
                 } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
-                    showErrorDialog("THÔNG BÁO LỖI", "Lỗi hệ thống. Vui lòng thử lại sau !");
+                    showErrorDialog("THÔNG BÁO LỖI", "Lỗi: " + resource.message);
                 }
             });
         } else {
             viewModel.updateEmployee(employee).observe(getViewLifecycleOwner(), resource -> {
+                if (resource == null) return;
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                    showSuccessDialog("Đã chỉnh sửa thông tin nhân viên thành công");
+                    showSuccessToast("Đã chỉnh sửa thông tin thành công");
+                    viewModel.loadEmployees();
+                    NavHostFragment.findNavController(this).popBackStack();
                 } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
-                    showErrorDialog("THÔNG BÁO LỖI", "Lỗi hệ thống. Vui lòng thử lại sau !");
+                    showErrorDialog("THÔNG BÁO LỖI", "Lỗi: " + resource.message);
                 }
             });
         }
     }
 
-    private void showSuccessDialog(String msg) {
-        View layout = getLayoutInflater().inflate(R.layout.layout_custom_toast, null);
-        TextView tvMessage = layout.findViewById(R.id.tvMessage);
-        tvMessage.setText(msg);
+    private void handleBackAction() {
+        showConfirmDialog("XÁC NHẬN HỦY", "Bạn có thông tin chưa lưu, xác nhận hủy ?", "Không", "Đồng ý", () -> {
+            if (isAdded()) {
+                NavHostFragment.findNavController(this).popBackStack();
+            }
+        });
+    }
 
+    private void showSuccessToast(String msg) {
+        if (!isAdded()) return;
+        View layout = getLayoutInflater().inflate(R.layout.layout_custom_toast, null);
+        ((TextView) layout.findViewById(R.id.tvMessage)).setText(msg);
         Toast toast = new Toast(requireContext());
         toast.setDuration(Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 100);
         toast.setView(layout);
         toast.show();
-        
-        Navigation.findNavController(requireView()).popBackStack();
     }
 
-    private void handleBackAction() {
-        showConfirmDialog("XÁC NHẬN HỦY", "Bạn có thông tin chưa lưu, xác nhận hủy ?", () -> {
-            Navigation.findNavController(requireView()).popBackStack();
-        });
-    }
-
-    private void showConfirmDialog(String title, String message, Runnable onConfirm) {
+    private void showConfirmDialog(String title, String message, String negativeText, String positiveText, Runnable onConfirm) {
+        if (!isAdded()) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
+        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         dialogBinding.tvTitle.setText(title);
         dialogBinding.tvMessage.setText(message);
-        dialogBinding.ivIcon.setImageResource(R.drawable.ic_warning_outline);
-
+        dialogBinding.btnNegative.setText(negativeText);
+        dialogBinding.btnPositive.setText(positiveText);
         dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
-        dialogBinding.btnPositive.setOnClickListener(v -> {
-            dialog.dismiss();
-            onConfirm.run();
-        });
-
+        dialogBinding.btnPositive.setOnClickListener(v -> { dialog.dismiss(); if (onConfirm != null) onConfirm.run(); });
         dialog.show();
     }
 
     private void showErrorDialog(String title, String message) {
+        if (!isAdded()) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         DialogCustomConfirmBinding dialogBinding = DialogCustomConfirmBinding.inflate(getLayoutInflater());
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
+        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         dialogBinding.tvTitle.setText(title);
         dialogBinding.tvMessage.setText(message);
         dialogBinding.ivIcon.setImageResource(R.drawable.ic_error_x);
-
         dialogBinding.btnNegative.setText("Thoát");
         dialogBinding.btnPositive.setText("Quay lại");
-
         dialogBinding.btnNegative.setOnClickListener(v -> dialog.dismiss());
         dialogBinding.btnPositive.setOnClickListener(v -> dialog.dismiss());
-
         dialog.show();
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
+    public void onDestroyView() { super.onDestroyView(); binding = null; }
 }

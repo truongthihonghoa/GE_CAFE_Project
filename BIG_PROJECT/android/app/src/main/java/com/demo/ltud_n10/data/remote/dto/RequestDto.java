@@ -25,6 +25,9 @@ public class RequestDto implements Serializable {
     @SerializedName("ma_nv")
     private String employeeId;
 
+    @SerializedName("ten_nv")
+    private String employeeName;
+
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -40,4 +43,6 @@ public class RequestDto implements Serializable {
     public void setStatus(String status) { this.status = status; }
     public String getEmployeeId() { return employeeId; }
     public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+    public String getEmployeeName() { return employeeName; }
+    public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
 }

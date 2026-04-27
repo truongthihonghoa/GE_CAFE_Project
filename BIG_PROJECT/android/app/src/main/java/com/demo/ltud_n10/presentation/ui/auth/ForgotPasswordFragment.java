@@ -65,7 +65,7 @@ public class ForgotPasswordFragment extends Fragment {
                 Toast.makeText(requireContext(), "Số điện thoại không hợp lệ", Toast.LENGTH_SHORT).show();
                 return;
             }
-            
+
             authRepository.resetPassword(phone).observe(getViewLifecycleOwner(), resource -> {
                 if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                     binding.layoutStep1.setVisibility(View.GONE);

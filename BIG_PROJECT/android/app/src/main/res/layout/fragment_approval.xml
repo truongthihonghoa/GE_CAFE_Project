@@ -113,11 +113,13 @@
                             android:gravity="center"
                             android:orientation="horizontal">
                             <ImageView
+                                android:id="@+id/ivTabRegister"
                                 android:layout_width="18dp"
                                 android:layout_height="18dp"
                                 android:src="@android:drawable/ic_menu_today"
                                 app:tint="#1A1A1A" />
                             <TextView
+                                android:id="@+id/tvTabRegister"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
@@ -142,11 +144,13 @@
                             android:gravity="center"
                             android:orientation="horizontal">
                             <ImageView
+                                android:id="@+id/ivTabLeave"
                                 android:layout_width="18dp"
                                 android:layout_height="18dp"
                                 android:src="@android:drawable/ic_menu_agenda"
                                 app:tint="#757575" />
                             <TextView
+                                android:id="@+id/tvTabLeave"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
@@ -179,12 +183,12 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ca Làm Việc - Lịch Tuần"
+                        android:text="Bộ lọc thời gian"
                         android:textColor="#1A1A1A"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <!-- Date Picker Simulation -->
+                    <!-- Date Picker -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -192,77 +196,35 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            app:cardBackgroundColor="#F8F9FA"
-                            app:cardCornerRadius="8dp"
-                            app:cardElevation="0dp"
-                            app:strokeColor="#E2E8F0"
-                            app:strokeWidth="1dp">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:padding="8dp"
-                                android:src="@android:drawable/ic_media_previous"
-                                app:tint="#1A1A1A" />
-                        </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:id="@+id/tvStartDate"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_field"
+                            android:gravity="center"
+                            android:text="2026-02-08"
+                            android:textColor="#1A1A1A"
+                            android:textSize="14sp" />
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="8dp"
+                            android:text="đến"
+                            android:textColor="#757575" />
+
+                        <TextView
+                            android:id="@+id/tvEndDate"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
                             android:layout_weight="1"
+                            android:background="@drawable/bg_input_field"
                             android:gravity="center"
-                            android:text="9 tháng 2 - 15 tháng 2, 2026"
+                            android:text="2026-02-08"
                             android:textColor="#1A1A1A"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            app:cardBackgroundColor="#F8F9FA"
-                            app:cardCornerRadius="8dp"
-                            app:cardElevation="0dp"
-                            app:strokeColor="#E2E8F0"
-                            app:strokeWidth="1dp">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:padding="8dp"
-                                android:src="@android:drawable/ic_media_next"
-                                app:tint="#1A1A1A" />
-                        </com.google.android.material.card.MaterialCardView>
+                            android:textSize="14sp" />
                     </LinearLayout>
-
-                    <!-- Filter Spinner Simulation -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_marginTop="12dp"
-                        app:cardBackgroundColor="#F1F3F5"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="0dp">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:paddingHorizontal="12dp">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_centerVertical="true"
-                                android:text="Tất cả nhân viên"
-                                android:textColor="#1A1A1A"
-                                android:textSize="14sp" />
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@android:drawable/arrow_down_float"
-                                app:tint="#757575" />
-                        </RelativeLayout>
-                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- List of Requests -->
                     <androidx.recyclerview.widget.RecyclerView

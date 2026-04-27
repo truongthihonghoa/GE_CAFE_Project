@@ -9,10 +9,14 @@ public class Employee implements Serializable {
     private String phone;
     private String cccd;
     private String gender; // "Nam", "Nữ"
-    private String dob; // Date of birth
+    private String dob; // Date of birth YYYY-MM-DD
     private String address;
     private String position; // "Quản lý", "Pha chế", "Phục vụ", v.v.
     private String status; // "Đang làm", "Ngừng hoạt động"
+
+    // New fields required by API
+    private String bankAccount;
+    private String branchId;
 
     public Employee() {}
 
@@ -50,4 +54,9 @@ public class Employee implements Serializable {
     public void setPosition(String position) { this.position = position; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getBankAccount() { return bankAccount; }
+    public void setBankAccount(String bankAccount) { this.bankAccount = bankAccount; }
+    public String getBranchId() { return branchId; }
+    public void setBranchId(String branchId) { this.branchId = branchId; }
 }

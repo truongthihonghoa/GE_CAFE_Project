@@ -89,11 +89,11 @@ public class AccountDetailFragment extends Fragment {
 
         binding.ivBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
         binding.btnCancel.setOnClickListener(v -> handleBackAction(v));
-        
+
         binding.cvRole.setOnClickListener(v -> {
             if (binding.cvRole.isEnabled() && !isReadOnly) showRoleDialog();
         });
-        
+
         binding.cvStatus.setOnClickListener(v -> {
             if (binding.cvStatus.isEnabled() && !isReadOnly) showStatusDialog();
         });
@@ -109,12 +109,12 @@ public class AccountDetailFragment extends Fragment {
         binding.etPassword.setText("******");
         binding.etPassword.setEnabled(false);
         binding.etPassword.setAlpha(0.6f);
-        
+
         binding.etName.setText(user.getName());
         binding.tvRole.setText(user.getRole());
         updateStatusUI(user.getStatus());
         binding.layoutStatus.setVisibility(View.VISIBLE);
-        
+
         // KIỂM TRA CHỈ XEM (TÊN LÀI HOẶC FLAG READONLY)
         if (isReadOnly || (user.getName() != null && user.getName().equals("Trần Thị Thúy Lài"))) {
             setFieldsDisabledDarkText();
@@ -263,7 +263,7 @@ public class AccountDetailFragment extends Fragment {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             window.setGravity(Gravity.TOP);
             WindowManager.LayoutParams lp = window.getAttributes();
-            lp.y = 50; 
+            lp.y = 50;
             window.setAttributes(lp);
         }
         TextView tvMessage = dialog.findViewById(R.id.tvMessage);

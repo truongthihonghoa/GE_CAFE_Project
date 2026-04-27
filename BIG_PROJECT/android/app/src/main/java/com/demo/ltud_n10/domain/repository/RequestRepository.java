@@ -8,7 +8,7 @@ import java.util.List;
 public interface RequestRepository {
     LiveData<Resource<List<Request>>> getRequests();
     LiveData<Resource<Request>> addRequest(Request request);
-    LiveData<Resource<Request>> updateRequest(Request request);
-    LiveData<Resource<Boolean>> deleteRequest(String requestId);
+    LiveData<Resource<Request>> updateRequest(String oldId, Request request);
+    LiveData<Resource<Boolean>> deleteRequest(String requestId, String type);
     LiveData<Resource<Request>> updateRequestStatus(String requestId, String status);
 }

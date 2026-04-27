@@ -61,18 +61,18 @@ public class AccountFragment extends Fragment {
             if (currentUser != null) {
                 loggedInUser = currentUser;
                 loggedInUserRole = currentUser.getRole();
-                
+
                 if (adapter != null) {
                     adapter.setCurrentUserRole(loggedInUserRole);
                 }
-                
+
                 if (!"ADMIN".equals(loggedInUserRole)) {
                     // NẾU LÀ NHÂN VIÊN: Chuyển sang trang thông tin cá nhân và xóa trang này khỏi Backstack
                     navigateToDetail(loggedInUser, "THÔNG TIN TÀI KHOẢN", true);
                 } else {
                     setupToolbar();
                     setupRecyclerView();
-                    
+
                     if (binding.btnAddAccount != null) {
                         binding.btnAddAccount.setOnClickListener(v -> {
                             Bundle bundle = new Bundle();
@@ -81,7 +81,7 @@ public class AccountFragment extends Fragment {
                             Navigation.findNavController(v).navigate(R.id.action_accountFragment_to_accountDetailFragment, bundle);
                         });
                     }
-                    
+
                     loadData();
                 }
             }
@@ -131,7 +131,7 @@ public class AccountFragment extends Fragment {
         bundle.putSerializable("user", user);
         bundle.putString("title", title);
         bundle.putBoolean("isReadOnly", isReadOnly);
-        
+
         if (!"ADMIN".equals(loggedInUserRole)) {
             NavOptions navOptions = new NavOptions.Builder()
                     .setPopUpTo(R.id.accountFragment, true)

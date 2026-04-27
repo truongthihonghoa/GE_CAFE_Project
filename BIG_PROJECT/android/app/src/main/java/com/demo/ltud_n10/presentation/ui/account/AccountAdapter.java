@@ -18,7 +18,7 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.ViewHold
 
     private List<User> items = new ArrayList<>();
     private OnItemClickListener listener;
-    private String currentUserRole = "ADMIN"; 
+    private String currentUserRole = "ADMIN";
 
     public interface OnItemClickListener {
         void onEditClick(User user);
@@ -82,7 +82,7 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.ViewHold
                 statusLabel = "Nhân viên";
             }
             binding.tvStatus.setText(statusLabel);
-            
+
             // 2. Màu sắc nhãn (Hồng cho cả Quản lý và Nhân viên theo hình)
             binding.cvStatus.setCardBackgroundColor(Color.parseColor("#F8D7DA"));
             binding.tvStatus.setTextColor(Color.parseColor("#721C24"));

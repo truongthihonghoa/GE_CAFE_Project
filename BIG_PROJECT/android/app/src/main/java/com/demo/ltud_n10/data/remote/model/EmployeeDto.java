@@ -33,8 +33,17 @@ public class EmployeeDto {
     @SerializedName("trang_thai")
     private String trangThai;
 
-    @SerializedName("is_staff") // Thêm trường is_staff theo yêu cầu
-    private Integer isStaff;
+    @SerializedName("sdt")
+    private String sdt;
+
+    @SerializedName("tk_ngan_hang")
+    private String tkNganHang;
+
+    @SerializedName("ma_chi_nhanh")
+    private String maChiNhanh;
+
+    @SerializedName("is_staff")
+    private Boolean isStaff; // SỬA: Đổi từ Integer sang Boolean
 
     // Getters and Setters
     public String getMaNv() { return maNv; }
@@ -67,6 +76,15 @@ public class EmployeeDto {
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
-    public Integer getIsStaff() { return isStaff; }
-    public void setIsStaff(Integer isStaff) { this.isStaff = isStaff; }
+    public String getSdt() { return sdt; }
+    public void setSdt(String sdt) { this.sdt = sdt; }
+
+    public String getTkNganHang() { return tkNganHang; }
+    public void setTkNganHang(String tkNganHang) { this.tkNganHang = tkNganHang; }
+
+    public String getMaChiNhanh() { return maChiNhanh; }
+    public void setMaChiNhanh(String maChiNhanh) { this.maChiNhanh = maChiNhanh; }
+
+    public Boolean getIsStaff() { return isStaff; }
+    public void setIsStaff(Boolean isStaff) { this.isStaff = isStaff; }
 }

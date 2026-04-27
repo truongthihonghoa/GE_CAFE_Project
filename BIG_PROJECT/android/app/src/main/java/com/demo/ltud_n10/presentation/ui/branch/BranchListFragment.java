@@ -1,6 +1,8 @@
 package com.demo.ltud_n10.presentation.ui.branch;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,9 @@ import com.demo.ltud_n10.databinding.FragmentBranchListBinding;
 import com.demo.ltud_n10.domain.model.Branch;
 import com.demo.ltud_n10.domain.repository.BranchRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -26,6 +31,7 @@ public class BranchListFragment extends Fragment {
 
     private FragmentBranchListBinding binding;
     private BranchAdapter adapter;
+    private List<Branch> fullBranchList = new ArrayList<>();
 
     @Inject
     BranchRepository branchRepository;
@@ -43,6 +49,7 @@ public class BranchListFragment extends Fragment {
 
         setupToolbar();
         setupRecyclerView();
+        setupSearch();
         
         binding.btnAddBranch.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
@@ -74,10 +81,46 @@ public class BranchListFragment extends Fragment {
         binding.rvBranches.setAdapter(adapter);
     }
 
+    private void setupSearch() {
+        binding.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filter(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        binding.btnSearch.setOnClickListener(v -> {
+            filter(binding.etSearch.getText().toString());
+        });
+    }
+
+    private void filter(String query) {
+        if (fullBranchList == null) return;
+        
+        String lowerQuery = query.toLowerCase().trim();
+        List<Branch> filtered = new ArrayList<>();
+        
+        for (Branch b : fullBranchList) {
+            if (b.getName().toLowerCase().contains(lowerQuery) || 
+                b.getAddress().toLowerCase().contains(lowerQuery) ||
+                b.getId().toLowerCase().contains(lowerQuery)) {
+                filtered.add(b);
+            }
+        }
+        adapter.setItems(filtered);
+    }
+
     private void loadData() {
         branchRepository.getBranches().observe(getViewLifecycleOwner(), resource -> {
             if (resource != null && resource.data != null) {
-                adapter.setItems(resource.data);
+                fullBranchList = resource.data;
+                filter(binding.etSearch.getText().toString());
             }
         });
     }

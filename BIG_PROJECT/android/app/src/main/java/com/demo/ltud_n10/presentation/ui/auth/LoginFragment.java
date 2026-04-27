@@ -14,10 +14,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.demo.ltud_n10.R;
+import com.demo.ltud_n10.data.local.SharedPrefsManager;
 import com.demo.ltud_n10.databinding.FragmentLoginBinding;
 
-import java.util.Arrays;
-import java.util.List;
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -26,6 +26,9 @@ public class LoginFragment extends Fragment {
 
     private FragmentLoginBinding binding;
     private LoginViewModel viewModel;
+
+    @Inject
+    SharedPrefsManager prefsManager;
 
     @Nullable
     @Override
@@ -39,22 +42,17 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
-        // Đảm bảo ban đầu không có text
-        binding.etEmail.setText("");
-        binding.etPassword.setText("");
-
         setupLiveValidation();
 
         binding.btnLogin.setOnClickListener(v -> {
-            boolean hasError = validateAll();
-            if (hasError) return;
+            if (validateAll()) return;
 
             String email = binding.etEmail.getText().toString().trim();
             String password = binding.etPassword.getText().toString().trim();
 
             viewModel.login(email, password).observe(getViewLifecycleOwner(), resource -> {
                 if (resource == null) return;
-                
+
                 switch (resource.status) {
                     case LOADING:
                         binding.btnLogin.setEnabled(false);
@@ -63,19 +61,18 @@ public class LoginFragment extends Fragment {
                     case SUCCESS:
                         binding.btnLogin.setEnabled(true);
                         binding.btnLogin.setText("Đăng nhập");
-                        if (resource.data != null) {
-                            if ("ADMIN".equals(resource.data.getRole())) {
-                                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_adminDashboardFragment);
-                            } else {
-                                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_employeeDashboardFragment);
-                            }
+                        
+                        // ĐIỀU HƯỚNG DỰA TRÊN QUYỀN IS_STAFF ĐÃ LƯU TRONG SESSION
+                        if (prefsManager.isStaff()) {
+                            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_adminDashboardFragment);
+                        } else {
+                            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_employeeDashboardFragment);
                         }
                         break;
                     case ERROR:
                         binding.btnLogin.setEnabled(true);
                         binding.btnLogin.setText("Đăng nhập");
-                        
-                        // Xử lý thông báo lỗi từ Server nếu logic local chưa bắt hết
+
                         if (resource.message != null) {
                             String msg = resource.message.toLowerCase();
                             if (msg.contains("mật khẩu") || msg.contains("password")) {
@@ -97,13 +94,6 @@ public class LoginFragment extends Fragment {
     }
 
     private void setupLiveValidation() {
-        // Kiểm tra Email khi rời khỏi ô nhập
-        binding.etEmail.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                validateEmail();
-            }
-        });
-
         binding.etEmail.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -113,13 +103,6 @@ public class LoginFragment extends Fragment {
             }
             @Override
             public void afterTextChanged(Editable s) {}
-        });
-
-        // Kiểm tra Mật khẩu khi rời khỏi ô nhập
-        binding.etPassword.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                validatePassword();
-            }
         });
 
         binding.etPassword.addTextChangedListener(new TextWatcher() {
@@ -141,20 +124,6 @@ public class LoginFragment extends Fragment {
             binding.tvEmailError.setVisibility(View.VISIBLE);
             return true;
         }
-        
-        // Danh sách các tên đăng nhập hợp lệ (từ database Django)
-        List<String> validUsernames = Arrays.asList(
-            "owner@coffee.com", "staff@coffee.com", "staff@gmail.com",
-            "ThuyLai", "ThuyNa", "bao.tq", "quan.pm", "lan.dt", 
-            "anh.bd", "huy.nq", "ngoc.pt", "hoa.tk", "dat.vt", "thi.nd", "thu.tt"
-        );
-        
-        if (!validUsernames.contains(email)) {
-            binding.tvEmailError.setText("*Tên đăng nhập không đúng, vui lòng nhập lại");
-            binding.tvEmailError.setVisibility(View.VISIBLE);
-            return true;
-        }
-
         binding.tvEmailError.setVisibility(View.GONE);
         return false;
     }
