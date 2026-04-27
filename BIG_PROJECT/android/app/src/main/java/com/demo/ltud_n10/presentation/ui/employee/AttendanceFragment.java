@@ -113,8 +113,9 @@ public class AttendanceFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     List<HistoryItem> items = new ArrayList<>();
                     for (Map<String, Object> data : response.body()) {
-                        Object nameObj = data.get("ho_ten");
-                        if (nameObj == null) nameObj = data.get("ma_nv"); // Fallback dùng mã nhân viên nếu chưa có tên
+                        Object nameObj = data.get("ten_nhan_vien_that");
+                        if (nameObj == null) nameObj = data.get("ho_ten");
+                        if (nameObj == null) nameObj = data.get("ma_nv");
                         
                         String name = String.valueOf(nameObj);
                         
