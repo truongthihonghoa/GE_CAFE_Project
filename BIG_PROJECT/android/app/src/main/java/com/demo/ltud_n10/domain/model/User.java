@@ -9,7 +9,7 @@ public class User implements Serializable {
     private String role; 
     private String status; 
     private String password;
-    private String maNvId; // Bổ sung trường mã nhân viên
+    private String maNv;
     private boolean isSuperuser;
     private boolean isStaff;
 
@@ -43,8 +43,8 @@ public class User implements Serializable {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
     
-    public String getMaNvId() { return maNvId; }
-    public void setMaNvId(String maNvId) { this.maNvId = maNvId; }
+    public String getMaNv() { return maNv; }
+    public void setMaNv(String maNv) { this.maNv = maNv; }
     
     public boolean isSuperuser() { return isSuperuser; }
     public void setSuperuser(boolean superuser) { this.isSuperuser = superuser; }

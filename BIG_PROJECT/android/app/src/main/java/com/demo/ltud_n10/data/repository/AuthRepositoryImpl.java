@@ -83,6 +83,7 @@ public class AuthRepositoryImpl implements AuthRepository {
                                 prefsManager.saveUserRole(role);
                                 
                                 User user = new User(maNv != null ? maNv : "0", username + "@coffee.com", fullName, role);
+                                user.setMaNv(maNv);
                                 currentUser.setValue(user);
                                 result.setValue(Resource.success(user));
                             } else {
@@ -145,7 +146,7 @@ public class AuthRepositoryImpl implements AuthRepository {
                                 dto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
                         );
                         user.setStatus(dto.getStatus());
-                        user.setMaNvId(dto.getMaNvId());
+                        user.setMaNv(dto.getMaNvId());
                         users.add(user);
                     }
                     result.setValue(Resource.success(users));
@@ -172,7 +173,7 @@ public class AuthRepositoryImpl implements AuthRepository {
         dto.setPassword(user.getPassword());
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
         dto.setStatus(user.getStatus());
-        dto.setMaNvId(user.getId());
+        dto.setMaNvId(user.getMaNv());
 
         apiService.createAccount(dto).enqueue(new Callback<AccountDto>() {
             @Override
@@ -181,6 +182,7 @@ public class AuthRepositoryImpl implements AuthRepository {
                     AccountDto body = response.body();
                     User newUser = new User(body.getId(), body.getUsername(), body.getFullName(), body.checkIsStaff() ? "ADMIN" : "EMPLOYEE");
                     newUser.setStatus(body.getStatus());
+                    newUser.setMaNv(body.getMaNvId());
                     result.setValue(Resource.success(newUser));
                 } else {
                     result.setValue(Resource.error("Thêm thất bại", null));
@@ -205,6 +207,7 @@ public class AuthRepositoryImpl implements AuthRepository {
         dto.setFullName(user.getName());
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
         dto.setStatus(user.getStatus());
+        dto.setMaNvId(user.getMaNv());
 
         apiService.updateAccount(user.getId(), dto).enqueue(new Callback<AccountDto>() {
             @Override

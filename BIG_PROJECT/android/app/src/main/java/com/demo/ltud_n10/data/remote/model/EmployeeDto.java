@@ -12,9 +12,6 @@ public class EmployeeDto {
     @SerializedName("email")
     private String email;
 
-    @SerializedName("so_dien_thoai")
-    private String soDienThoai;
-
     @SerializedName("cccd")
     private String cccd;
 
@@ -43,9 +40,8 @@ public class EmployeeDto {
     private String maChiNhanh;
 
     @SerializedName("is_staff")
-    private Boolean isStaff; // SỬA: Đổi từ Integer sang Boolean
+    private Boolean isStaff;
 
-    // Getters and Setters
     public String getMaNv() { return maNv; }
     public void setMaNv(String maNv) { this.maNv = maNv; }
 
@@ -54,9 +50,6 @@ public class EmployeeDto {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
-    public String getSoDienThoai() { return soDienThoai; }
-    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
 
     public String getCccd() { return cccd; }
     public void setCccd(String cccd) { this.cccd = cccd; }

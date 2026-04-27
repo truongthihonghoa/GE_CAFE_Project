@@ -38,13 +38,9 @@ public class UserRepositoryImpl implements UserRepository {
         MutableLiveData<Resource<List<User>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        // Lấy thông tin từ bộ nhớ máy để thực hiện lọc dữ liệu
         String maNv = prefsManager.getMaNv();
-        // LOGIC PHÂN QUYỀN: Nếu là Staff (Sếp) -> Không lọc (null) để xem tất cả
-        // Nếu không phải Staff -> Lọc theo maNv để chỉ xem chính mình
         String filterMaNv = prefsManager.isStaff() ? null : maNv;
 
-        // Cập nhật tham số truyền vào apiService.getAccounts() để khớp với ApiService.java
         apiService.getAccounts(filterMaNv).enqueue(new Callback<List<AccountDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<AccountDto>> call, @NonNull Response<List<AccountDto>> response) {
@@ -58,6 +54,8 @@ public class UserRepositoryImpl implements UserRepository {
                                 dto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
                         );
                         user.setStatus(dto.getStatus());
+                        user.setMaNv(dto.getMaNvId());
+                        user.setStaff(dto.checkIsStaff());
                         users.add(user);
                     }
                     result.setValue(Resource.success(users));
@@ -75,54 +73,44 @@ public class UserRepositoryImpl implements UserRepository {
         return result;
     }
 
-    // ================= THAY 3 HÀM NULL CUỐI FILE 2 BẰNG ĐOẠN NÀY =================
-
     @Override
     public LiveData<Resource<User>> addUser(User user) {
         MutableLiveData<Resource<User>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
         AccountDto dto = new AccountDto();
-        dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setFullName(user.getName());
         dto.setPassword(user.getPassword());
+        dto.setMaNvId(user.getMaNv());
+        dto.setIsStaff(user.isStaff());
+        dto.setIsActive("Đang hoạt động".equals(user.getStatus()));
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
-        dto.setStatus(user.getStatus() != null ? user.getStatus() : "Đang hoạt động");
+        dto.setStatus(user.getStatus());
 
         apiService.createAccount(dto).enqueue(new Callback<AccountDto>() {
             @Override
-            public void onResponse(@NonNull Call<AccountDto> call,
-                                   @NonNull Response<AccountDto> response) {
-
+            public void onResponse(@NonNull Call<AccountDto> call, @NonNull Response<AccountDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     AccountDto responseDto = response.body();
-
                     User newUser = new User(
                             responseDto.getId(),
                             responseDto.getUsername(),
                             responseDto.getFullName(),
                             responseDto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
                     );
-
                     newUser.setStatus(responseDto.getStatus());
-
+                    newUser.setMaNv(responseDto.getMaNvId());
+                    newUser.setStaff(responseDto.checkIsStaff());
                     result.setValue(Resource.success(newUser));
                 } else {
-                    result.setValue(Resource.error(
-                            "Không thể thêm tài khoản. Mã lỗi: " + response.code(),
-                            null
-                    ));
+                    result.setValue(Resource.error("Lỗi: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<AccountDto> call,
-                                  @NonNull Throwable t) {
-                result.setValue(Resource.error(
-                        "Lỗi kết nối: " + t.getMessage(),
-                        null
-                ));
+            public void onFailure(@NonNull Call<AccountDto> call, @NonNull Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), null));
             }
         });
 
@@ -138,46 +126,39 @@ public class UserRepositoryImpl implements UserRepository {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setFullName(user.getName());
+        dto.setMaNvId(user.getMaNv());
+        dto.setIsStaff(user.isStaff());
+        dto.setIsActive("Đang hoạt động".equals(user.getStatus()));
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
-        dto.setStatus(user.getStatus() != null ? user.getStatus() : "Đang hoạt động");
+        dto.setStatus(user.getStatus());
 
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+        if (user.getPassword() != null && !user.getPassword().isEmpty() && !user.getPassword().equals("******")) {
             dto.setPassword(user.getPassword());
         }
 
         apiService.updateAccount(user.getId(), dto).enqueue(new Callback<AccountDto>() {
             @Override
-            public void onResponse(@NonNull Call<AccountDto> call,
-                                   @NonNull Response<AccountDto> response) {
-
+            public void onResponse(@NonNull Call<AccountDto> call, @NonNull Response<AccountDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     AccountDto updatedDto = response.body();
-
                     User updatedUser = new User(
                             updatedDto.getId(),
                             updatedDto.getUsername(),
                             updatedDto.getFullName(),
                             updatedDto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
                     );
-
                     updatedUser.setStatus(updatedDto.getStatus());
-
+                    updatedUser.setMaNv(updatedDto.getMaNvId());
+                    updatedUser.setStaff(updatedDto.checkIsStaff());
                     result.setValue(Resource.success(updatedUser));
                 } else {
-                    result.setValue(Resource.error(
-                            "Không thể cập nhật tài khoản. Mã lỗi: " + response.code(),
-                            null
-                    ));
+                    result.setValue(Resource.error("Lỗi: " + response.code(), null));
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<AccountDto> call,
-                                  @NonNull Throwable t) {
-                result.setValue(Resource.error(
-                        "Lỗi cập nhật: " + t.getMessage(),
-                        null
-                ));
+            public void onFailure(@NonNull Call<AccountDto> call, @NonNull Throwable t) {
+                result.setValue(Resource.error("Lỗi cập nhật: " + t.getMessage(), null));
             }
         });
 
@@ -191,26 +172,17 @@ public class UserRepositoryImpl implements UserRepository {
 
         apiService.deleteAccount(userId).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(@NonNull Call<Void> call,
-                                   @NonNull Response<Void> response) {
-
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
                     result.setValue(Resource.success(true));
                 } else {
-                    result.setValue(Resource.error(
-                            "Không thể vô hiệu hóa tài khoản. Mã lỗi: " + response.code(),
-                            false
-                    ));
+                    result.setValue(Resource.error("Lỗi: " + response.code(), false));
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<Void> call,
-                                  @NonNull Throwable t) {
-                result.setValue(Resource.error(
-                        "Lỗi kết nối: " + t.getMessage(),
-                        false
-                ));
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                result.setValue(Resource.error("Lỗi kết nối: " + t.getMessage(), false));
             }
         });
 

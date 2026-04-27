@@ -26,7 +26,10 @@ public class AccountDto implements Serializable {
     private String maNvId;
 
     @SerializedName("is_staff")
-    private Object isStaff;
+    private Boolean isStaff;
+
+    @SerializedName("is_active")
+    private Boolean isActive;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -43,12 +46,14 @@ public class AccountDto implements Serializable {
     public String getMaNvId() { return maNvId; }
     public void setMaNvId(String maNvId) { this.maNvId = maNvId; }
     
-    public Object getIsStaff() { return isStaff; }
-    public void setIsStaff(Object isStaff) { this.isStaff = isStaff; }
+    public Boolean getIsStaff() { return isStaff; }
+    public void setIsStaff(Boolean isStaff) { this.isStaff = isStaff; }
+
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 
     public boolean checkIsStaff() { 
-        if (isStaff == null) return "Quản lý".equals(role);
-        String val = String.valueOf(isStaff);
-        return val.equals("1") || val.equals("1.0") || val.equalsIgnoreCase("true") || "Quản lý".equals(role);
+        if (isStaff != null) return isStaff;
+        return "Quản lý".equals(role) || "ADMIN".equals(role);
     }
 }

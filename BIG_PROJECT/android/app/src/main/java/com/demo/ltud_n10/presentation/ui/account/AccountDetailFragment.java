@@ -101,6 +101,7 @@ public class AccountDetailFragment extends Fragment {
 
     private void setupAddMode() {
         binding.layoutStatus.setVisibility(View.GONE);
+        binding.layoutSwitches.setVisibility(View.VISIBLE);
         binding.btnSave.setOnClickListener(v -> handleSave());
     }
 
@@ -111,15 +112,17 @@ public class AccountDetailFragment extends Fragment {
         binding.etPassword.setAlpha(0.6f);
 
         binding.etName.setText(user.getName());
-        binding.tvRole.setText(user.getRole());
+        binding.etMaNv.setText(user.getMaNv());
+        binding.tvRole.setText(user.getRole().equals("ADMIN") ? "Quản lý" : "Nhân viên");
         updateStatusUI(user.getStatus());
         binding.layoutStatus.setVisibility(View.VISIBLE);
+        binding.layoutSwitches.setVisibility(View.GONE);
 
         // KIỂM TRA CHỈ XEM (TÊN LÀI HOẶC FLAG READONLY)
         if (isReadOnly || (user.getName() != null && user.getName().equals("Trần Thị Thúy Lài"))) {
             setFieldsDisabledDarkText();
             binding.btnSave.setVisibility(View.GONE);
-            binding.btnCancel.setVisibility(View.GONE); // XÓA NÚT THOÁT THEO YÊU CẦU
+            binding.btnCancel.setVisibility(View.GONE);
         } else {
             applyPermissions();
             binding.btnSave.setOnClickListener(v -> handleUpdate());
@@ -127,7 +130,7 @@ public class AccountDetailFragment extends Fragment {
     }
 
     private void setFieldsDisabledDarkText() {
-        int darkColor = Color.parseColor("#333333"); // Chữ màu đen đậm hơn
+        int darkColor = Color.parseColor("#333333");
 
         binding.etUsername.setEnabled(false);
         binding.etUsername.setTextColor(darkColor);
@@ -140,6 +143,10 @@ public class AccountDetailFragment extends Fragment {
         binding.etName.setEnabled(false);
         binding.etName.setTextColor(darkColor);
         binding.etName.setAlpha(1.0f);
+
+        binding.etMaNv.setEnabled(false);
+        binding.etMaNv.setTextColor(darkColor);
+        binding.etMaNv.setAlpha(1.0f);
 
         binding.tvRole.setTextColor(darkColor);
         binding.cvRole.setEnabled(false);
@@ -202,6 +209,8 @@ public class AccountDetailFragment extends Fragment {
         binding.etPassword.setAlpha(alpha);
         binding.etName.setEnabled(enabled);
         binding.etName.setAlpha(alpha);
+        binding.etMaNv.setEnabled(enabled);
+        binding.etMaNv.setAlpha(alpha);
         binding.cvRole.setEnabled(enabled);
         binding.cvRole.setAlpha(alpha);
         binding.cvStatus.setEnabled(enabled);
@@ -283,11 +292,16 @@ public class AccountDetailFragment extends Fragment {
         newUser.setUsername(binding.etUsername.getText().toString().trim());
         newUser.setPassword(binding.etPassword.getText().toString().trim());
         newUser.setName(binding.etName.getText().toString().trim());
+        newUser.setMaNv(binding.etMaNv.getText().toString().trim());
         newUser.setRole(binding.tvRole.getText().toString().equals("Quản lý") ? "ADMIN" : "EMPLOYEE");
-        newUser.setStatus("Đang hoạt động");
+        newUser.setStatus(binding.switchActive.isChecked() ? "Đang hoạt động" : "Ngưng hoạt động");
+        newUser.setStaff(binding.switchStaff.isChecked());
+
         userRepository.addUser(newUser).observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                 showSuccessNotification("Thêm tài khoản thành công");
+            } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                Toast.makeText(getContext(), resource.message, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -295,11 +309,14 @@ public class AccountDetailFragment extends Fragment {
     private void handleUpdate() {
         if (!validateFields()) return;
         user.setName(binding.etName.getText().toString().trim());
+        user.setMaNv(binding.etMaNv.getText().toString().trim());
         user.setRole(binding.tvRole.getText().toString().equals("Quản lý") ? "ADMIN" : "EMPLOYEE");
         user.setStatus(binding.tvStatus.getText().toString());
         userRepository.updateUser(user).observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                 showSuccessNotification("Cập nhật tài khoản thành công");
+            } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                Toast.makeText(getContext(), resource.message, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -337,7 +354,8 @@ public class AccountDetailFragment extends Fragment {
             if (binding.tvUsernameError != null) binding.tvUsernameError.setVisibility(View.VISIBLE);
             isValid = false;
         }
-        if (binding.etPassword.getText().toString().trim().isEmpty()) {
+        // Khi thêm mới thì bắt buộc mật khẩu, khi sửa thì không (vì mật khẩu bị disable)
+        if (user == null && binding.etPassword.getText().toString().trim().isEmpty()) {
             if (binding.tvPasswordError != null) binding.tvPasswordError.setVisibility(View.VISIBLE);
             isValid = false;
         }
