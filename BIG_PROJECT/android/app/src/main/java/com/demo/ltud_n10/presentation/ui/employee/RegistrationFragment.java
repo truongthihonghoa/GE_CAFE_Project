@@ -173,9 +173,30 @@ public class RegistrationFragment extends Fragment {
         binding.rvHistory.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvHistory.setAdapter(adapter);
         adapter.setOnActionClickListener(new RegistrationHistoryAdapter.OnActionClickListener() {
-            @Override public void onEdit(Request request) { showEditDialog(request); }
+            @Override public void onEdit(Request request) { 
+                if (isDateInPast(request.getStartDate())) {
+                    Toast.makeText(getContext(), "Không thể chỉnh sửa yêu cầu trong quá khứ", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                showEditDialog(request); 
+            }
             @Override public void onDelete(Request request) { showDeleteConfirmDialog(request); }
         });
+    }
+
+    private boolean isDateInPast(String dateStr) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Date date = sdf.parse(dateStr);
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            return date != null && date.before(cal.getTime());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private void setupSubmitButtons() {
@@ -184,6 +205,11 @@ public class RegistrationFragment extends Fragment {
     }
 
     private void handleShiftSubmit() {
+        if (isDateInPast(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(selectedShiftDate)))) {
+            Toast.makeText(getContext(), "Không thể đăng ký cho ngày trong quá khứ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String maNv = prefsManager.getMaNv();
         User user = authRepository.getCurrentUser().getValue();
         if (maNv == null) {
@@ -217,6 +243,12 @@ public class RegistrationFragment extends Fragment {
     }
 
     private void handleLeaveSubmit() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        if (isDateInPast(sdf.format(new Date(selectedStartDate)))) {
+            Toast.makeText(getContext(), "Ngày bắt đầu không thể ở quá khứ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String maNv = prefsManager.getMaNv();
         User user = authRepository.getCurrentUser().getValue();
         if (maNv == null) return;
@@ -226,7 +258,6 @@ public class RegistrationFragment extends Fragment {
         binding.btnSubmitLeave.setEnabled(false);
         Request request = new Request();
         request.setId(generateRequestId("NP"));
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         request.setStartDate(sdf.format(new Date(selectedStartDate)));
         request.setEndDate(sdf.format(new Date(selectedEndDate)));
         request.setReason(reason);
@@ -296,10 +327,17 @@ public class RegistrationFragment extends Fragment {
         }
 
         dialogBinding.btnSaveEdit.setOnClickListener(v -> {
+            // Kiểm tra ngày mới có ở quá khứ không
+            long targetDate = "Nghỉ phép".equals(request.getType()) ? editDates[1] : editDates[0];
+            if (isDateInPast(sdf.format(new Date(targetDate)))) {
+                Toast.makeText(getContext(), "Không thể chuyển yêu cầu về ngày trong quá khứ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             String maNv = prefsManager.getMaNv();
             User user = authRepository.getCurrentUser().getValue();
             
-            // CẬP NHẬT ĐẦY ĐỦ THÔNG TIN: Quan trọng nhất là maNv để tránh lỗi 403/400
+            // CẬP NHẬT ĐẦY ĐỦ THÔNG TIN
             request.setEmployeeId(maNv);
             request.setEmployeeName(user != null ? user.getName() : maNv);
             request.setStatus("Chờ duyệt");
@@ -314,7 +352,16 @@ public class RegistrationFragment extends Fragment {
                 request.setReason(dialogBinding.rbEditMorning.isChecked() ? "Sáng" : dialogBinding.rbEditAfternoon.isChecked() ? "Chiều" : "Tối");
             }
 
-            requestRepository.updateRequest(request).observe(getViewLifecycleOwner(), resource -> {
+            // SỬA TẠI ĐÂY: Sử dụng ID mới để cập nhật thời gian "Gửi lúc" nếu bạn đã chọn ID theo timestamp trước đó
+            // Tuy nhiên, vì yêu cầu của bạn là "ngày đã qua không được chỉnh sửa", 
+            // tôi sẽ giữ nguyên ID cũ nếu logic server yêu cầu.
+            
+            // Tạo ID mới để cập nhật thời gian gửi
+            String prefix = "Nghỉ phép".equals(request.getType()) ? "NP" : "YC";
+            String oldId = request.getId();
+            request.setId(prefix + System.currentTimeMillis() + (new Random().nextInt(900) + 100));
+
+            requestRepository.updateRequest(oldId, request).observe(getViewLifecycleOwner(), resource -> {
                 if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                     showSuccessNotification("Cập nhật thành công");
                     loadHistory();
@@ -333,11 +380,13 @@ public class RegistrationFragment extends Fragment {
         AlertDialog d = new AlertDialog.Builder(getContext()).setView(db.getRoot()).create();
         if (d.getWindow() != null) d.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         db.btnDelete.setOnClickListener(v -> {
-            requestRepository.deleteRequest(request.getId()).observe(getViewLifecycleOwner(), resource -> {
+            requestRepository.deleteRequest(request.getId(), request.getType()).observe(getViewLifecycleOwner(), resource -> {
                 if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                     showSuccessNotification("Đã xóa yêu cầu");
                     loadHistory();
                     d.dismiss();
+                } else if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                    Toast.makeText(getContext(), "Xóa thất bại: " + resource.message, Toast.LENGTH_SHORT).show();
                 }
             });
         });

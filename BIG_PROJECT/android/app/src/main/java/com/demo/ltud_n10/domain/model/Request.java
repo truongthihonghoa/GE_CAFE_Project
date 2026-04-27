@@ -11,6 +11,7 @@ public class Request implements Serializable {
     private String status;
     private String employeeId;
     private String employeeName;
+    private String createdAt; // Sẽ dùng id để parse ra ngày gửi tạm thời nếu API chưa có field riêng
 
     public Request() {}
 
@@ -49,4 +50,7 @@ public class Request implements Serializable {
 
     public String getEmployeeName() { return employeeName; }
     public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
+
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

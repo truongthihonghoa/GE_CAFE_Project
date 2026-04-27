@@ -78,6 +78,9 @@ public interface ApiService {
     @POST("api/requests/dangkylich/")
     Call<RequestDto> addRequest(@Body RequestDto request);
 
+    @POST("api/requests/nghiphep/")
+    Call<RequestDto> addLeaveRequest(@Body RequestDto request);
+
     @PUT("api/requests/dangkylich/{id}/")
     Call<RequestDto> updateRequest(@Path("id") String id, @Body RequestDto request);
 
@@ -86,6 +89,9 @@ public interface ApiService {
 
     @DELETE("api/requests/dangkylich/{id}/")
     Call<Void> deleteRequest(@Path("id") String id);
+
+    @DELETE("api/requests/nghiphep/{id}/")
+    Call<Void> deleteLeaveRequest(@Path("id") String id);
 
     @GET("api/branches/")
     Call<List<BranchDto>> getBranches();

@@ -191,7 +191,7 @@ public class ApprovalFragment extends Fragment {
 
     private void handleUpdateRequest(Request request, String newStatus) {
         request.setStatus(newStatus);
-        requestRepository.updateRequest(request).observe(getViewLifecycleOwner(), resource -> {
+        requestRepository.updateRequest(request.getId(), request).observe(getViewLifecycleOwner(), resource -> {
             if (resource != null && resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                 String message = "Đã duyệt".equals(newStatus) ? "Duyệt yêu cầu thành công" : 
                                 "Bị từ chối".equals(newStatus) ? "Từ chối yêu cầu thành công" : "Cập nhật thành công";

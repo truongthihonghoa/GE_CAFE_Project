@@ -11,8 +11,11 @@ import com.demo.ltud_n10.data.remote.dto.RequestDto;
 import com.demo.ltud_n10.domain.model.Request;
 import com.demo.ltud_n10.domain.repository.RequestRepository;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
@@ -77,9 +80,14 @@ public class RequestRepositoryImpl implements RequestRepository {
         MutableLiveData<Resource<Request>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
         
-        // FIX TRIỆT ĐỂ: Gửi toàn bộ dữ liệu bao gồm cả ID (ma_yc) mà Fragment đã tạo
-        // để thỏa mãn điều kiện "Required" của Server
-        apiService.addRequest(mapDomainToDto(request)).enqueue(new Callback<RequestDto>() {
+        Call<RequestDto> call;
+        if ("Nghỉ phép".equals(request.getType())) {
+            call = apiService.addLeaveRequest(mapDomainToDto(request));
+        } else {
+            call = apiService.addRequest(mapDomainToDto(request));
+        }
+
+        call.enqueue(new Callback<RequestDto>() {
             @Override
             public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -101,31 +109,72 @@ public class RequestRepositoryImpl implements RequestRepository {
     }
 
     @Override
-    public LiveData<Resource<Request>> updateRequest(Request request) {
+    public LiveData<Resource<Request>> updateRequest(String oldId, Request request) {
         MutableLiveData<Resource<Request>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        apiService.updateRequest(request.getId(), mapDomainToDto(request)).enqueue(new Callback<RequestDto>() {
-            @Override
-            public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    result.setValue(Resource.success(mapDtoToDomain(response.body())));
-                } else {
-                    result.setValue(Resource.error("Cập nhật thất bại", null));
+        // NẾU ID THAY ĐỔI (Chỉnh sửa từ phía nhân viên để cập nhật thời gian gửi)
+        if (!oldId.equals(request.getId())) {
+            // Bước 1: Xóa yêu cầu cũ
+            Call<Void> deleteCall = "Nghỉ phép".equals(request.getType()) ? 
+                    apiService.deleteLeaveRequest(oldId) : apiService.deleteRequest(oldId);
+            
+            deleteCall.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                    // Bước 2: Sau khi xóa thành công (hoặc kể cả thất bại do không tìm thấy), thêm yêu cầu mới
+                    addRequest(request).observeForever(resource -> {
+                        if (resource != null) result.setValue(resource);
+                    });
                 }
+
+                @Override
+                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                    // Nếu lỗi mạng không xóa được, vẫn thử thêm mới nhưng báo lỗi
+                    addRequest(request).observeForever(resource -> {
+                        if (resource != null) result.setValue(resource);
+                    });
+                }
+            });
+        } else {
+            // NẾU ID KHÔNG ĐỔI (Chỉnh sửa từ phía quản trị viên hoặc không đổi giờ)
+            Call<RequestDto> call;
+            if ("Nghỉ phép".equals(request.getType())) {
+                call = apiService.updateLeaveRequest(oldId, mapDomainToDto(request));
+            } else {
+                call = apiService.updateRequest(oldId, mapDomainToDto(request));
             }
-            @Override
-            public void onFailure(@NonNull Call<RequestDto> call, @NonNull Throwable t) {
-                result.setValue(Resource.error(t.getMessage(), null));
-            }
-        });
+
+            call.enqueue(new Callback<RequestDto>() {
+                @Override
+                public void onResponse(@NonNull Call<RequestDto> call, @NonNull Response<RequestDto> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        result.setValue(Resource.success(mapDtoToDomain(response.body())));
+                    } else {
+                        result.setValue(Resource.error("Cập nhật thất bại", null));
+                    }
+                }
+                @Override
+                public void onFailure(@NonNull Call<RequestDto> call, @NonNull Throwable t) {
+                    result.setValue(Resource.error(t.getMessage(), null));
+                }
+            });
+        }
         return result;
     }
 
     @Override
-    public LiveData<Resource<Boolean>> deleteRequest(String requestId) {
+    public LiveData<Resource<Boolean>> deleteRequest(String requestId, String type) {
         MutableLiveData<Resource<Boolean>> result = new MutableLiveData<>();
-        apiService.deleteRequest(requestId).enqueue(new Callback<Void>() {
+        
+        Call<Void> call;
+        if ("Nghỉ phép".equals(type)) {
+            call = apiService.deleteLeaveRequest(requestId);
+        } else {
+            call = apiService.deleteRequest(requestId);
+        }
+
+        call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) result.setValue(Resource.success(true));
@@ -154,6 +203,20 @@ public class RequestRepositoryImpl implements RequestRepository {
         request.setEndDate(dto.getEndDate());
         request.setReason(dto.getReason());
         request.setStatus(dto.getStatus());
+        
+        try {
+            String id = dto.getId();
+            if (id != null && id.length() >= 15) {
+                String timestampStr = id.substring(2, 15);
+                long timestamp = Long.parseLong(timestampStr);
+                request.setCreatedAt(new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.getDefault()).format(new Date(timestamp)));
+            } else {
+                request.setCreatedAt(new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.getDefault()).format(new Date()));
+            }
+        } catch (Exception e) {
+            request.setCreatedAt(new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.getDefault()).format(new Date()));
+        }
+
         return request;
     }
 

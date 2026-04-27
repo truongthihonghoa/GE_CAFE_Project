@@ -11,8 +11,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.demo.ltud_n10.databinding.ItemRegistrationHistoryBinding;
 import com.demo.ltud_n10.domain.model.Request;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class RegistrationHistoryAdapter extends RecyclerView.Adapter<RegistrationHistoryAdapter.ViewHolder> {
 
@@ -59,37 +63,83 @@ public class RegistrationHistoryAdapter extends RecyclerView.Adapter<Registratio
             this.binding = binding;
         }
 
-        void bind(Request request) {
-            String dateDisplay = request.getStartDate();
-            if (request.getEndDate() != null && !request.getEndDate().isEmpty() && !request.getEndDate().equals(request.getStartDate())) {
-                dateDisplay += " - " + request.getEndDate();
+        private String formatDisplayDate(String dateStr) {
+            try {
+                SimpleDateFormat from = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                // Định dạng: Thứ..., ngày... tháng...
+                SimpleDateFormat to = new SimpleDateFormat("EEEE, dd 'tháng' MM", new Locale("vi", "VN"));
+                Date date = from.parse(dateStr);
+                String result = to.format(date);
+                // Viết hoa chữ cái đầu (ví dụ: thứ hai -> Thứ hai)
+                return result.substring(0, 1).toUpperCase() + result.substring(1);
+            } catch (Exception e) {
+                return dateStr;
             }
-            binding.tvDateTitle.setText(dateDisplay);
+        }
 
-            if ("Nghỉ phép".equals(request.getType())) {
-                binding.tvShiftDetail.setText("Xin nghỉ phép");
+        private boolean isDateInPast(String dateStr) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Date date = sdf.parse(dateStr);
+                Calendar cal = Calendar.getInstance();
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                return date != null && date.before(cal.getTime());
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        void bind(Request request) {
+            // Hiển thị ngày tháng theo định dạng "Thứ..., ngày... tháng..."
+            binding.tvDateTitle.setText(formatDisplayDate(request.getStartDate()));
+
+            if (!"Nghỉ phép".equals(request.getType())) {
+                // XỬ LÝ CHO ĐĂNG KÝ CA LÀM
+                binding.tvShiftDetail.setVisibility(View.VISIBLE);
+                
+                String shiftLabel = request.getReason();
+                String timeRange = "";
+                if ("Sáng".equals(shiftLabel)) timeRange = "08:00 - 12:00";
+                else if ("Chiều".equals(shiftLabel)) timeRange = "13:00 - 17:00";
+                else if ("Tối".equals(shiftLabel)) timeRange = "18:00 - 22:00";
+                
+                binding.tvShiftDetail.setText("Ca " + shiftLabel + " • " + timeRange);
+                binding.tvReason.setVisibility(View.GONE);
+            } else {
+                // XỬ LÝ CHO NGHỈ PHÉP
+                binding.tvShiftDetail.setVisibility(View.GONE);
                 binding.tvReason.setVisibility(View.VISIBLE);
                 binding.tvReason.setText(request.getReason());
-            } else {
-                binding.tvShiftDetail.setText("Đăng ký ca: " + request.getReason());
-                binding.tvReason.setVisibility(View.GONE);
+                
+                // Nếu nghỉ phép nhiều ngày, cập nhật lại title hiển thị khoảng ngày
+                try {
+                    SimpleDateFormat from = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    SimpleDateFormat to = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                    if (request.getEndDate() != null && !request.getEndDate().equals(request.getStartDate())) {
+                        binding.tvDateTitle.setText(to.format(from.parse(request.getStartDate())) + " - " + to.format(from.parse(request.getEndDate())));
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            // HIỂN THỊ THỜI GIAN GỬI
+            if (request.getCreatedAt() != null) {
+                binding.tvSentTime.setVisibility(View.VISIBLE);
+                binding.tvSentTime.setText("Gửi lúc: " + request.getCreatedAt());
             }
 
             binding.tvStatus.setText(request.getStatus());
-            binding.tvSentTime.setVisibility(View.GONE); // RequestDto/Model current don't have sentTime field explicitly shown in UI here
 
-            boolean canAction = "Chờ duyệt".equals(request.getStatus());
+            // CHẶN CHỈNH SỬA NẾU NGÀY Ở QUÁ KHỨ
+            boolean isPast = isDateInPast(request.getStartDate());
+            boolean canAction = "Chờ duyệt".equals(request.getStatus()) && !isPast;
 
+            binding.layoutActions.setVisibility(canAction ? View.VISIBLE : View.GONE);
             if (canAction) {
-                binding.layoutActions.setVisibility(View.VISIBLE);
-                binding.btnEdit.setOnClickListener(v -> {
-                    if (listener != null) listener.onEdit(request);
-                });
-                binding.btnDelete.setOnClickListener(v -> {
-                    if (listener != null) listener.onDelete(request);
-                });
-            } else {
-                binding.layoutActions.setVisibility(View.GONE);
+                binding.btnEdit.setOnClickListener(v -> { if (listener != null) listener.onEdit(request); });
+                binding.btnDelete.setOnClickListener(v -> { if (listener != null) listener.onDelete(request); });
             }
 
             // Status colors
