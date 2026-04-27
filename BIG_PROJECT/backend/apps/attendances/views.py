@@ -42,40 +42,44 @@ class ChamCongViewSet(viewsets.ModelViewSet):
         today = timezone.now().date()
         now_time = timezone.now().time()
 
-        # Kiểm tra xem hôm nay đã có bản ghi nào chưa
+        # Kiểm tra xem có bản ghi nào ĐANG MỞ (đã có giờ vào nhưng chưa có giờ ra) không
+        # Ưu tiên lấy bản ghi mới nhất của ngày hôm nay
         record = ChamCong.objects.filter(
             ma_nv=nhan_vien,
-            ngay_lam=today
-        ).first()
+            ngay_lam=today,
+            gio_ra__isnull=True
+        ).order_by('-gio_vao').first()
 
         if record is None:
             # CHECK-IN: Tạo bản ghi mới
+            # Tạo mã CC duy nhất bằng cách thêm 4 số cuối của timestamp
+            suffix = int(timezone.now().timestamp()) % 10000
+            ma_cc = f"C{ma_nv_id}{today.strftime('%y%m%d')}{suffix}" 
+            # Ví dụ: CNV000072404271234 (1 + 7 + 6 + 4 = 18 ký tự, vừa đủ max_length=20)
+            
             new_record = ChamCong.objects.create(
-                ma_cc=f"CC_{ma_nv_id}_{today.strftime('%Y%m%d')}",
+                ma_cc=ma_cc,
                 ma_nv=nhan_vien,
                 ngay_lam=today,
                 gio_vao=now_time
             )
             return Response({
                 "message": "Check-in thành công",
-                "gio_vao": now_time.strftime('%H:%M:%S')
+                "gio_vao": now_time.strftime('%H:%M:%S'),
+                "ma_cc": ma_cc
             }, status=status.HTTP_201_CREATED)
 
         else:
-            # CHECK-OUT: Nếu đã có giờ vào nhưng chưa có giờ ra
-            if record.gio_ra is None:
-                record.gio_ra = now_time
-                # Tính toán số giờ làm
-                t1 = datetime.combine(today, record.gio_vao)
-                t2 = datetime.combine(today, record.gio_ra)
-                record.so_gio_lam = round((t2 - t1).seconds / 3600, 2)
-                record.save()
+            # CHECK-OUT: Đóng bản ghi đang mở
+            record.gio_ra = now_time
+            # Tính toán số giờ làm cho lượt này
+            t1 = datetime.combine(today, record.gio_vao)
+            t2 = datetime.combine(today, record.gio_ra)
+            record.so_gio_lam = round((t2 - t1).seconds / 3600, 2)
+            record.save()
 
-                return Response({
-                    "message": "Check-out thành công",
-                    "gio_ra": now_time.strftime('%H:%M:%S'),
-                    "tong_gio": record.so_gio_lam
-                })
-
-            return Response({"message": "Hôm nay bạn đã hoàn thành chấm công (đã có cả giờ vào và giờ ra)."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "message": "Check-out thành công",
+                "gio_ra": now_time.strftime('%H:%M:%S'),
+                "tong_gio_luot_nay": record.so_gio_lam
+            })

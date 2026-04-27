@@ -29,14 +29,16 @@ public class WorkShiftAdapter extends ListAdapter<WorkShift, WorkShiftAdapter.Vi
         super(new DiffUtil.ItemCallback<WorkShift>() {
             @Override
             public boolean areItemsTheSame(@NonNull WorkShift oldItem, @NonNull WorkShift newItem) {
+                if (oldItem.getId() == null || newItem.getId() == null) return false;
                 return oldItem.getId().equals(newItem.getId());
             }
 
             @Override
             public boolean areContentsTheSame(@NonNull WorkShift oldItem, @NonNull WorkShift newItem) {
                 return oldItem.isSent() == newItem.isSent() && 
-                       oldItem.getEmployeeName().equals(newItem.getEmployeeName()) &&
-                       oldItem.getStartTime().equals(newItem.getStartTime());
+                       java.util.Objects.equals(oldItem.getEmployeeName(), newItem.getEmployeeName()) &&
+                       java.util.Objects.equals(oldItem.getStartTime(), newItem.getStartTime()) &&
+                       java.util.Objects.equals(oldItem.getEndTime(), newItem.getEndTime());
             }
         });
         this.listener = listener;
@@ -52,8 +54,10 @@ public class WorkShiftAdapter extends ListAdapter<WorkShift, WorkShiftAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         WorkShift shift = getItem(position);
-        holder.tvName.setText(shift.getEmployeeName());
-        holder.tvTime.setText(shift.getStartTime() + " - " + shift.getEndTime());
+        holder.tvName.setText(shift.getEmployeeName() != null ? shift.getEmployeeName() : "");
+        String startTime = shift.getStartTime() != null ? shift.getStartTime() : "--:--";
+        String endTime = shift.getEndTime() != null ? shift.getEndTime() : "--:--";
+        holder.tvTime.setText(startTime + " - " + endTime);
         
         if (shift.isSent()) {
             holder.tvStatus.setText("Đã gửi");

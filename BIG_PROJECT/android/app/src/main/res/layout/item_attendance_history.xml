@@ -33,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Bắt đầu ca"
+                android:text="Chấm công vào"
                 android:textColor="#64748B"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -54,8 +54,8 @@
                 android:textSize="11sp"
                 android:textStyle="bold" />
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
+
 
     <View
         android:layout_width="match_parent"

@@ -32,6 +32,7 @@ public class WorkShiftDetailFragment extends Fragment {
     private WorkShiftViewModel viewModel;
     private WorkShift currentShift;
     private String title;
+    private java.util.List<com.demo.ltud_n10.domain.model.Employee> employeeList = new java.util.ArrayList<>();
 
     @Nullable
     @Override
@@ -60,11 +61,25 @@ public class WorkShiftDetailFragment extends Fragment {
         binding.tvTitle.setText(title);
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
 
-        // Mock employees for dropdown
-        String[] employees = {"Lê Văn C", "Phạm Thị D", "Lê Văn D"};
-        ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, employees);
-        empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerEmployee.setAdapter(empAdapter);
+        // Fetch real employees for dropdown
+        viewModel.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                employeeList = resource.data;
+                java.util.List<String> names = new java.util.ArrayList<>();
+                for (com.demo.ltud_n10.domain.model.Employee e : employeeList) {
+                    names.add(e.getName());
+                }
+                ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, names);
+                empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                binding.spinnerEmployee.setAdapter(empAdapter);
+
+                // Re-select if editing
+                if (currentShift != null) {
+                    int pos = names.indexOf(currentShift.getEmployeeName());
+                    if (pos >= 0) binding.spinnerEmployee.setSelection(pos);
+                }
+            }
+        });
 
         // Positions dropdown
         String[] positions = {"Phục vụ", "Pha chế", "Giữ xe"};
@@ -127,11 +142,17 @@ public class WorkShiftDetailFragment extends Fragment {
         WorkShift shift = currentShift;
         if (shift == null) {
             shift = new WorkShift();
-            shift.setId(UUID.randomUUID().toString());
+            // ma_llv max 20 chars
+            String shortId = "S" + (System.currentTimeMillis() % 10000000000L); 
+            shift.setId(shortId);
         }
 
-        shift.setEmployeeName(employeeName);
-        shift.setEmployeeId("EMP01"); // Mock ID
+        int selectedEmpIdx = binding.spinnerEmployee.getSelectedItemPosition();
+        if (selectedEmpIdx >= 0 && selectedEmpIdx < employeeList.size()) {
+            com.demo.ltud_n10.domain.model.Employee selectedEmp = employeeList.get(selectedEmpIdx);
+            shift.setEmployeeName(selectedEmp.getName());
+            shift.setEmployeeId(selectedEmp.getId());
+        }
         shift.setDate(date);
         shift.setStartTime(startTime);
         shift.setEndTime(endTime);

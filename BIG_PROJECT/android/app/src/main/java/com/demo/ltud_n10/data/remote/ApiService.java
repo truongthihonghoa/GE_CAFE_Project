@@ -98,6 +98,18 @@ public interface ApiService {
     @GET("api/schedules/data/api/")
     Call<List<ScheduleDto>> getSchedules();
 
+    @POST("api/schedules/data/api/")
+    Call<ScheduleDto> createSchedule(@Body ScheduleDto schedule);
+
+    @PUT("api/schedules/data/api/{id}/")
+    Call<ScheduleDto> updateSchedule(@Path("id") String id, @Body ScheduleDto schedule);
+
+    @DELETE("api/schedules/data/api/{id}/")
+    Call<Void> deleteSchedule(@Path("id") String id);
+
+    @POST("api/schedules/send-notification/")
+    Call<Void> sendNotification();
+
     // Attendances
     @GET("api/attendances/")
     Call<List<Map<String, Object>>> getAttendances();

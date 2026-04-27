@@ -5,7 +5,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.demo.ltud_n10.core.Resource;
+import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.model.WorkShift;
+import com.demo.ltud_n10.domain.repository.EmployeeRepository;
 import com.demo.ltud_n10.domain.repository.WorkShiftRepository;
 
 import java.util.ArrayList;
@@ -19,11 +21,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 public class WorkShiftViewModel extends ViewModel {
 
     private final WorkShiftRepository repository;
+    private final EmployeeRepository employeeRepository;
     private final MutableLiveData<List<String>> selectedShiftIds = new MutableLiveData<>(new ArrayList<>());
 
     @Inject
-    public WorkShiftViewModel(WorkShiftRepository repository) {
+    public WorkShiftViewModel(WorkShiftRepository repository, EmployeeRepository employeeRepository) {
         this.repository = repository;
+        this.employeeRepository = employeeRepository;
+    }
+
+    public LiveData<Resource<List<Employee>>> getEmployees() {
+        return employeeRepository.getEmployees();
     }
 
     public LiveData<Resource<List<WorkShift>>> getWorkShifts() {

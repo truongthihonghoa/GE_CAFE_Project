@@ -81,6 +81,25 @@ public class AttendanceFragment extends Fragment {
         setupToolbar();
         setupListeners();
         setupHistoryList();
+        updateShiftDisplay(); // Tự động hiển thị ca làm theo giờ thực tế
+    }
+
+    private void updateShiftDisplay() {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int hour = now.get(java.util.Calendar.HOUR_OF_DAY);
+        
+        String shiftText;
+        if (hour >= 6 && hour < 12) {
+            shiftText = "06:00 - 12:00";
+        } else if (hour >= 12 && hour < 17) {
+            shiftText = "12:00 - 17:00";
+        } else if (hour >= 17 && hour < 22) {
+            shiftText = "17:00 - 22:00";
+        } else {
+            shiftText = "Ngoài ca làm việc";
+        }
+        
+        binding.tvCurrentShiftTime.setText(shiftText);
     }
 
     private void setupToolbar() {
@@ -99,11 +118,35 @@ public class AttendanceFragment extends Fragment {
         binding.btnCancelHistory.setOnClickListener(v -> hideHistory());
     }
 
+    private Map<String, String> employeeNameMap = new HashMap<>();
+
     private void setupHistoryList() {
         adapter = new HistoryAdapter();
         binding.rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvHistory.setAdapter(adapter);
-        loadHistory();
+        
+        // Tải danh sách nhân viên trước để lấy tên
+        loadEmployeesAndHistory();
+    }
+
+    private void loadEmployeesAndHistory() {
+        apiService.getEmployees().enqueue(new Callback<List<com.demo.ltud_n10.data.remote.model.EmployeeDto>>() {
+            @Override
+            public void onResponse(Call<List<com.demo.ltud_n10.data.remote.model.EmployeeDto>> call, Response<List<com.demo.ltud_n10.data.remote.model.EmployeeDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (com.demo.ltud_n10.data.remote.model.EmployeeDto emp : response.body()) {
+                        employeeNameMap.put(emp.getMaNv(), emp.getHoTen());
+                    }
+                }
+                // Sau khi có danh sách nhân viên (hoặc lỗi), mới tải lịch sử
+                loadHistory();
+            }
+
+            @Override
+            public void onFailure(Call<List<com.demo.ltud_n10.data.remote.model.EmployeeDto>> call, Throwable t) {
+                loadHistory();
+            }
+        });
     }
 
     private void loadHistory() {
@@ -113,19 +156,28 @@ public class AttendanceFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     List<HistoryItem> items = new ArrayList<>();
                     for (Map<String, Object> data : response.body()) {
-                        Object nameObj = data.get("ho_ten");
-                        if (nameObj == null) nameObj = data.get("ma_nv"); // Fallback dùng mã nhân viên nếu chưa có tên
+                        String maNv = String.valueOf(data.get("ma_nv"));
+                        String name = String.valueOf(data.get("ho_ten"));
                         
-                        String name = String.valueOf(nameObj);
-                        
-                        // Nếu đã có giờ ra, hiện dòng "Kết thúc ca"
-                        if (data.get("gio_ra") != null) {
-                            items.add(new HistoryItem(name, "Kết thúc ca"));
+                        // Ưu tiên 1: Lấy từ server (nếu đã deploy bản mới)
+                        // Ưu tiên 2: Tra cứu từ danh sách nhân viên vừa tải về (mẹo cho bản server cũ)
+                        // Ưu tiên 3: Hiển thị mã NV nếu không tìm thấy gì
+                        if (name == null || name.equals("null") || name.equals("Chưa xác định")) {
+                            if (employeeNameMap.containsKey(maNv)) {
+                                name = employeeNameMap.get(maNv);
+                            } else {
+                                name = maNv;
+                            }
                         }
                         
-                        // Luôn hiện dòng "Bắt đầu ca"
+                        // Nếu đã có giờ ra, hiện dòng "Chấm công ra"
+                        if (data.get("gio_ra") != null) {
+                            items.add(new HistoryItem(name, "Chấm công ra"));
+                        }
+                        
+                        // Luôn hiện dòng "Chấm công vào"
                         if (data.get("gio_vao") != null) {
-                            items.add(new HistoryItem(name, "Bắt đầu ca"));
+                            items.add(new HistoryItem(name, "Chấm công vào"));
                         }
                     }
                     adapter.setItems(items);
@@ -322,11 +374,9 @@ public class AttendanceFragment extends Fragment {
     }
 
     private void updateMainStatus() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        String currentTime = sdf.format(new Date());
         String status = currentAction.contains("Bắt đầu") ? 
-                "Đã vào ca lúc " + currentTime : 
-                "Đã kết thúc ca lúc " + currentTime;
+                "Đã vào ca" : 
+                "Đã kết thúc ca";
         
         binding.tvAttendanceStatus.setText(status);
         binding.tvAttendanceStatus.setTextColor(Color.WHITE);

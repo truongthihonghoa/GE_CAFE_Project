@@ -97,11 +97,19 @@ public class WorkShiftListFragment extends Fragment {
 
         binding.tvWeekRange.setOnClickListener(v -> showDatePicker());
 
-        // Setup Spinner
-        String[] employees = {"Tất cả nhân viên", "Lê Văn C", "Phạm Thị D", "Lê Văn D"};
-        ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, employees);
-        empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerEmployee.setAdapter(empAdapter);
+        // Fetch real employees for Spinner filter
+        viewModel.getEmployees().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS && resource.data != null) {
+                List<String> names = new ArrayList<>();
+                names.add("Tất cả nhân viên");
+                for (com.demo.ltud_n10.domain.model.Employee e : resource.data) {
+                    names.add(e.getName());
+                }
+                ArrayAdapter<String> empAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, names);
+                empAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                binding.spinnerEmployee.setAdapter(empAdapter);
+            }
+        });
 
         binding.btnSend.setEnabled(false); // Initially disabled
         binding.btnSend.setOnClickListener(v -> {
@@ -156,9 +164,9 @@ public class WorkShiftListFragment extends Fragment {
     private void observeViewModel() {
         viewModel.getSelectedShiftIds().observe(getViewLifecycleOwner(), ids -> {
             boolean hasUnsent = false;
-            if (ids != null && !ids.isEmpty()) {
+            if (ids != null && !ids.isEmpty() && allShifts != null) {
                 for (WorkShift shift : allShifts) {
-                    if (ids.contains(shift.getId()) && !shift.isSent()) {
+                    if (shift != null && ids.contains(shift.getId()) && !shift.isSent()) {
                         hasUnsent = true;
                         break;
                     }
@@ -170,6 +178,7 @@ public class WorkShiftListFragment extends Fragment {
     }
 
     private void updateSendButtonState(boolean active) {
+        if (!isAdded()) return;
         binding.btnSend.setEnabled(active);
         if (active) {
             binding.btnSend.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.primary_green));
@@ -233,6 +242,8 @@ public class WorkShiftListFragment extends Fragment {
                         if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                             Toast.makeText(requireContext(), "Xóa lịch làm việc thành công", Toast.LENGTH_SHORT).show();
                             loadData();
+                        } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
+                            Toast.makeText(requireContext(), resource.message, Toast.LENGTH_LONG).show();
                         }
                     });
                 })

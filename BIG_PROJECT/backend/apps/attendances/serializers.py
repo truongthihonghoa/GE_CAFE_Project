@@ -6,7 +6,7 @@ class ChamCongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChamCong
-        fields = '__all__'
+        fields = ['ma_cc', 'ma_nv', 'ngay_lam', 'gio_vao', 'gio_ra', 'so_gio_lam', 'trang_thai', 'ghi_chu', 'ho_ten']
 
     def get_ho_ten(self, obj):
         try:
