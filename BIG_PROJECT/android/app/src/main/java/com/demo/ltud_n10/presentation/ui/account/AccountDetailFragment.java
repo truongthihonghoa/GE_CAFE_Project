@@ -25,10 +25,16 @@ import androidx.navigation.Navigation;
 
 import com.demo.ltud_n10.R;
 import com.demo.ltud_n10.databinding.FragmentAccountDetailBinding;
+import com.demo.ltud_n10.domain.model.Employee;
 import com.demo.ltud_n10.domain.model.User;
 import com.demo.ltud_n10.domain.repository.AuthRepository;
+import com.demo.ltud_n10.domain.repository.EmployeeRepository;
 import com.demo.ltud_n10.domain.repository.UserRepository;
 import com.google.android.material.button.MaterialButton;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -43,12 +49,16 @@ public class AccountDetailFragment extends Fragment {
     private boolean isReadOnly = false;
     private String loggedInUserName = "";
     private String loggedInUserRole = "EMPLOYEE";
+    private List<Employee> availableEmployees = new ArrayList<>();
 
     @Inject
     UserRepository userRepository;
 
     @Inject
     AuthRepository authRepository;
+
+    @Inject
+    EmployeeRepository employeeRepository;
 
     @Nullable
     @Override
@@ -103,22 +113,71 @@ public class AccountDetailFragment extends Fragment {
         binding.layoutStatus.setVisibility(View.GONE);
         binding.layoutSwitches.setVisibility(View.VISIBLE);
         binding.btnSave.setOnClickListener(v -> handleSave());
+
+        // Thiết lập chọn mã nhân viên từ dropdown
+        binding.etMaNv.setFocusable(false);
+        binding.etMaNv.setClickable(true);
+        binding.etMaNv.setOnClickListener(v -> showEmployeeSelectionDialog());
+        
+        loadAvailableEmployees();
+    }
+
+    private void loadAvailableEmployees() {
+        userRepository.getUsers().observe(getViewLifecycleOwner(), userResource -> {
+            if (userResource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS && userResource.data != null) {
+                List<String> existingMaNv = userResource.data.stream()
+                        .map(User::getMaNv)
+                        .filter(ma -> ma != null && !ma.isEmpty())
+                        .collect(Collectors.toList());
+
+                employeeRepository.getEmployees().observe(getViewLifecycleOwner(), empResource -> {
+                    if (empResource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS && empResource.data != null) {
+                        availableEmployees = empResource.data.stream()
+                                .filter(e -> !existingMaNv.contains(e.getId()))
+                                .collect(Collectors.toList());
+                    }
+                });
+            }
+        });
+    }
+
+    private void showEmployeeSelectionDialog() {
+        if (availableEmployees.isEmpty()) {
+            Toast.makeText(getContext(), "Tất cả nhân viên đã có tài khoản", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] employeeNames = new String[availableEmployees.size()];
+        for (int i = 0; i < availableEmployees.size(); i++) {
+            employeeNames[i] = availableEmployees.get(i).getId() + " - " + availableEmployees.get(i).getName();
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Chọn nhân viên")
+                .setItems(employeeNames, (dialog, which) -> {
+                    Employee selected = availableEmployees.get(which);
+                    binding.etMaNv.setText(selected.getId());
+                    binding.etName.setText(selected.getName());
+                    // Tự động set tên đăng nhập gợi ý nếu trống
+                    if (binding.etUsername.getText().toString().isEmpty()) {
+                        binding.etUsername.setText(selected.getId().toLowerCase());
+                    }
+                })
+                .show();
     }
 
     private void setupEditMode() {
         binding.etUsername.setText(user.getUsername());
-        binding.etPassword.setText("******");
-        binding.etPassword.setEnabled(false);
-        binding.etPassword.setAlpha(0.6f);
+        binding.etPassword.setText("");
+        binding.etPassword.setHint("Nhập mật khẩu mới nếu muốn thay đổi");
 
         binding.etName.setText(user.getName());
         binding.etMaNv.setText(user.getMaNv());
         binding.tvRole.setText(user.getRole().equals("ADMIN") ? "Quản lý" : "Nhân viên");
-        updateStatusUI(user.getStatus());
-        binding.layoutStatus.setVisibility(View.VISIBLE);
+        
+        binding.layoutStatus.setVisibility(View.GONE);
         binding.layoutSwitches.setVisibility(View.GONE);
 
-        // KIỂM TRA CHỈ XEM (TÊN LÀI HOẶC FLAG READONLY)
         if (isReadOnly || (user.getName() != null && user.getName().equals("Trần Thị Thúy Lài"))) {
             setFieldsDisabledDarkText();
             binding.btnSave.setVisibility(View.GONE);
@@ -177,25 +236,20 @@ public class AccountDetailFragment extends Fragment {
 
     private void applyPermissions() {
         if (user == null) return;
-        boolean isEditingSelf = (loggedInUserName != null && loggedInUserName.equals(user.getName()));
 
-        setFieldsEnabled(true);
-        binding.etUsername.setEnabled(false);
-        binding.etUsername.setAlpha(0.6f);
-        binding.etPassword.setEnabled(false);
-        binding.etPassword.setAlpha(0.6f);
+        binding.etUsername.setEnabled(true);
+        binding.etUsername.setAlpha(1.0f);
+        binding.etPassword.setEnabled(true);
+        binding.etPassword.setAlpha(1.0f);
 
-        if (isEditingSelf) {
-            binding.cvRole.setEnabled(false);
-            binding.cvRole.setAlpha(0.6f);
-            binding.cvStatus.setEnabled(false);
-            binding.cvStatus.setAlpha(0.6f);
-        } else {
-            binding.cvRole.setEnabled(true);
-            binding.cvRole.setAlpha(1.0f);
-            binding.cvStatus.setEnabled(true);
-            binding.cvStatus.setAlpha(1.0f);
-        }
+        binding.etName.setEnabled(false);
+        binding.etName.setAlpha(0.6f);
+        binding.etMaNv.setEnabled(false);
+        binding.etMaNv.setAlpha(0.6f);
+        binding.cvRole.setEnabled(false);
+        binding.cvRole.setAlpha(0.6f);
+
+        binding.layoutStatus.setVisibility(View.GONE);
 
         binding.btnSave.setText("LƯU");
         binding.btnCancel.setVisibility(View.VISIBLE);
@@ -308,10 +362,17 @@ public class AccountDetailFragment extends Fragment {
 
     private void handleUpdate() {
         if (!validateFields()) return;
+
+        user.setUsername(binding.etUsername.getText().toString().trim());
+        String newPassword = binding.etPassword.getText().toString().trim();
+        if (!newPassword.isEmpty()) {
+            user.setPassword(newPassword);
+        }
+
         user.setName(binding.etName.getText().toString().trim());
         user.setMaNv(binding.etMaNv.getText().toString().trim());
         user.setRole(binding.tvRole.getText().toString().equals("Quản lý") ? "ADMIN" : "EMPLOYEE");
-        user.setStatus(binding.tvStatus.getText().toString());
+        
         userRepository.updateUser(user).observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
                 showSuccessNotification("Cập nhật tài khoản thành công");
@@ -354,7 +415,6 @@ public class AccountDetailFragment extends Fragment {
             if (binding.tvUsernameError != null) binding.tvUsernameError.setVisibility(View.VISIBLE);
             isValid = false;
         }
-        // Khi thêm mới thì bắt buộc mật khẩu, khi sửa thì không (vì mật khẩu bị disable)
         if (user == null && binding.etPassword.getText().toString().trim().isEmpty()) {
             if (binding.tvPasswordError != null) binding.tvPasswordError.setVisibility(View.VISIBLE);
             isValid = false;

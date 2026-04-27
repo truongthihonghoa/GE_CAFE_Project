@@ -38,13 +38,9 @@ public class UserRepositoryImpl implements UserRepository {
         MutableLiveData<Resource<List<User>>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        // Lấy thông tin từ bộ nhớ máy để thực hiện lọc dữ liệu
         String maNv = prefsManager.getMaNv();
-        // LOGIC PHÂN QUYỀN: Nếu là Staff (Sếp) -> Không lọc (null) để xem tất cả
-        // Nếu không phải Staff -> Lọc theo maNv để chỉ xem chính mình
         String filterMaNv = prefsManager.isStaff() ? null : maNv;
 
-        // Cập nhật tham số truyền vào apiService.getAccounts() để khớp với ApiService.java
         apiService.getAccounts(filterMaNv).enqueue(new Callback<List<AccountDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<AccountDto>> call, @NonNull Response<List<AccountDto>> response) {
@@ -58,6 +54,7 @@ public class UserRepositoryImpl implements UserRepository {
                                 dto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
                         );
                         user.setStatus(dto.getStatus());
+                        user.setMaNv(dto.getMaNvId());
                         users.add(user);
                     }
                     result.setValue(Resource.success(users));
@@ -75,8 +72,6 @@ public class UserRepositoryImpl implements UserRepository {
         return result;
     }
 
-    // ================= THAY 3 HÀM NULL CUỐI FILE 2 BẰNG ĐOẠN NÀY =================
-
     @Override
     public LiveData<Resource<User>> addUser(User user) {
         MutableLiveData<Resource<User>> result = new MutableLiveData<>();
@@ -89,6 +84,7 @@ public class UserRepositoryImpl implements UserRepository {
         dto.setPassword(user.getPassword());
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
         dto.setStatus(user.getStatus() != null ? user.getStatus() : "Đang hoạt động");
+        dto.setMaNvId(user.getMaNv());
 
         apiService.createAccount(dto).enqueue(new Callback<AccountDto>() {
             @Override
@@ -106,6 +102,7 @@ public class UserRepositoryImpl implements UserRepository {
                     );
 
                     newUser.setStatus(responseDto.getStatus());
+                    newUser.setMaNv(responseDto.getMaNvId());
 
                     result.setValue(Resource.success(newUser));
                 } else {
@@ -140,6 +137,7 @@ public class UserRepositoryImpl implements UserRepository {
         dto.setFullName(user.getName());
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
         dto.setStatus(user.getStatus() != null ? user.getStatus() : "Đang hoạt động");
+        dto.setMaNvId(user.getMaNv());
 
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             dto.setPassword(user.getPassword());
@@ -161,6 +159,7 @@ public class UserRepositoryImpl implements UserRepository {
                     );
 
                     updatedUser.setStatus(updatedDto.getStatus());
+                    updatedUser.setMaNv(updatedDto.getMaNvId());
 
                     result.setValue(Resource.success(updatedUser));
                 } else {
