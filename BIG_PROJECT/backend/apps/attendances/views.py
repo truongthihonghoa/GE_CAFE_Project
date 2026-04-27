@@ -21,7 +21,7 @@ class ChamCongViewSet(viewsets.ModelViewSet):
         # Luôn luôn chỉ trả về lịch sử của người đang đăng nhập
         # (Không phân biệt Admin hay Nhân viên để tránh lộ dữ liệu trên màn hình cá nhân)
         try:
-            return ChamCong.objects.filter(ma_nv__taikhoan__user=user).order_by('-ngay_lam', '-gio_vao')
+            return ChamCong.objects.filter(ma_nv__taikhoan__user=user).select_related('ma_nv').order_by('-ngay_lam', '-gio_vao')
         except Exception:
             return ChamCong.objects.none()
 
