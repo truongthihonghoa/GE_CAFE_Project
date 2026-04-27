@@ -145,7 +145,7 @@ public class AuthRepositoryImpl implements AuthRepository {
                                 dto.checkIsStaff() ? "ADMIN" : "EMPLOYEE"
                         );
                         user.setStatus(dto.getStatus());
-                        user.setMaNvId(dto.getMaNvId());
+                        user.setMaNv(dto.getMaNvId());
                         users.add(user);
                     }
                     result.setValue(Resource.success(users));
@@ -172,7 +172,7 @@ public class AuthRepositoryImpl implements AuthRepository {
         dto.setPassword(user.getPassword());
         dto.setRole("ADMIN".equals(user.getRole()) ? "Quản lý" : "Nhân viên");
         dto.setStatus(user.getStatus());
-        dto.setMaNvId(user.getId());
+        dto.setMaNvId(user.getMaNv());
 
         apiService.createAccount(dto).enqueue(new Callback<AccountDto>() {
             @Override
