@@ -226,13 +226,26 @@ public class EmployeeListFragment extends Fragment {
             viewModel.deleteEmployee(employee.getId()).observe(getViewLifecycleOwner(), resource -> {
                 if (resource == null) return;
                 if (resource.status == com.demo.ltud_n10.core.Resource.Status.SUCCESS) {
-                    Toast.makeText(requireContext(), "Đã xóa nhân viên thành công", Toast.LENGTH_SHORT).show();
+                    showSuccessToast("Đã xóa thông tin nhân viên");
                     viewModel.loadEmployees();
                 } else if (resource.status == com.demo.ltud_n10.core.Resource.Status.ERROR) {
                     showErrorToast("Không thể xóa nhân viên: " + resource.message);
                 }
             });
         });
+    }
+
+    private void showSuccessToast(String message) {
+        if (!isAdded()) return;
+        View layout = getLayoutInflater().inflate(R.layout.layout_custom_toast, null);
+        TextView tvMessage = layout.findViewById(R.id.tvMessage);
+        tvMessage.setText(message);
+
+        Toast toast = new Toast(requireContext());
+        toast.setDuration(Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 100);
+        toast.setView(layout);
+        toast.show();
     }
 
     private void showConfirmDialog(String title, String message, String negativeText, String positiveText, Runnable onConfirm) {

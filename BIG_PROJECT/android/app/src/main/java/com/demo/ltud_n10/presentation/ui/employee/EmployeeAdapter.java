@@ -52,7 +52,6 @@ public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewH
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Employee employee = getItem(position);
         holder.tvName.setText(employee.getName() != null ? employee.getName() : "N/A");
-        holder.tvEmail.setText(employee.getEmail() != null ? employee.getEmail() : "");
         holder.tvCccd.setText("CCCD: " + (employee.getCccd() != null ? employee.getCccd() : ""));
         holder.tvPhone.setText("SĐT: " + (employee.getPhone() != null ? employee.getPhone() : ""));
         holder.tvPosition.setText(employee.getPosition() != null ? employee.getPosition() : "");
@@ -74,13 +73,12 @@ public class EmployeeAdapter extends ListAdapter<Employee, EmployeeAdapter.ViewH
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvEmail, tvCccd, tvPhone, tvPosition, tvStatus;
+        TextView tvName, tvCccd, tvPhone, tvPosition, tvStatus;
         View btnEdit, btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvEmployeeName);
-            tvEmail = itemView.findViewById(R.id.tvEmail);
             tvCccd = itemView.findViewById(R.id.tvCccd);
             tvPhone = itemView.findViewById(R.id.tvPhone);
             tvPosition = itemView.findViewById(R.id.tvPosition);
