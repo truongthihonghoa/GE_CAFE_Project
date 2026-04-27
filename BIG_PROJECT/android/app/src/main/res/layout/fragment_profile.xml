@@ -262,6 +262,27 @@
                 android:textSize="15sp"
                 tools:text="Chức vụ" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Thông tin ngân hàng (Lương):"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etBankAccount"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
+                android:enabled="false"
+                android:paddingHorizontal="16dp"
+                android:textColor="#5F6368"
+                android:textSize="15sp"
+                tools:text="Tài khoản ngân hàng" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
                 android:layout_width="match_parent"
