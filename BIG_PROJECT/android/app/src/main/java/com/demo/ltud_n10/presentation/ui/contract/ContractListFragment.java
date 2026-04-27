@@ -61,6 +61,21 @@ public class ContractListFragment extends Fragment {
             args.putString("title", "Tạo hợp đồng lao động");
             Navigation.findNavController(v).navigate(R.id.action_contractListFragment_to_contractDetailFragment, args);
         });
+
+        binding.etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (adapter != null) {
+                    adapter.filter(s.toString());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
     }
 
     private void setupRecyclerView() {

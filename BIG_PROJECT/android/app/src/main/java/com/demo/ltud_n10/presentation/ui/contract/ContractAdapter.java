@@ -15,6 +15,7 @@ import java.util.List;
 public class ContractAdapter extends RecyclerView.Adapter<ContractAdapter.ViewHolder> {
 
     private List<Contract> contracts = new ArrayList<>();
+    private List<Contract> contractsFull = new ArrayList<>();
     private final OnContractClickListener listener;
 
     public interface OnContractClickListener {
@@ -28,6 +29,23 @@ public class ContractAdapter extends RecyclerView.Adapter<ContractAdapter.ViewHo
 
     public void setContracts(List<Contract> contracts) {
         this.contracts = contracts;
+        this.contractsFull = new ArrayList<>(contracts);
+        notifyDataSetChanged();
+    }
+
+    public void filter(String text) {
+        List<Contract> filteredList = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            filteredList.addAll(contractsFull);
+        } else {
+            String filterPattern = text.toLowerCase().trim();
+            for (Contract item : contractsFull) {
+                if (item.getEmployeeName() != null && item.getEmployeeName().toLowerCase().contains(filterPattern)) {
+                    filteredList.add(item);
+                }
+            }
+        }
+        this.contracts = filteredList;
         notifyDataSetChanged();
     }
 

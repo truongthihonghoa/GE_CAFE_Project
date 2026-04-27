@@ -167,8 +167,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         Employee employee = new Employee();
         employee.setId(dto.getMaNv());
         employee.setName(dto.getHoTen());
-        employee.setEmail(dto.getEmail());
-        employee.setPhone(dto.getSdt()); 
+        employee.setPhone(dto.getSdt());
         employee.setCccd(dto.getCccd());
         employee.setGender(dto.getGioiTinh());
         employee.setDob(dto.getNgaySinh());
@@ -184,7 +183,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         EmployeeDto dto = new EmployeeDto();
         dto.setMaNv(employee.getId());
         dto.setHoTen(employee.getName());
-        dto.setEmail(employee.getEmail());
         dto.setSdt(employee.getPhone());
         dto.setCccd(employee.getCccd());
         dto.setGioiTinh(employee.getGender());

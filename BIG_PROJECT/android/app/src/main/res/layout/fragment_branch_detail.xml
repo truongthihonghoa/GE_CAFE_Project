@@ -88,8 +88,7 @@
                 android:textColor="#DC3545"
                 android:textSize="11sp"
                 android:layout_marginTop="4dp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
             <!-- Field: Address -->
             <TextView
@@ -119,8 +118,7 @@
                 android:textColor="#DC3545"
                 android:textSize="11sp"
                 android:layout_marginTop="4dp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
             <!-- Field: Phone Number -->
             <TextView
@@ -151,10 +149,9 @@
                 android:textColor="#DC3545"
                 android:textSize="11sp"
                 android:layout_marginTop="4dp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
-            <!-- Field: Manager (Dropdown-like Card) -->
+            <!-- Field: Manager -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -164,40 +161,15 @@
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cvManager"
+            <EditText
+                android:id="@+id/etManagerName"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="8dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingHorizontal="16dp">
-
-                    <TextView
-                        android:id="@+id/tvManagerName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:text="Chọn quản lý"
-                        android:textColor="#64748B"
-                        android:textSize="14sp" />
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:src="@android:drawable/arrow_down_float"
-                        app:tint="#64748B" />
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+                android:background="@drawable/bg_edittext"
+                android:hint="Nhập tên quản lý"
+                android:paddingHorizontal="16dp"
+                android:textSize="14sp" />
 
             <!-- Field: Status -->
             <LinearLayout
@@ -205,8 +177,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone"
-                tools:visibility="visible">
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -253,6 +224,22 @@
                     </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGenerateQR"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="24dp"
+                app:backgroundTint="#F89E1B"
+                android:text="XEM MÃ QR CHẤM CÔNG"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:cornerRadius="10dp"
+                app:icon="@android:drawable/ic_menu_camera"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"/>
 
             <!-- Buttons -->
             <LinearLayout

@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class Employee implements Serializable {
     private String id;
     private String name;
-    private String email;
     private String phone;
     private String cccd;
     private String gender; // "Nam", "Nữ"
@@ -20,10 +19,9 @@ public class Employee implements Serializable {
 
     public Employee() {}
 
-    public Employee(String id, String name, String email, String phone, String cccd, String gender, String dob, String address, String position, String status) {
+    public Employee(String id, String name, String phone, String cccd, String gender, String dob, String address, String position, String status) {
         this.id = id;
         this.name = name;
-        this.email = email;
         this.phone = phone;
         this.cccd = cccd;
         this.gender = gender;
@@ -38,8 +36,6 @@ public class Employee implements Serializable {
     public void setId(String id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
     public String getCccd() { return cccd; }

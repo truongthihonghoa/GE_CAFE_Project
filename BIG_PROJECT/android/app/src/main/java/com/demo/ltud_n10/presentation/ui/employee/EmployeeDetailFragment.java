@@ -181,7 +181,6 @@ public class EmployeeDetailFragment extends Fragment {
             employee.setId("NV" + (System.currentTimeMillis() % 1000000));
         }
         employee.setName(name);
-        employee.setEmail(currentEmployee != null ? currentEmployee.getEmail() : "");
         employee.setCccd(cccd);
         employee.setPhone(phone);
         employee.setAddress(address);
