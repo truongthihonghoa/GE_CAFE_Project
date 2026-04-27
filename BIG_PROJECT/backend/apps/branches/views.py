@@ -70,7 +70,7 @@ def branch_update(request, pk):
     })
 
 
-# ❌ DELETE
+
 def branch_delete(request, pk):
     branch = get_object_or_404(ChiNhanh, pk=pk)
     branch.trang_thai = 'inactive'

@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import TaiKhoanViewSet
 
 router = DefaultRouter()
-router.register(r'', TaiKhoanViewSet, basename='')
+router.register(r'taikhoan', TaiKhoanViewSet, basename='taikhoan')
 
 urlpatterns = [
     path('', include(router.urls)),

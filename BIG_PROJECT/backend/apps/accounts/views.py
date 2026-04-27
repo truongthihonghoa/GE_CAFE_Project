@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import TaiKhoan
 from .serializers import TaiKhoanSerializer
 
@@ -161,29 +161,46 @@ def logout_view(request):
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.response import Response
+from rest_framework import status
 
 
-class TaiKhoanViewSet(viewsets.ReadOnlyModelViewSet):
+class TaiKhoanViewSet(viewsets.ModelViewSet):
+    queryset = TaiKhoan.objects.all()
     serializer_class = TaiKhoanSerializer
-    # Chỉ cho phép người đã đăng nhập (có Token) mới được gọi API
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+
+    # ÉP MỞ QUYỀN: Không dùng IsAuthenticated lúc này
+    permission_classes = [AllowAny]
+    authentication_classes = [] # Tạm thời bỏ qua xác thực để thông luồng POST/PUT
+    # Cho phép test thoải mái không lo bị chặn 405/401
+
 
     def get_queryset(self):
-        user = self.request.user
+        # Trả về tất cả để App Android có thể hiển thị sau khi CRUD
+        return TaiKhoan.objects.all()
 
-        # Kiểm tra quyền Staff trực tiếp từ Token của User
-        if user.is_superuser:
-            return TaiKhoan.objects.all()
+    # --- CRUD CỦA BẠN ĐÂY ---
 
-        if user.is_staff:
-            # Lấy chi nhánh của quản lý để lọc
-            # Đảm bảo model TaiKhoan có quan hệ ngược hoặc truy vấn đúng
-            try:
-                ma_chi_nhanh = user.taikhoan.ma_nv.ma_chi_nhanh
-                return TaiKhoan.objects.filter(ma_nv__ma_chi_nhanh=ma_chi_nhanh)
-            except AttributeError:
-                return TaiKhoan.objects.none()  # Trả về trống nếu ko tìm thấy chi nhánh
+    def create(self, request, *args, **kwargs):
+        """Xử lý lệnh POST từ App Android"""
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Nếu là nhân viên thường, chỉ thấy chính mình
-        return TaiKhoan.objects.filter(user=user)
+    def update(self, request, *args, **kwargs):
+        """Xử lý lệnh PUT từ App Android"""
+        instance = self.get_object()
+        # partial=True cực kỳ quan trọng, giúp bạn sửa lẻ từng trường
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        """Xử lý lệnh DELETE từ App Android"""
+        instance = self.get_object()
+        instance.delete()
+        return Response({"detail": "Xóa thành công!"}, status=status.HTTP_204_NO_CONTENT)

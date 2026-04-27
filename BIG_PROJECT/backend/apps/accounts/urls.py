@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 app_name = 'accounts'
 router = DefaultRouter()
 # Bạn nên đặt tên cho router để tránh bị trống URL, ví dụ 'taikhoan'
-router.register(r'taikhoan', TaiKhoanViewSet, basename='taikhoan')
+router.register(r'accounts', TaiKhoanViewSet, basename='accounts')
 
 urlpatterns = [
     path('', include(router.urls)),
